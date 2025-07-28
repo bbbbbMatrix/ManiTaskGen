@@ -1,0 +1,69 @@
+# Task Generation Project Dependencies
+# Python version: 3.10.16
+
+# Core robotics and simulation libraries
+mani_skill==3.0.0b15
+sapien==3.0.0b1
+
+# Mathematics and geometry libraries
+pytorch-kinematics>=0.7.4
+cvxpy==1.6.1
+transforms3d==0.4.2
+
+# Spatial indexing and 3D processing
+rtree==1.4.0
+manifold3d==3.0.1
+
+# 3D file handling and point cloud processing
+pygltflib==1.16.3
+open3d==0.19.0
+
+# glogs 
+glog>=0.3.1
+ipdb>=0.13.13
+
+# Additional dependencies (commonly needed for these libraries)
+numpy>=1.21.0
+scipy>=1.7.0
+torch>=1.10.0
+trimesh>=3.9.0
+pillow>=8.0.0
+matplotlib>=3.3.0
+shapely==2.0.6
+graphviz==0.20.3
+colorama==0.4.6
+validators==0.34.0
+torch==2.6.0
+torchvision==0.21.0
+
+
+#The following packages are required by VLMEvalKit
+decord; platform_machine != 'arm64'
+eva-decord; platform_machine == 'arm64'
+gradio
+huggingface_hub
+imageio
+matplotlib
+numpy
+omegaconf
+openai
+opencv-python>=4.4.0.46
+openpyxl
+pandas
+pillow
+portalocker
+protobuf
+python-dotenv
+requests
+rich
+sentencepiece
+setuptools
+sty
+tabulate
+tiktoken
+timeout-decorator
+tqdm
+transformers
+typing_extensions
+validators
+xlsxwriter

@@ -1,0 +1,322 @@
+adjust_with_gravity: true
+atomic_task: !!python/object:__main__.AtomicTaskConfig
+  debug_mode: false
+  default_timeout: 30.0
+  max_intermediate_states: 10
+  validation_enabled: true
+atomic_task_pkl_load_path: ./atomic_task.pkl
+atomic_task_pkl_save_path: ./atomic_task.pkl
+basic_geometry: !!python/object:__main__.BasicGeometryConfig
+  EPS: 1.0e-05
+bbox_only: false
+benchmark_executor: !!python/object:__main__.BenchmarkExecutorConfig
+  allow_invalid_actions: false
+  auto_rotate_enabled: true
+  default_fovy_deg_max: 60.0
+  default_fovy_deg_min: 40.0
+  default_standing_direction: 0
+  enable_detailed_logging: false
+  focus_ratio: 0.6
+  image_save_base_path: image4interact/
+  intermediate_task_max_score: 4
+  max_interaction_count: 20
+  max_rotation_attempts: 4
+  object_naming_for_interaction: true
+  picture_height: 768
+  picture_width: 1366
+  platform_naming_for_interaction: true
+  prompt_templates_path: src/utils/prompts/task_interact_prompts.json
+  reflection_prompts_path: src/utils/prompts/reflection_prompts.json
+  reflection_txt_load_path: ./load_reflection.txt
+  reflection_txt_save_path: ./save_reflection.txt
+  rotation_step: 2
+  save_interaction_history: true
+  task_timeout_seconds: 300.0
+  validate_actions: true
+  visibility_check_enabled: true
+cache_enabled: true
+concave_processor: !!python/object:__main__.ConcaveProcessorConfig {}
+entity_json_path: ./replica_apt_0_entities.json
+generate_mistake_note: false
+ground_coverage: !!python/object:__main__.GroundCoverageConfig
+  global_bounds:
+  - -5.0
+  - 5.0
+  - -5.0
+  - 5.0
+  min_rect_size: 0.4
+  resolution: 0.01
+  z_range:
+  - 0.2
+  - 1
+image4interaction_path: ./image4interaction/
+image4rename_path: ./image4rename/
+image_renderer: !!python/object:__main__.ImageRendererConfig
+  default_camera_xy:
+  - 0.0
+  - 0.0
+  default_focus_ratio: 0.5
+  default_fovy: 75.0
+  default_fovy_range:
+  - 10.0
+  - 100.0
+  default_scipy_minimize_ftol: 0.001
+  default_scipy_minimize_maxiter: 250
+  font_size: 48
+  height: 1080
+  number_font_size: 40
+  roll_range:
+  - -0.003490658503988659
+  - 0.003490658503988659
+  trans_visiblity: 0.2
+  width: 1920
+  z_range:
+  - 0.2
+  - 2.5
+input_json_path: path/to/replica_dataset/configs/scenes/apt_0.scene_instance.json
+log_level: INFO
+meshprocessor: !!python/object:__main__.MeshProcessorConfig
+  EPS: 1.0e-06
+  coverage_threshold: 0.6
+  height_threshold: 0.01
+  min_size: 0.0025
+  relative_size_ratio: 0.25
+mode: manual
+model_name: human
+openrouter: !!python/object:__main__.OpenRouterConfig
+  api_key: Bearer sk-or-v1-PLEASEREPLACEWITHYOUROPENROUTERAPIKEY
+  model: google/gemini-2.5-flash-lite-preview-06-17
+output_json_path: ./replica_apt_0_parsed.json
+random_seed: null
+raw_scene: !!python/object:__main__.RawSceneConfig
+  dataset_root_path: path/to/dataset
+  desired_articulations: null
+  desired_objects: null
+  not_desired_articulations: null
+  not_desired_objects:
+  - frl_apartment_handbag
+  - frl_apartment_cushion_01
+  - frl_apartment_monitor
+  - frl_apartment_cloth_01
+  - frl_apartment_cloth_02
+  - frl_apartment_cloth_03
+  - frl_apartment_cloth
+  - frl_apartment_umbrella
+  - frl_apartment_tv_screen
+  - frl_apartment_indoor_plant_01
+  - frl_apartment_monitor_stand
+  - frl_apartment_setupbox
+  - frl_apartment_beanbag
+  - frl_apartment_bike_01
+  - frl_apartment_bike_02
+  - frl_apartment_indoor_plant_02
+  - frl_apartment_picture_01
+  - frl_apartment_towel
+  - frl_apartment_rug_01
+  - frl_apartment_rug_02
+  - frl_apartment_rug_03
+  - frl_apartment_mat
+  - frl_apartment_tv_object
+  object_config_path: path/to/object/config
+rectangle_query: !!python/object:__main__.RectangleQueryConfig
+  EPS: 0.001
+reflection_txt_load_path: ./load_reflection.txt
+reflection_txt_save_path: ./save_reflection.txt
+rename_dict_path: ./rename_dict.json
+result_file_path: ./result.txt
+sapien: !!python/object:__main__.SapienConfig
+  ambient_light:
+  - 0.5
+  - 0.5
+  - 0.5
+  camera_parameters:
+    far: 100
+    fovy: 1
+    near: 0.05
+  camera_position:
+    x: -5
+    y: 0
+    z: 6
+  camera_rotation:
+    p: !!python/object/apply:numpy.core.multiarray.scalar
+    - !!python/object/apply:numpy.dtype
+      args:
+      - f8
+      - false
+      - true
+      state: !!python/tuple
+      - 3
+      - <
+      - null
+      - null
+      - null
+      - -1
+      - -1
+      - 0
+    - !!binary |
+      T7thBWes3b8=
+    r: 0
+    y: 0
+  camera_shader: default
+  collision_path_prefix: path/to/collision/objects
+  correction_rotation_x: -90
+  cushion_z_offset: 0.1
+  dataset_root_path: path/to/dataset
+  default_json_file: replica_apt_0_parsed.json
+  default_material:
+    base_color:
+    - 1
+    - 1
+    - 1
+    metallic: 0.0
+    roughness: 0.5
+    specular: 0.5
+    transmission: 9.0
+  default_output_file: entities_apt_0.json
+  default_shading_mode: 1
+  directional_light:
+  - color:
+    - 0.5
+    - 0.5
+    - 0.5
+    direction:
+    - 0
+    - 1
+    - -1
+  excluded_shading_objects:
+  - book_03
+  ground_altitude: 0.0
+  point_lights:
+  - color:
+    - 0.5
+    - 0.5
+    - 0.5
+    position:
+    - 1.989
+    - -5.822
+    - 1
+  - color:
+    - 0.4
+    - 0.4
+    - 0.4
+    position:
+    - 2.15
+    - -5.9
+    - 1.0
+  - color:
+    - 0.4
+    - 0.4
+    - 0.4
+    position:
+    - 1.3499999999999999
+    - -5.9
+    - 1.0
+  - color:
+    - 0.4
+    - 0.4
+    - 0.4
+    position:
+    - 1.75
+    - -6.65
+    - 1.0
+  - color:
+    - 0.4
+    - 0.4
+    - 0.4
+    position:
+    - 1.75
+    - -5.15
+    - 1.0
+  - color:
+    - 0.4
+    - 0.4
+    - 0.4
+    position:
+    - 2.15
+    - -6.65
+    - 1.0
+  - color:
+    - 0.4
+    - 0.4
+    - 0.4
+    position:
+    - 2.15
+    - -5.15
+    - 1.0
+  - color:
+    - 0.4
+    - 0.4
+    - 0.4
+    position:
+    - 1.9
+    - -6.35
+    - 1
+  - color:
+    - 0.4
+    - 0.4
+    - 0.4
+    position:
+    - 2.1
+    - -6.35
+    - 1
+  - color:
+    - 0.4
+    - 0.4
+    - 0.4
+    position:
+    - 1.3499999999999999
+    - -5.15
+    - 1
+  ray_tracing_denoiser: none
+  rotation_offset_x: 90
+  time_step: 0.01
+  urdf_path_prefix: path/to/urdf
+  urdf_z_adjustment_offset: 0.005
+  visual_path_prefix: path/to/visual/objects
+scene: !!python/object:__main__.SceneConfig
+  collision_check_enabled: true
+  global_bounds:
+  - -5.0
+  - 5.0
+  - -5.0
+  - 5.0
+  safety_margin: 0.1
+scene_element: !!python/object:__main__.SceneElementConfig
+  bbox_eps: 0.4
+  contact_eps: 0.05
+  ground_level_correction: 0.0001
+scene_graph_pkl_load_path: ./scene_graph.pkl
+scene_graph_pkl_save_path: ./scene_graph.pkl
+scene_type: !!python/object:__main__.SceneType
+  NEED_COLLISION_ADJUSTMENT: true
+  RGBD_SCENE: false
+task_interaction: !!python/object:__main__.TaskInteractionConfig
+  default_idle_state: IDLE
+  default_navigation_state: NAVIGATION
+  enable_ambiguous_item_handling: true
+  enable_hint_prompts: true
+  enable_reflection_prompts: true
+task_num: 5
+task_primitive: !!python/object:__main__.TaskPrimitiveConfig
+  default_action: move
+  support_directions:
+  - front
+  - rear
+  - left
+  - right
+  - center
+  - front-left
+  - front-right
+  - rear-left
+  - rear-right
+  support_relations:
+  - at
+  - 'on'
+  - in
+  - around
+  - between
+  - freespace
+use_mistake_note: 0
+use_renaming_engine: false
+vlm_interactor: !!python/object:__main__.VlmInteractorConfig
+  MAX_INTERACTION_COUNT: 20

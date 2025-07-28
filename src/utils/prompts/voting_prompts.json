@@ -1,0 +1,67 @@
+{
+  "outcome_based_task_evaluation": {
+    "system_prompt_template": {
+      "prompt_type": "task_feasibility_evaluation",
+      "required_variables": [
+        "task_description",
+        "platform_name",
+        "multilayer_object_name"
+      ],
+      "content": "Please evaluate the feasibility of the following task:\n\nTask: {task_description}\n\nWe want to evaluate if the given task is feasible for such a robot: Its ability involves: navigate, pick up any objects and place objects anywhere fitable on the platform.\n\nI'll provide images of relevant platforms and objects. Based on these images, please assess whether this task can be completed successfully.\n\nAssessment criteria:\n1. Are all required objects present in the scene?\n2. Is there sufficient free space on the target platform for placement?\n3. Are the spatial relationships between objects as required by the task achievable?\n4. Would completing the task create any unstable or physically impossible arrangements?\n\nPlease only output a single line: \"Feasible\", \"Partially feasible\", or \"Not feasible\" based on the task's feasibility.\n\nExplanation is not required.\n\nThis task involves the following platforms and multilayer objects:\n\nplatform: {platform_name}\nmultilayer object: {multilayer_object_name}\n\nTheir pictures are as follows:"
+    },
+
+    "platform_description_template": {
+      "prompt_type": "platform_description",
+      "required_variables": [
+        "platform_name",
+        "child_name_list",
+        "n_platform_img_list"
+      ],
+      "content": "This image(s) show the platform{platform_name} (in different view angles), with the items on it are marked with colored number circles and guidlines. the items are: {child_name_list}"
+    },
+
+    "multilayer_object_intro": {
+      "prompt_type": "multilayer_object_intro",
+      "required_variables": [],
+      "content": "The following images show each layer of the multilayer object, with the items on it are marked with colored number circles and guidlines."
+    },
+
+    "multilayer_platform_description_template": {
+      "prompt_type": "multilayer_platform_description",
+      "required_variables": [
+        "platform_name",
+        "child_name_list",
+        "is_top_layer"
+      ],
+      "content": "This image shows the platform{platform_name}, with the items on it are marked with colored number circles and guidlines. {is_top_layer}. the items are: {child_name_list}"
+    }
+  },
+
+  "image_generation_config": {
+    "view_settings": {
+      "view": "human_full",
+      "mark_object": true,
+      "mark_freespace": false,
+      "focus_ratio": 0.6
+    },
+    "file_naming": {
+      "single_image": "{save_path}{platform_name}.png",
+      "multiple_images": "{save_path}{platform_name}_{image_index}_out_of_{total_images}.png"
+    }
+  },
+
+  "response_format": {
+    "expected_responses": ["Feasible", "Partially feasible", "Not feasible"],
+    "output_format": "single_line_only",
+    "explanation_required": false
+  },
+
+  "task_components": {
+    "platform_reference": "PLATFORM0",
+    "multilayer_object_reference": "MULTILAYER-OBJECT0",
+    "layer_indicator": {
+      "top_layer_text": "And this is the top layer.",
+      "other_layer_text": ""
+    }
+  }
+}

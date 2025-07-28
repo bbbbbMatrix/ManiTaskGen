@@ -1,0 +1,14 @@
+*.txt
+*.png
+
+!task_generation/result/*.txt
+!task_generation/result/*.png
+scene_datasets/replica_cad_dataset/
+__pycache__/
+*.pyc
+*.pyo
+debug/
+.vscode/
+*.obj
+replica_apt_0.json
+toy_scene_*.json

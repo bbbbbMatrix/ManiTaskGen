@@ -1,0 +1,173 @@
+{
+  "partial_score": {
+    "prompt_type": "partial_score",
+    "required_variables": [
+      "action_list",
+      "correct_state_list",
+      "failed_state_list"
+    ],
+    "content": "In your first {action_list} operations, you successfully completed {correct_state_list} actions, however you failed to complete {failed_state_list} actions.\n\n"
+  },
+  "one_possible_correct_answer": {
+    "prompt_type": "one_possible_correct_answer",
+    "required_variables": ["failed_state_list", "solution_list"],
+    "content": "To complete the operations in {failed_state_list}, one possible solution is as follows: {solution_list}.\n\n"
+  },
+
+  "action_reason": {
+    "pick_up_object": {
+      "prompt_type": "pick_up_object",
+      "required_variables": ["object_name", "object_idx"],
+      "content": "From the available images, we can identify that {object_name} is object #{object_idx}. So, we need to select action 'pick_up_object_{object_idx}_of_current_platform'\n\n"
+    },
+    "goto_platform": {
+      "prompt_type": "goto_platform",
+      "required_variables": ["platform_name"],
+      "content": "Based on the initial position information and action space provided by the system, we can recognize that now you need to go to {platform_name} with action 'goto_{platform_name}'.\n\n"
+    },
+    "rotate_observation_view": {
+      "prompt_type": "rotate_observation_view",
+      "required_variables": ["direction"],
+      "content": "The existing view may not be the optimal angle or may not align with the position of the target object at the beginning of the task, which may intervere our judgement. Therefore, we can try to rotate the viewing angle with action 'rotate_observation_view_of_current_platform';.\n\n"
+    },
+    "show_freespace_of_object": {
+      "prompt_type": "show_freespace_of_object",
+      "required_variables": [
+        "object_name",
+        "object_idx",
+        "adjacent_object_name_list",
+        "adjacent_object_idx_list"
+      ],
+      "content": "Given that the task requires placing an item in a location related to {object_name}, and from the existing images we can see that {object_name} is object #{object_idx}, we need to observe its free space. Additionally, we can see {adjacent_object_name_list}, numbered as {adjacent_object_idx_list}, which are also around {object_name}. If we find that the free space of the task object is not large enough, we can also check their free spaces and consider choosing appropriate areas among them.\n\n"
+    },
+
+    "place_object": {
+      "prompt_type": "place_object",
+      "required_variables": ["placement_type", "freespace_list"],
+      "placement_type": {
+        "middle_of_2_objects": {
+          "prompt_type": "middle",
+          "required_variables": [
+            "object_name_a",
+            "object_name_b",
+            "object_idx_a",
+            "object_idx_b",
+            "adjacent_object_name_list",
+            "adjacent_object_idx_list"
+          ],
+          "content": "To complete the task, you need to place the object between {object_name_a} and {object_name_b}; From the given platform image and the freespace image, we can recognize that they are #{object_idx_a} and #{object_idx_b} on the platform, and the free space between them is {freespace_list}, so you should choose 'place_at_freespace_{freespace_list}' to place the object there. If it doesn't fit, you can try to combine more freespace regions from these two objects; further more, around your chosen area, there are {adjacent_object_name_list}, numbered as {adjacent_object_idx_list}, and you can also try to combine their free spaces that are close to the target area with the current choice. \n\n"
+        },
+        "around_object": {
+          "prompt_type": "around_object",
+          "required_variables": [
+            "object_name",
+            "object_idx",
+            "adjacent_object_name_list",
+            "adjacent_object_idx_list"
+          ],
+          "content": "To complete the task, you need to place the object around {object_name}. From the images, we can recognize that this object is  #{object_idx}, and its free space numbers are {freespace_list}, so you should choose 'place_at_freespace_{freespace_list}' to place the object within its collection of free spaces. If it doesn't fit, around your chosen area, there are {adjacent_object_name_list}, numbered as {adjacent_object_idx_list}, and you can also try to combine their free spaces that are close to the target area with the current choice.\n\n"
+        },
+        "on_platform": {
+          "prompt_type": "around",
+          "required_variables": [
+            "object_name",
+            "object_idx",
+            "adjacent_object_name_list",
+            "adjacent_object_idx_list"
+          ],
+          "content": "To complete the task, you need to place the object around {object_name}. From the images, we can recognize that this object is  #{object_idx}, and its free space numbers are {freespace_list}, so you should choose 'place_at_freespace_{freespace_list}' to place the object within its collection of free spaces. If it doesn't fit, around your chosen area, there are {adjacent_object_name_list}, numbered as {adjacent_object_idx_list}, and you can also try to combine their free spaces that are close to the target area with the current choice.\n\n"
+        },
+        "on_platform_dir_cardinal": {
+          "required_variables": [
+            "platform_name",
+            "direction",
+            "direction_idx",
+            "extending_direction_cardinal_list",
+            "more_extending_direction_cardinal_list"
+          ],
+          "content": "To complete the task, you need to place the object in the {direction} direction of {platform_name}. From the given platform image and the freespace image, the free space number in the {direction} direction is {object_idx}, so you should choose 'place_at_freespace_{freespace_list}' to place the object in this direction. If it doesn't fit, you can also choose {extending_direction_list} or {more_extending_direction_list}, combining free spaces adjacent to the {direction} direction and collectively in the {direction} direction of the platform.\n\n"
+        },
+        "on_platform_dir_diagonal": {
+          "required_variables": [
+            "platform_name",
+            "direction",
+            "direction_idx",
+            "extending_direction_diagonal_list"
+          ],
+          "content": "To complete the task, you need to place the object in the {direction} direction of {platform_name}. From the given platform image, we can recognize that the free space number in the {direction} direction is {object_idx}, so you should choose 'place_at_freespace_{freespace_list}' to place the object in this direction. If it doesn't fit, you can also choose {extending_direction_list}, combining free spaces adjacent to the {direction} direction and collectively in the {direction} direction of the platform.\n\n"
+        },
+        "direction_of_object": {
+          "required_variables": [
+            "object_name",
+            "object_idx",
+            "adjacent_object_name_list",
+            "adjacent_object_idx_list",
+            "adjacent_direction_list"
+          ],
+          "content": "To complete the task, you need to place the object in the {direction} direction of {object_name}. From the given platform image, this object has ID {object_idx}, and the free space in this direction is {freespace_list}, so you should choose 'place_at_freespace_{freespace_list}' to place the object in this direction. If it doesn't fit, you can consider combining free spaces from adjacent directions ({adjacent_direction_list}). Additionally, around your chosen area, there are {adjacent_object_name_list}, numbered as {adjacent_object_idx_list}, and you can also try to combine their free spaces that are close to the target area.\n\n"
+        }
+      }
+    }
+  },
+  "image_description": {
+    "template": {
+      "required_variables": ["n_image", "image_name_list"],
+      "content": "Here are {n_image} images, named {image_name_list} respectively.\n\nTheir description is as follows: {image_description}"
+    },
+    "variants": {
+      "show_freespace_of_object": {
+        "required_variables": ["image_name", "object_idx", "freespace_num"],
+        "shared_variables": ["object_idx"],
+        "content": "This image shows the available free spaces around object {object_idx} on the platform, you see this because you've taken \"show_freespace\" action previously. The numbers from 1 to {freespace_num} indicate the available free spaces. Not all numbers from 1 to 8 may be present, as some free spaces might be too small or blocked. To use the numbers shown in the image to specify where you want to place the object you are holding, you can include ({object_idx}, {freespace_idx} (freespace_idx in [1, {freespace_num}]) in the output action.\n\n"
+      },
+      "show_platform": {
+        "required_variables": ["image_name"],
+        "shared_variables": ["platform_name"],
+        "content": "This image shows the platform you are currently on in one view, with regions or objects marked with numbers for you to place objects accurately. The platform is {platform_name}.\n\nIf the platform has no objects, a 3x3 grid will be marked on the platform to help you place objects, with each grid marked in numbers from 1 to 9. If there are objects on the platform, guiding lines will indicate the object numbers. Note that  if you see multiple images, it means the platform is too long to be captured in one image, and it's guaranteed that the same object will marked in THE SAME COLOR GUILDLINES AND THE SAME NUMBER. If you think you can't determine the number of an item in one picture, you can go through other pictures and see if this item is marked more clearly.\n\n"
+      }
+    }
+  },
+  "action_description_with_image": {
+    "prompt_type": "image_description",
+    "required_variables": [
+      "image_name_list",
+      "action_name",
+      "image_list_reason",
+      "action_reason"
+    ],
+    "content": "At this point, we can see images such as {image_name_list}, because {image_list_reason}; and you should choose {action_name}. The reason for choosing this action is {action_reason}.\n\n"
+  },
+
+  "hints": {
+    "no_rotate_hint": {
+      "prompt_type": "no_rotate_hint",
+      "required_variables": [],
+      "content": "You don't seem to have tried using the 'rotate_observation_view_of_current_platform' action to rotate the viewing angle. Please learn to use it effectively to avoid observing objects from non-frontal angles, which can result in a suboptimal view that could be improved.\n\n"
+    },
+    "attempted_place_repeatedly_at_beginning_hint": {
+      "prompt_type": "attempted_place_repeatedly_at_beginning_hint",
+      "required_variables": ["action_list"],
+      "content": "You made multiple placement attempts at the starting platform through {action_list}. This is commendable, indicating that you're trying to pick up the correct object. However, if you tried too many times,  you can also use 'show_freespace_of_object_x' to clearly see the placement space of object #x, which can indirectly confirm whether this object is what you want.\n\n"
+    },
+    "attempted_place_repeatedly_at_end_with_correct_item_hint": {
+      "prompt_type": "attempted_place_repeatedly_at_end_correct_hint",
+      "required_variables": ["action_list"],
+      "content": "After picking up the correct object, you made multiple placement attempts at the destination platform through {action_list}. This is commendable, suggesting you may have noticed issues with the placement. However, the images obtained from the 'show_freespace_of_object_x' command can help you determine what object #x is, which might allow you to identify it more quickly.\n\n"
+    },
+    "attempted_place_repeatedly_at_end_with_wrong_item_hint": {
+      "prompt_type": "attempted_place_repeatedly_at_end_wrong_hint",
+      "required_variables": ["action_list"],
+      "content": "After picking up the wrong object, you made multiple placement attempts at the destination platform through {action_list}. This is commendable, indicating that you recognize you've picked up the wrong object; however, since the destination platform may not have space to place the incorrect object you're holding, your operations might be in vain. You might instead try these operations at the starting platform instead.\n\n"
+    },
+    "attempted_place_before_look_hint": {
+      "prompt_type": "attempted_place_before_look_hint",
+      "required_variables": ["action_list"],
+      "content": "You made multiple placement attempts before have a look at the object's freespace. However, you can also use 'show_freespace_of_object_x' to clearly see the placement space of object #x, which can indirectly confirm whether this object is what you want.\n\n"
+    },
+    "too_much_invalid_action_hint": {
+      "prompt_type": "too_much_invalid_action_hint",
+      "required_variables": [],
+      "content": "You've output too many invalid actions. Please don't attempt to print your thought process, explanations, or apologies, as they won't be recognized by the system. If you believe your output is a correct instruction, please carefully observe your current action space. Note that you can only pick up one object at a time, and the methods for placing on empty platforms versus occupied platforms with objects are different.\n\n"
+    }
+  }
+}

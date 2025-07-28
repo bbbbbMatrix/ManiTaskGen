@@ -1,0 +1,215 @@
+{
+  "system_initialization": {
+    "prompt_type": "system_initialization",
+    "required_variables": [],
+    "content": "You are a household assistant robot equipped with a vision system and manipulation capabilities. You need to complete a task in a 3D environment, mainly involving moving, picking up, and placing objects. Your goal is to move an object from one place to another correctly according to instructions. Please strictly follow the given Action Space for operations.\n\n"
+  },
+  "task_instructions": {
+    "prompt_type": "task_instructions",
+    "required_variables": [],
+    "content": "At the beginning of each task, you will be informed of a specific task to complete. Throughout the task execution, you will transit between multiple states and have access to a set of possible actions (action space).\n\nYou may receive one of the following task types involving one object and another object or a platform '{an object/another object/a platform} are the name of objects or platforms:\n\n- move {an object} to {a platform}.\n- move {an object} to the {dir} of {a platform}.\n- move {an object} around {another object}.\n- move {an object} to the {dir} of {another object}.\n- move {an object} between {another object} and {yet another object}."
+  },
+  "understanding_directions": {
+    "prompt_type": "understanding_directions",
+    "required_variables": [],
+    "content": "**Understanding directions:**\nDirections like 'front', 'rear', 'left', and 'right' are defined relative to the robot's perspective and the heading of the object or platform you are interacting with. The heading of a ground object is not fixed and depends on where the robot is standing and facing.\n\n*   **Empty Surfaces (Platforms):** When interacting with an empty platform, imagine it divided into a 3x3 grid. The direction aligned with the heading (also, the FARTHEST middle space to you, NOT THE NEAREST MIDDLE SPACE) is labeled \"front,\" with the remaining regions proceeding counterclockwise as \"front-left,\" \"left,\" \"rear-left,\" \"rear,\" \"rear-right,\" \"right,\" and \"front-right.\"  The grid is conceptually numbered as follows, based on these directions:\n\n    [front-left, front, front-right],\n    [left, center, right],\n    [rear-left, rear, rear-right]\n\n *   **Occupied Surfaces (Objects on Platforms):** For objects on platforms, imagine extending the edges of the object's bounding box to the platform's boundaries. The resulting regions define the object's 8 free spaces, and the direction is defined similarly."
+  },
+  "task_success_criteria": {
+    "prompt_type": "task_success_criteria",
+    "required_variables": [],
+    "content": "**Task success criteria:**\n\n- **move {an object} to {a platform}**: The task is considered successful only when {an object} is placed anywhere on the specified platform.\n\n- **move {an object} to the {dir} of {a platform}**: The task is considered successful only when {an object} is placed on the platform and the geometric center of the placement is in the {dir} direction relative to the platform. \n\n- **move {an object} around {another object}**: The task is considered successful only when {an object} is placed in any of the free spaces surrounding {another object}.\n\n- **move {an object} to the {dir} of {another object}**: The task is considered successful only when {an object} is placed in the free spaces surrounding {another object} and overlaps with the {dir} direction.\n\n- **move {an object} between {another object} and {yet another object}**: The task is considered successful only when {an object} is placed such that it intersects with free spaces in a pair of opposite directions between {another object} and {yet another object}."
+  },
+  "possible_action_space_description": {
+    "prompt_type": "possible_action_space_description",
+    "required_variables": [],
+    "content": "Your action space, includes walking to platforms, picking up items, putting items down, rotating direction, getting information about directions around an object; CALL_END, placing an item in a specific direction on a platform, in a direction relative to another object, or placing it anywhere. Whenever you're about to choose an action, I will provide your current action space. If you choose an action that cannot be performed, such as trying to pick up an object repeatedly or attempting to place an object in a space that's too small, you'll receive a notification.\n\nPicking up an item: Corresponds to the command \"pick_up_object_{object number}_of_current_platform\".\n\nWalking to a platform: Corresponds to the command \"goto_{platform name}\".\n\nRotating direction: Corresponds to the command \"rotate_observation_view_of_current_platform\".\n\nGetting an image of an object: Corresponds to the command \"show_freespace_of_object_{object_number}_of_current_platform\".\n\nPutting down your holding item on empty platform: Corresponds to the command \"place_at_freespace_[{region_idx1},{region_idx2}...]\" where {dir_idx1}, {dir_idx2} are NUMBERS, indicating the index of the freespace; Putting down your item on an occupied platform: Corresponds to the command \"place_at_freespace_[({object_idx1},{dir_idx1})...]\",where {object_idx1}, {dir_idx1} are NUMBERS, indicating the object and its corresponding freespace. For example,  \"place_at_freespace_[(1,2), (2,5)]\" means putting down your item at the union of object 1's 2nd freespace and object 2's 5th freespace.Note that for placement action, the system will attempt to find a valid placement area that intersects with all the regions you selected. If it fails, it will place the object anywhere within your chosen space and you'll receive a notification.\n\n"
+  },
+  "possible_image_type_description": {
+    "prompt_type": "possible_image_explanation",
+    "required_variables": [],
+    "content": "You may be shown various types of images:\n\n0) At the beginning of a task, if the task involves objects on a platform that contains other objects of the same type (e.g., the object is a book on a bookshelf with many books), you will receive a notification and images of these objects to help you distinguish them.\n\n1) Whenever you move to a platform, you will see an image of the platform from your current perspective (or multiple images for longer platforms, indicating you can move horizontally to better observe the platform).\nIf the platform has no objects, a 3x3 grid will be marked on the platform to help you place objects.\nIf there are objects on the platform, guiding lines will indicate the object numbers.\n\n2) If there are objects on a platform, you can use \"display {an object} free space\" to get a focused image of that object with numbered free spaces around it. This allows you to see the available free spaces around the object."
+  },
+  "task_remainder": {
+    "prompt_type": "task_remainder",
+    "required_variables": ["task_description", "steps_used", "total_steps"],
+    "content": "Current task:\n{task_description}\n\nSteps used: {steps_used}/{total_steps}. You can only take at most {total_steps} steps, so hurry if you've almost used all of them!\n",
+    "identical_objects_prompt": "Important: There are identical objects in this task. To help you distinguish them, we also provided images of the relevant objects.\n\n"
+  },
+  "important_suggestion": {
+    "prompt_type": "important_suggestion",
+    "required_variables": [],
+    "content": "Here are some useful suggestions for you to better finish the task: \n\n1. Your extra actions do not affect the success of the task, you only need to keep your steps within the total step limit.\n\n2. When you want to place an object but cannot find enough space, you can try changing your standing position to find the correct orientation, try combining multiple free spaces, or remove objects that are blocking your way first(although you generally do not need to do this). Specifically, for the task asking you put object to empty platforms, try combining adjacent free spaces may be very useful.\n\n3. For tasks that involve placing objects near other objects, please remember to get a focused image of the target object and examine it carefully. This is important because the regions may not be intuitive. \n\n4. **Important: Don't output anything other than the action you want to take. You will only receive the same hint informing you your invalid action. If you make mistakes, just start output correct actions from the next prompt without any apologize.\n\n**"
+  },
+
+  "current_state": {
+    "prompt_type": "current_state",
+    "required_variables": ["platform_name", "holding_object"],
+    "content": "You are currently at {platform_name}.\n\nAnd you are holding {holding_object}."
+  },
+  "action_space": {
+    "prompt_type": "action_space",
+    "template": {
+      "required_variables": [],
+      "content": "Your available action space:\n{action_space_content}\n\nAll your current available actions are listed as follows (all are without quotes and square brackets). Please don't mix up it with the action space of previous steps."
+    },
+    "variants": {
+      "navigation": {
+        "required_variables": ["location_action_list"],
+        "content": "Your available actions (all are without quotes and square brackets):\n- `CALL_END`: Call end (terminate the task).\n- {location_action_list}. Please choose one of the available actions."
+      },
+      "idle": {
+        "required_variables": [
+          "location_action_list",
+          "object_action_list",
+          "show_freespace_of_object_action_list"
+        ],
+        "content": "Your available actions:\n- {location_action_list}\n- {object_action_list}\n- {show_freespace_of_object_action_list}\n- `CALL_END`: Call end (terminate the task).\n- `rotate_observation_view_of_current_platform`: Change the viewing angle to observe the scene from another perspective.\n\nChoose one of the available actions."
+      },
+      "holding_empty_platform": {
+        "required_variables": [
+          "location_action_list",
+          "show_freespace_of_object_action_list"
+        ],
+        "content": "Your available actions:\n-{location_action_list}\n- {show_freespace_of_object_action_list}\n- `CALL_END`: Call end (terminate the task).\n- `rotate_observation_view_of_current_platform`: Change the viewing angle to observe the scene from another perspective.\n- `place_at_anywhere`:Place the object in an arbitrary place on the platform. - `place_at_freespace_[{region_idx1},{region_idx2}...]`: Place the object in the union area of regions with indices {region_idx1}, {region_idx2}, etc. regions should be numbered from 1 to 9\n\n"
+      },
+      "holding_occupied_platform": {
+        "required_variables": [
+          "available_freespace_pair_list",
+          "location_action_list",
+          "show_freespace_of_object_action_list"
+        ],
+        "content": "Your available actions:\n-{location_action_list}\n- {show_freespace_of_object_action_list}\n- `CALL_END`: Call end (terminate the task).\n- `rotate_observation_view_of_current_platform`: Change the viewing angle to observe the scene from another perspective.\n- `place_at_anywhere`:Place the object in an arbitrary place on the platform. - `place_at_freespace_[({object_idx1},{dir_idx1})...]`: Place the object in the union area of regions with indices {(object_idx1,region_idx1)}(object_idx1's region_idx1 space)  etc. All available pairs are in {available_freespace_pair_list}, and a valid choice should be a subset of it. \n\n"
+      }
+    }
+  },
+
+  "image_description": {
+    "template": {
+      "required_variables": ["n_image", "image_name_list"],
+      "content": "Here are {n_image} images, named {image_name_list} respectively.\n\nTheir description is as follows: {image_description}"
+    },
+    "variants": {
+      "identical_object_to_move": {
+        "required_variables": [
+          "image_name",
+          "source_object_name",
+          "source_platform_name"
+        ],
+        "content": "This image, {image_name}, is an image of the object you are going to move, with its adjacent objects transparentized. The object is {source_object_name}.\n\nThe object is located on {source_platform_name}.\n\n"
+      },
+      "identical_object_destination": {
+        "required_variables": [
+          "image_name",
+          "destination_object_name",
+          "destination_platform_name"
+        ],
+        "content": "This image, {image_name}, is an image of the object you are going to place an object nearby, with its adjacent objects transparentized. The object is {destination_object_name}.\n\nThe object is located on {destination_platform_name}.\n\n"
+      },
+
+      "show_freespace_of_object": {
+        "required_variables": ["image_name", "object_idx", "freespace_num"],
+        "shared_variables": ["object_idx"],
+        "content": "This image shows the available free spaces around object {object_idx} on the platform, you see this because you've taken \"show_freespace\" action previously. The numbers from 1 to {freespace_num} indicate the available free spaces. Not all numbers from 1 to 8 may be present, as some free spaces might be too small or blocked. To use the numbers shown in the image to specify where you want to place the object you are holding, you can include ({object_idx}, {freespace_idx} (freespace_idx in [1, {freespace_num}]) in the output action.\n\n"
+      },
+      "show_platform": {
+        "required_variables": ["image_name"],
+        "shared_variables": ["platform_name"],
+        "content": "This image shows the platform you are currently on in one view, with regions or objects marked with numbers for you to place objects accurately. The platform is {platform_name}.\n\nIf the platform has no objects, a 3x3 grid will be marked on the platform to help you place objects, with each grid marked in numbers from 1 to 9. If there are objects on the platform, guiding lines will indicate the object numbers. Note that  if you see multiple images, it means the platform is too long to be captured in one image, and it's guaranteed that the same object will marked in THE SAME COLOR GUILDLINES AND THE SAME NUMBER. If you think you can't determine the number of an item in one picture, you can go through other pictures and see if this item is marked more clearly.\n\n"
+      }
+    }
+  },
+  "states": {
+    "navigation": {
+      "prompts": [
+        "system_initialization",
+        "task_instructions",
+        "possible_action_space_description",
+        "possible_image_type_description",
+        "understanding_directions",
+        "task_success_criteria",
+        "task_remainder",
+        "action_space_navigation",
+        "important_suggestion"
+      ]
+    },
+    "idle": {
+      "prompts": [
+        "current_state",
+        "action_space_idle",
+        "task_remainder",
+        "important_suggestion",
+        "image_description"
+      ]
+    },
+    "holding_empty_platform": {
+      "prompts": [
+        "current_state",
+        "action_space_holding_empty_platform",
+        "task_remainder",
+        "understanding_directions",
+        "important_suggestion",
+        "image_description"
+      ]
+    },
+    "holding_occupied_platform": {
+      "prompts": [
+        "current_state",
+        "action_space_holding_occupied_platform",
+        "task_remainder",
+        "understanding_directions",
+        "important_suggestion",
+        "image_description"
+      ]
+    }
+  },
+  "hints": {
+    "attempt_moving_destination_hint": {
+      "prompt_type": "attempt_moving_destination_hint",
+      "content": "You are trying to pick up a destination object, which is not allowed and not necessary to finish the task. Please try picking up another object instead."
+    },
+    "identical_object_involved": {
+      "content": "The task involves identical objects. To help you distinguish them, we have provided images of the relevant objects.\n\n"
+    },
+    "not_available_action_hint": {
+      "prompt_type": "not_available_action_hint",
+      "content": "We can't recognize the action you've entered so it is ignored, and it seems you've entered an action having correct format but is not available currently (such as picking up repeatedly or placing with no object in hand).Please note you can only hold one item at a time, and you need different patterns of instruction for placing items on empty platform and occupied platform. If you are seeing this repeatedly, please check if you're trying to place while holding nothing, pickup while already holding something, using \"place_at_freespace_[({object_idx1},{dir_idx1})...]\" with empty platform or \"place_at_freespace_[{dir_idx1},{dir_idx2}...]\" with occupied platform.  \n\n Please enter a valid action according to the action space. Remember, don't output any irrelevant characters, don't output your thinking steps or apologize!!\n\n"
+    },
+    "invalid_action_hint": {
+      "prompt_type": "invalid_action_hint",
+      "content": "We can't recognize the action you've entered so it is ignored. Please note you can only hold one item at a time, and you need different patterns of instruction for placing items on empty platform and occupied platform. If you are seeing this repeatedly, please check if you're trying to place while holding nothing, pickup while already holding something, using \"place_at_freespace_[({object_idx1},{dir_idx1})...]\" with empty platform or \"place_at_freespace_[{dir_idx1},{dir_idx2}...]\" with occupied platform.  Remember, don't output any irrelevant characters, including quotes; don't output your thinking steps or apologize!!\n\n"
+    },
+    "placement_failure_area_too_small": {
+      "prompt_type": "placement_failure",
+      "content": "The combined area you selected is not large enough to place the object. Please choose a larger area, select 'place_at_anywhere' or go elsewhere instead.\n\n"
+    },
+    "placement_failure_no_intersection": {
+      "content": "The system could not find a location that intersects with all the regions/free spaces you selected. The system will now place the object anywhere within your chosen space. If you think the placement doesn't match your expectation, you can pick it up and try placement again. \n\n"
+    },
+    "placement_failure_idle": {
+      "prompt_type": "placement_failure_idle",
+      "content": "You don't have an object in your hand, so you cannot place anything. Please pick up an object first before attempting to place it.\n\n"
+    },
+    "placement_failure_empty_platform": {
+      "prompt_type": "placement_failure_empty_platform",
+      "content": "The platform you are trying to place the object on is empty. Please ensure that you are placing the object with correct placement format.\n\nYou are still holding {holding_object} and are at {platform_description}.\n\n"
+    },
+    "placement_failure_occupied_platform": {
+      "prompt_type": "placement_failure_occupied_platform",
+      "content": "The platform you are trying to place the object on is occupied. Please ensure that you are placing the object with correct placement format.\n\nYou are still holding {holding_object} and are at {platform_description}.\n\n"
+    },
+    "placement_failure_invalid_place": {
+      "prompt_type": "placement_failure_invalid_place",
+      "content": "The placement action you attempted is invalid, you probably entered invalid region. You are still holding {holding_object} and are at {platform_description}.\n\n"
+    },
+    "placement_made": {
+      "content": "The object has been placed successfully. You can now call end if you think you've finished the task correctly, or can also pick up the object again if you think the placement is not correct.\n\n"
+    },
+    "response_format_hint": {
+      "prompt_type": "response_format_hint",
+      "content": "Please only respond with the action you want to take. Do not include any additional characters, neither text or explanations. The action should be one of the following:\n\n{action_space}\n\n."
+    },
+    "rotation_failed_hint": {
+      "content": "Unable to rotate to another view. The platform you at only have 1 walkable place for you. \n\n"
+    }
+  }
+}
