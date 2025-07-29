@@ -9,16 +9,7 @@
 
 
 
-This is the official repository for the ManiTaskGen project. It Includes instructions for downloading and running the ManiTaskGen benchmark.
-
-
-
-
-
-## Overview 
-
-This codebase contains a universal task generation framework for ManiSkill-style scenes, facilitating both benchmarking and improvement of embodied decision-making agents. 
-
+This is the official repository for the ManiTaskGen project. It Includes instructions on dataset downloading, environment setting up and commands for ManiTaskGen benchmarks and agent finetuning pipelines.
 
 
 
@@ -76,7 +67,7 @@ This codebase contains a universal task generation framework for ManiSkill-style
 
 For installation, refer to  [INSTALLATION.md](../docs/INSTALLATION.md) 
 
-The configuration file exported by the conda environment used by the author can be found in ``config/env.yml``.
+We also provide the configuration file exported by the conda environment in ``config/env.yml``.
 
 
 
@@ -192,7 +183,7 @@ The following tables summarizes the core global configuration parameters and the
 
 Aside from AI2THOR and ReplicaCAD, other maniskill-style scenes can also be parsed with ``src/preprocessing/maniskill_parser.py``. 
 
-If you want to run the benchmark on other scenes, refer to ``src/preprocessing/base_parser.py``, ``src/preprocessing/maniskill_parser.py`` and ``src/preprocessing/sunrgbd_parser.py`` to add new parsers for other data formats.
+If you want to run the benchmark on other scene datasets with different formats, refer to ``src/preprocessing/base_parser.py``, ``src/preprocessing/maniskill_parser.py`` and ``src/preprocessing/sunrgbd_parser.py`` to add new parsers.
 
 
 ## Set Up VLM API
