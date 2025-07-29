@@ -69,6 +69,16 @@ Though unable to benchmark, you can run the following command to parse the sunrg
 python src/preprocessing/sunrgbd_parser.py --scene_path=path/to/SUNRGBD/dataset --output_path=/path/to/output/folder
 ```
 
+## Setting Up VLM APIs
+
+We use OpenRouter API to access both open-source and closed-source VLMs. To benchmark VLM agents, you need to set up your OpenRouter API key and model address in the configuration file or command line arguments.
+
+### Encode your OpenRouter API_key
+
+Modify  ``OpenRouterConfig `` class in `src/utils/config_manager.py` (or your yml config file) with your API key.
+
+For more details on using the OpenRouter API, refer to the OpenRouter  [official documentation](https://openrouter.ai/docs/quickstart).
+
 
 
 
