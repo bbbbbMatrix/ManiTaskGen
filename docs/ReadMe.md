@@ -5,8 +5,7 @@
 
 
 [![arXiv](https://img.shields.io/badge/arXiv-2505.20726-df2a2a.svg?style=for-the-badge)](https://arxiv.org/abs/2406.09246)
-[![Python](https://img.shields.io/badge/python-3.10-blue?style=for-the-badge)](https://www.python.org)
-[![Project Page](https://img.shields.io/badge/Project%20Page-Visit-brightgreen?style=for-the-badge&logo=globe)](https://manitaskgen.github.io/)
+[![Website](https://img.shields.io/badge/Project%20Page-Visit-brightgreen?style=for-the-badge&logo=globe)](https://manitaskgen.github.io/)
 
 
 
@@ -196,18 +195,9 @@ Aside from AI2THOR and ReplicaCAD, other maniskill-style scenes can also be pars
 If you want to run the benchmark on other scenes, refer to ``src/preprocessing/base_parser.py``, ``src/preprocessing/maniskill_parser.py`` and ``src/preprocessing/sunrgbd_parser.py`` to add new parsers for other data formats.
 
 
-##  Implementation Details
+## Set Up VLM API
 
-【To Be Updated】
-
-
-## VLM API
-
-We use OpenRouter API for VLM interaction. To benchmark VLM agents, you need to set up your OpenRouter API key and model address in the configuration file or command line arguments.
-
-### Requirements:
-
-* Openrouter API key (begin with `sk-or-v1`)
+We use OpenRouter API to access both open-source and closed-source VLMs. To benchmark VLM agents, you need to set up your OpenRouter API key and model address in the configuration file or command line arguments.
 
 ### Encode your OpenRouter API_key
 
