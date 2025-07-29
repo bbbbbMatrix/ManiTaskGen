@@ -186,17 +186,6 @@ Aside from AI2THOR and ReplicaCAD, other maniskill-style scenes can also be pars
 If you want to run the benchmark on other scene datasets with different formats, refer to ``src/preprocessing/base_parser.py``, ``src/preprocessing/maniskill_parser.py`` and ``src/preprocessing/sunrgbd_parser.py`` to add new parsers.
 
 
-## Set Up VLM API
-
-We use OpenRouter API to access both open-source and closed-source VLMs. To benchmark VLM agents, you need to set up your OpenRouter API key and model address in the configuration file or command line arguments.
-
-### Encode your OpenRouter API_key
-
-Modify  ``OpenRouterConfig `` class in `src/utils/config_manager.py` (or your yml config file) with your API key.
-
-For more details on using the OpenRouter API, refer to the OpenRouter  [official documentation](https://openrouter.ai/docs/quickstart).
-
-
 
 
 
