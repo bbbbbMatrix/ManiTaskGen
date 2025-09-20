@@ -106,7 +106,7 @@ class ConcaveProcessor:
 
         # Check if decomposition is needed
         if not self._is_concave():
-            glog.info("Polygon is already convex, no decomposition needed")
+            # glog.info("Polygon is already convex, no decomposition needed")
             return [(self.vertices, self.faces)]
 
         # glog.info(f"Starting decomposition using '{strategy}' strategy")
@@ -270,9 +270,9 @@ class ConcaveProcessor:
         if len(polygons) <= 1:
             return polygons
 
-        glog.info(
-            f"Starting to merge adjacent rectangles, current {len(polygons)} polygons"
-        )
+        # glog.info(
+        #     f"Starting to merge adjacent rectangles, current {len(polygons)} polygons"
+        # )
 
         # Create Shapely polygon list
         shapely_polygons = []
@@ -315,7 +315,7 @@ class ConcaveProcessor:
                     vertices_3d, faces_3d = self._polygon_to_3d(merged_poly, z_value)
                     merged_results.append((vertices_3d, faces_3d))
                     used_indices.update(group)
-                    glog.info(f"Merged {len(group)} rectangles")
+                    # glog.info(f"Merged {len(group)} rectangles")
 
         # Add unmerged polygons
         for i, poly_idx in enumerate(original_indices):
@@ -780,7 +780,7 @@ class ConcaveProcessor:
             hull = ConvexHull(vertices_2d)
             hull_area = hull.volume
             actual_area = sum(Polygon(vertices_2d[face]).area for face in self.faces)
-            print(f"Actual area: {actual_area}, Hull area: {hull_area}")
+            # print(f"Actual area: {actual_area}, Hull area: {hull_area}")
             config = self.get_config()
 
             if hull_area > config.concave_min_area:
@@ -967,9 +967,9 @@ class ConcaveProcessor:
                 if area > config.min_polygon_area:
                     filtered_results.append((vertices, faces))
 
-        glog.info(
-            f"Post-processing complete: {len(results)} -> {len(filtered_results)} polygons"
-        )
+        # glog.info(
+        #     f"Post-processing complete: {len(results)} -> {len(filtered_results)} polygons"
+        # )
 
         return filtered_results if filtered_results else [(self.vertices, self.faces)]
 

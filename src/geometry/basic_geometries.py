@@ -30,11 +30,32 @@ class Basic2DGeometry:
 
     @staticmethod
     def rotate_point_counterclockwise(point, angle):
+        """Rotate a point counterclockwise by a given angle around the origin.
+
+        Args:
+            point (np.ndarray): The point to rotate, represented as a 2D vector.
+            angle (float): The angle in radians to rotate the point.
+
+        Returns:
+            np.ndarray: The rotated point as a 2D vector.
+        """
+
         R = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
         return np.dot(point, R)
 
     @staticmethod
     def point_to_segment_distance(point, segment):
+        """
+
+        Calculate the distance from a point to a line segment.
+        Args:
+            point (_type_): _description_
+            segment (_type_): _description_
+
+        Returns:
+            _type_: _description_
+
+        """
         start, end = segment[0], segment[1]
         if np.allclose(start, end):
             return np.linalg.norm(point - start)

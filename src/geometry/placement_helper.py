@@ -22,7 +22,7 @@ from src.utils.config_manager import get_rectangle_query_config
 
 class PlacementHelper:
     placement_coverage_threshold = 0.95
-    eps = 1e-6
+    EPS = 1e-6
 
     def __init__(self):
 
@@ -120,7 +120,7 @@ class PlacementHelper:
             if not x_coords_new:
                 x_coords_new.append(x)
             else:
-                if np.abs(x - x_coords_new[-1]) > PlacementHelper.get_config().eps:
+                if np.abs(x - x_coords_new[-1]) > PlacementHelper.get_config().EPS:
                     x_coords_new.append(x)
 
         y_coords_new = []
@@ -128,7 +128,7 @@ class PlacementHelper:
             if not y_coords_new:
                 y_coords_new.append(y)
             else:
-                if np.abs(y - y_coords_new[-1]) > PlacementHelper.get_config().eps:
+                if np.abs(y - y_coords_new[-1]) > PlacementHelper.get_config().EPS:
                     y_coords_new.append(y)
 
         rectangle_query_processor = RectangleQuery2D()
@@ -195,7 +195,7 @@ class PlacementHelper:
 
         normalized_moving_rect_center = np.mean(normalized_moving_rect, axis=0)
 
-        if np.abs(normalized_angle - _) > PlacementHelper.get_config().eps:
+        if np.abs(normalized_angle - _) > PlacementHelper.get_config().EPS:
             glog.warning("The angle of the fixed and moving rectangle are not the same")
         normalized_placement_bounds = np.array(
             [
@@ -313,7 +313,7 @@ class PlacementHelper:
             if not x_coords_new:
                 x_coords_new.append(x)
             else:
-                if np.abs(x - x_coords_new[-1]) > PlacementHelper.get_config().eps:
+                if np.abs(x - x_coords_new[-1]) > PlacementHelper.get_config().EPS:
                     x_coords_new.append(x)
 
         y_coords_new = []
@@ -321,7 +321,7 @@ class PlacementHelper:
             if not y_coords_new:
                 y_coords_new.append(y)
             else:
-                if np.abs(y - y_coords_new[-1]) > PlacementHelper.get_config().eps:
+                if np.abs(y - y_coords_new[-1]) > PlacementHelper.get_config().EPS:
                     y_coords_new.append(y)
 
         glog.info(f"x_coords_new: {x_coords_new}")
@@ -414,7 +414,7 @@ class PlacementHelper:
         Place the moving_rect in the area where it intersects with all the rectangles in fixed_rect_list.
 
 
-        Here are the steps of the algorithm:
+        Here are the stEPS of the algorithm:
         1. Normalize the moving rectangle and fixed rectangles.
         2. First check if the moving rectangle can be placed in the area that is contained by the union of all fixed rectangles. if not, return -1.
         3. Then for each fixed rectangle, find the "intersecting bounds" of the moving rectangle that are intersecting with the fixed rectangle.

@@ -17,39 +17,33 @@ from typing import Dict, Any, Optional
 
 from .base_parser import BaseRawSceneParser, RawSceneParserFactory
 
+from src.utils.config_manager import get_config, get_raw_scene_config
+
 
 class ReplicaSceneParser(BaseRawSceneParser):
     """Replica dataset parser for converting scene files"""
 
     def __init__(self, config=None):
         """Initialize Replica parser"""
-        from ..utils.config_manager import get_raw_scene_config
 
-        self.config = config or get_raw_scene_config()
+        self.config = get_raw_scene_config()
+        self.global_config = get_config()
 
-    @classmethod
-    def get_config(cls):
+    # @classmethod
+    # def get_config(cls):
 
-        from ..utils.config_manager import get_raw_scene_config
+    #     from ..utils.config_manager import get_raw_scene_config
 
-        return get_raw_scene_config()
+    #     return get_raw_scene_config()
 
-    def get_glb_path(self, template_name: str) -> str:
+    def get_stage_path(self, stage_template) -> str:
+        """Get the base path for the dataset"""
+        return self.global_config.dataset_root_path
 
+    def get_collision_path(self, template_name: str) -> Optional[str]:
+        """Get the collision path for the given template name"""
         obj_config_path = (
-            Path(self.config.dataset_root_path)
-            / f"configs/objects/{template_name}.object_config.json"
-        )
-
-        with open(obj_config_path, "r") as f:
-            obj_config = json.load(f)
-
-        relative_glb_path = obj_config["render_asset"]
-        glb_file_path = os.path.normpath(obj_config_path.parent / relative_glb_path)
-        return glb_file_path
-
-        obj_config_path = (
-            Path(self.config.dataset_root_path)
+            Path(self.global_config.dataset_root_path)
             / f"configs/objects/{template_name}.object_config.json"
         )
 
@@ -63,17 +57,29 @@ class ReplicaSceneParser(BaseRawSceneParser):
             )
             return collision_file_path
         else:
-            assert (
-                obj_config.get("use_bounding_box_for_collision")
-                and obj_config["use_bounding_box_for_collision"]
-            )
+
             return None
+
+    def get_glb_path(self, template_name: str) -> str:
+
+        obj_config_path = (
+            Path(self.global_config.object_config_path)
+            / f"{template_name}.object_config.json"
+        )
+
+        with open(obj_config_path, "r") as f:
+            obj_config = json.load(f)
+
+        relative_glb_path = obj_config["render_asset"]
+
+        glb_file_path = os.path.normpath(obj_config_path.parent / relative_glb_path)
+        return glb_file_path
 
     def get_urdf_path(self, template_name: str) -> str:
 
         base_name = osp.basename(template_name)
         urdf_path = (
-            Path(self.config.dataset_root_path)
+            Path(self.global_config.dataset_root_path)
             / "urdf"
             / f"{base_name}/{base_name}.urdf"
         )
@@ -108,7 +114,7 @@ class ReplicaSceneParser(BaseRawSceneParser):
 
         if len(not_desired_objects) and name in not_desired_objects:
             return None
-
+        #  import ipdb; ipdb.set_trace()
         glb_path = self.get_glb_path(name)
         collision_path = self.get_collision_path(name)
         glb = trimesh.load(glb_path)
@@ -218,11 +224,10 @@ class ReplicaSceneParser(BaseRawSceneParser):
         with open(input_json_path, "r") as f:
             data = json.load(f)
 
-        background_template_name = data["stage_instance"]["template_name"].split("/")[
-            -1
-        ]
-        bg_path = osp.join(
-            self.config.dataset_root_path, f"stages/{background_template_name}.glb"
+        background_template_name = data["stage_instance"]["template_name"]
+
+        bg_path = os.path.join(
+            self.global_config.dataset_root_path, f"{background_template_name}.glb"
         )
 
         output_data = {

@@ -2,9 +2,9 @@ from enum import Enum
 import random
 import colorama
 from colorama import Fore, Style
-from vlm_interactor.VLMEvalKit.vlmeval.config import supported_VLM
+from src.vlm_interaction.VLMEvalKit.vlmeval.config import supported_VLM
 import glog
-from src.utils.config_manager import get_vlm_interactor_config
+from src.utils.config_manager import get_vlm_interactor_config, get_config_manager
 
 
 class InteractStatusCode(Enum):
@@ -29,13 +29,22 @@ class VLMInteractor:
         # mode: online, offline, debug
         self.mode = mode
         self.conversation = []
-        self.model = supported_VLM[model]()
+        self.model_name = model
         if self.mode == "online":
-            # from vlm_interactor.VLMEvalKit.vlmeval.config import supported_VLM
-            self.vlm = supported_VLM[model]()
+            # from src.vlm_interaction.VLMEvalKit.vlmeval.config import supported_VLM
+            config_manager = get_config_manager()
+            config_manager.temp_set_model(model)
             pass
+        self.model = supported_VLM["GPT4o"]()  # hardcoded
 
         pass
+
+    def change_model_name(self, model_name):
+        self.model_name = model_name
+        config_manager = get_config_manager()
+        config_manager.temp_set_model(model_name)
+        #  self.model = supported_VLM[model_name]()
+        return
 
     def initcount(self):
         self.interaction_count = 0
@@ -48,6 +57,7 @@ class VLMInteractor:
         self.interaction_count += 1
 
         # check if the interaction count exceeds the maximum interaction count
+        self.config_manager.temp_set_model(model_name=self.model_name)
         if self.interaction_count > VLMInteractor.MAX_INTERACTION_COUNT:
             print("Exceeded maximum interaction count")
             return InteractStatusCode.FAILURE
@@ -149,29 +159,6 @@ class VLMInteractor:
 
         return
 
-    def quick_send_and_request(
-        self,
-        img_path_list,
-        img_path_comment_list,
-        main_message,
-        action_space,
-        action_description,
-    ):
-        request_msg = ""
-        expected_range = (0, 100)
-        expected_response_type = "string"
-        statuscode = self.send(img_path_list, request_msg)
-        if statuscode != InteractStatusCode.SUCCESS:
-            return None, InteractStatusCode.FAILURE
-        response, statuscode = self.request(
-            action_space, main_message, expected_response_type
-        )
-        if statuscode != InteractStatusCode.SUCCESS:
-            return None, InteractStatusCode.FAILURE
-        return response, InteractStatusCode.SUCCESS
-
-        # waiting the message from
-
     def add_content(self, content="", role="user", content_type="text"):
 
         # add a message from the user
@@ -206,8 +193,6 @@ class VLMInteractor:
     def send_content_n_request(self):
         self.interaction_count += 1
         if self.mode == "online":
-            # import ipdb
-            # ipdb.set_trace()
             answer1 = self.model.chat(self.conversation)
             glog.info(f"conversation: {self.conversation}")
             glog.info(f"VLM response: {answer1}")
@@ -226,10 +211,10 @@ class VLMInteractor:
                 for msg in self.conversation:
                     if msg["content"][0]["type"] == "text":
                         f.write(f"{msg['content'][0]['value']}\n")
-                    else:
-                        glog.info(
-                            f'{msg["content"][0]["value"]} is not a text message, skipping.'
-                        )
+                    # else:
+                    #     glog.info(
+                    #         f'{msg["content"][0]["value"]} is not a text message, skipping.'
+                    #     )
             glog.info("printing conversation to conversation.txt")
             #   for msg in self.conversation:
             #      print(f"{msg['content'][0]['value']}")

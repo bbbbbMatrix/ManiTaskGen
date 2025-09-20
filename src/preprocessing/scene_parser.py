@@ -64,7 +64,8 @@ class SceneElement:
         if instancetype == "platform" or instancetype == "object":
             self.type = instancetype
         else:
-            print("Warning: The type of the platform is unexpected.")
+            glog.warning(f"Warning: The type of the platform is unexpected.")
+
         # belong = none for objects, = object_name for platforms
 
         # if mesh is not None(only when self is an object).
@@ -167,9 +168,9 @@ class SceneElement:
             ):
                 platforms[i].height += negative_height_adjustment[platforms[i].belong]
         platforms = SceneElement.sort_platforms(platforms)
-        import ipdb
+        # import ipdb
 
-        ipdb.set_trace()
+        # ipdb.set_trace()
         # id_contacts should be a list of tuples, each tuple is a pair of indices(x,y), x is the index of the platform, y is the index of the object, and y is on top of x
 
         # Note:
@@ -230,15 +231,12 @@ class SceneElement:
                     else:
                         id_possible_contact -= 1 if id_possible_contact < i else -1
                         if bbox_intersect_area > 1e-6:
-                            print(
-                                "warning: Too small bbox_intersect_area",
-                                bbox_intersect_area,
-                                "object_area",
-                                object_area,
-                                "i",
-                                platforms[i].name,
-                                "id",
-                                platforms[id_possible_contact].name,
+                            glog.warning("Too small bbox_intersect_area detected")
+                            glog.warning(
+                                f"Too small bbox_intersect_area: {bbox_intersect_area}, "
+                                f"object_area: {object_area}, "
+                                f"i: {platforms[i].name}, "
+                                f"id: {platforms[id_possible_contact].name}"
                             )
 
         pass
@@ -287,7 +285,7 @@ class SceneObject:
         ):
             self.rpy = R.from_quat(quaternion).as_euler("xyz")
         else:
-            print("Warning: No rotation information is provided.")
+            glog.warning("Warning: No rotation information is provided.")
 
         self.bbox = self.get_bounding_box()
         self.height = self.bbox[0][2]
@@ -364,7 +362,7 @@ class SceneObject:
             self.mesh = MeshProcessor(geometries[0])
 
             vertices = geometries[0].vertices
-            print(self.mesh.mesh)
+
         # for geometry in geometries:
         #     self.mesh.append(MeshProcessor(geometry))
         #     vertices.extend(geometry.vertices)
@@ -473,11 +471,7 @@ class SceneObject:
         result_list, visible_direction = [], []
         geometry = self.mesh
         geometry.name = self.name
-        glog.info(f"heading: {self.heading}")
         result, direction = geometry.check_platform_visability()
-        if "sofa" in self.name or "cabinet" in self.name:
-            glog.info(f"result: {result}")
-            glog.info(f"direction: {direction}")
         result_list.append(result)
         visible_direction.append(direction)
 
@@ -683,9 +677,7 @@ def create_object_list(object_mesh_list, calculate_affordable_platforms=True):
     for mesh in object_mesh_list:
         if mesh.get("name") is not None:
             mesh["template_name"] = mesh.get("name")
-        path_prefix = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "scene_graph"
-        )
+        path_prefix = os.path.abspath(os.getcwd())
         if mesh is None:
             continue
         if (
@@ -701,7 +693,8 @@ def create_object_list(object_mesh_list, calculate_affordable_platforms=True):
             "template_name"
         ):
             continue
-
+        # import ipdb; ipdb.set_trace()
+        # print(path_prefix, mesh["visual_path"], os.path.join(path_prefix, mesh["visual_path"]))
         glb = trimesh.load(os.path.join(path_prefix, mesh["visual_path"]))
 
         geometries = []

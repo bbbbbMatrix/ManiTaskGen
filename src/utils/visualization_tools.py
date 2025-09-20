@@ -142,19 +142,19 @@ class SceneGraphVisualizer:
         return str(output_path.with_suffix(f".{format}"))
 
     def export_full_tree(
-        self, scene_graph_tree, output_file: str = "full_scene_graph"
+        self, scene_graph, output_file: str = "full_scene_graph"
     ) -> str:
         """
         Export the complete scene graph tree
 
         Args:
-            scene_graph_tree: Scene graph tree object with nodes dictionary
+            scene_graph: Scene graph tree object with nodes dictionary
             output_file: Output file name
 
         Returns:
             Path to generated file
         """
-        if not hasattr(scene_graph_tree, "nodes"):
+        if not hasattr(scene_graph, "nodes"):
             raise ValueError("Scene graph tree must have 'nodes' attribute")
 
         dot = graphviz.Digraph(comment="Complete Scene Graph")
@@ -163,7 +163,7 @@ class SceneGraphVisualizer:
         dot.attr("edge", fontname="Arial")
 
         # Add all nodes
-        for node_name, node in scene_graph_tree.nodes.items():
+        for node_name, node in scene_graph.nodes.items():
             # Prepare node label
             label_parts = [node_name]
 
@@ -197,7 +197,7 @@ class SceneGraphVisualizer:
             dot.node(node_name, label, fillcolor=color)
 
         # Add edges based on parent-child relationships
-        for node_name, node in scene_graph_tree.nodes.items():
+        for node_name, node in scene_graph.nodes.items():
             if hasattr(node, "parent") and node.parent:
                 dot.edge(node.parent.name, node_name)
 
@@ -228,7 +228,7 @@ class TaskVisualizer:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def export_task_info(
-        self, task, task_id: int, scene_graph_tree=None, output_file: str = None
+        self, task, task_id: int, scene_graph=None, output_file: str = None
     ) -> str:
         """
         Export detailed task information
@@ -236,7 +236,7 @@ class TaskVisualizer:
         Args:
             task: Task object
             task_id: Task identifier
-            scene_graph_tree: Scene graph tree for context
+            scene_graph: Scene graph tree for context
             output_file: Output file name (auto-generated if None)
 
         Returns:
@@ -276,8 +276,8 @@ class TaskVisualizer:
                 f.write(f"   Reference Objects: {', '.join(ref_names)}\n")
 
             # Ambiguity check
-            if scene_graph_tree and hasattr(task, "is_ambiguous"):
-                is_ambiguous = task.is_ambiguous(scene_graph_tree)
+            if scene_graph and hasattr(task, "is_ambiguous"):
+                is_ambiguous = task.is_ambiguous(scene_graph)
                 f.write(f"   Is Ambiguous: {is_ambiguous}\n")
                 task_level = 2 if is_ambiguous else 1
                 f.write(f"   Task Level: Level {task_level}\n")
@@ -352,7 +352,7 @@ class TaskVisualizer:
     def export_task_batch_summary(
         self,
         tasks: List,
-        scene_graph_tree=None,
+        scene_graph=None,
         output_file: str = "task_batch_summary.json",
     ) -> str:
         """
@@ -360,7 +360,7 @@ class TaskVisualizer:
 
         Args:
             tasks: List of task objects
-            scene_graph_tree: Scene graph tree for context analysis
+            scene_graph: Scene graph tree for context analysis
             output_file: Output file name
 
         Returns:
@@ -393,8 +393,8 @@ class TaskVisualizer:
             )
 
             # Ambiguity analysis
-            if scene_graph_tree and hasattr(task, "is_ambiguous"):
-                is_ambiguous = task.is_ambiguous(scene_graph_tree)
+            if scene_graph and hasattr(task, "is_ambiguous"):
+                is_ambiguous = task.is_ambiguous(scene_graph)
                 task_info["is_ambiguous"] = is_ambiguous
                 task_info["level"] = 2 if is_ambiguous else 1
 
@@ -436,13 +436,13 @@ class VisualizationManager:
         self.task_visualizer = TaskVisualizer(str(self.base_dir / "tasks"))
 
     def visualize_scene_and_tasks(
-        self, scene_graph_tree, tasks: List, session_name: str = "session"
+        self, scene_graph, tasks: List, session_name: str = "session"
     ) -> Dict[str, str]:
         """
         Complete visualization of scene graph and tasks
 
         Args:
-            scene_graph_tree: Scene graph tree object
+            scene_graph: Scene graph tree object
             tasks: List of tasks
             session_name: Name for this visualization session
 
@@ -458,7 +458,7 @@ class VisualizationManager:
         # Visualize scene graph
         try:
             scene_file = self.scene_visualizer.export_full_tree(
-                scene_graph_tree, f"{session_name}_scene_graph"
+                scene_graph, f"{session_name}_scene_graph"
             )
             results["scene_graph"] = scene_file
         except Exception as e:
@@ -467,7 +467,7 @@ class VisualizationManager:
         # Export task summary
         try:
             task_summary = self.task_visualizer.export_task_batch_summary(
-                tasks, scene_graph_tree, f"{session_name}_task_summary.json"
+                tasks, scene_graph, f"{session_name}_task_summary.json"
             )
             results["task_summary"] = task_summary
         except Exception as e:
@@ -478,7 +478,7 @@ class VisualizationManager:
         for i, task in enumerate(tasks[:10]):
             try:
                 task_file = self.task_visualizer.export_task_info(
-                    task, i, scene_graph_tree, f"{session_name}_task_{i}.txt"
+                    task, i, scene_graph, f"{session_name}_task_{i}.txt"
                 )
                 task_files.append(task_file)
             except Exception as e:
@@ -491,30 +491,28 @@ class VisualizationManager:
 
 
 # Convenience functions for easy usage
-def quick_visualize_scene(scene_graph_tree, output_name: str = "quick_scene"):
+def quick_visualize_scene(scene_graph, output_name: str = "quick_scene"):
     """Quick scene graph visualization"""
     visualizer = SceneGraphVisualizer()
-    return visualizer.export_full_tree(scene_graph_tree, output_name)
+    return visualizer.export_full_tree(scene_graph, output_name)
 
 
-def quick_visualize_task(task, task_id: int, scene_graph_tree=None):
+def quick_visualize_task(task, task_id: int, scene_graph=None):
     """Quick task visualization"""
     visualizer = TaskVisualizer()
-    return visualizer.export_task_info(task, task_id, scene_graph_tree)
+    return visualizer.export_task_info(task, task_id, scene_graph)
 
 
-def quick_visualize_all(
-    scene_graph_tree, tasks: List, session_name: str = "quick_session"
-):
+def quick_visualize_all(scene_graph, tasks: List, session_name: str = "quick_session"):
     """Quick complete visualization"""
     manager = VisualizationManager()
-    return manager.visualize_scene_and_tasks(scene_graph_tree, tasks, session_name)
+    return manager.visualize_scene_and_tasks(scene_graph, tasks, session_name)
 
 
 if __name__ == "__main__":
     # Example usage
     print("Visualization tools loaded successfully!")
     print("Usage examples:")
-    print("1. quick_visualize_scene(scene_graph_tree)")
-    print("2. quick_visualize_task(task, task_id, scene_graph_tree)")
-    print("3. quick_visualize_all(scene_graph_tree, tasks)")
+    print("1. quick_visualize_scene(scene_graph)")
+    print("2. quick_visualize_task(task, task_id, scene_graph)")
+    print("3. quick_visualize_all(scene_graph, tasks)")

@@ -163,9 +163,9 @@ class TaskPrimitive:
                 }
                 direction = direction_map.get(task.direction, Direction.CENTER)
 
-        import ipdb
+        # import ipdb
 
-        ipdb.set_trace()
+        # ipdb.set_trace()
 
         return TaskPrimitive(
             action="move",

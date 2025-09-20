@@ -11,8 +11,8 @@ import xml.etree.ElementTree as ET
 from typing import Dict, Any, List, Set, Optional
 import sys
 
-sys.path.append(str(Path(__file__).parent.parent))
-from src.utils.config_manager import get_sapien_config
+sys.path.append(str(Path(__file__).parent.parent.parent))
+from src.utils.config_manager import get_sapien_config, get_config
 
 from pathlib import Path
 import numpy as np
@@ -53,6 +53,7 @@ class SapienSceneManager:
     def __init__(self):
         self.fixed_objects: Set[str] = set()
         self.config = get_sapien_config()
+        self.global_config = get_config()
 
     @classmethod
     def get_config(cls):
@@ -71,12 +72,14 @@ class SapienSceneManager:
         camera_shader = self.config.camera_shader
         ray_tracing_denoiser = self.config.ray_tracing_denoiser
 
-        for dir_light in directional_light:
-            scene.add_directional_light(dir_light["direction"], dir_light["color"])
-        for point_light in point_lights:
-            scene.add_point_light(point_light["position"], point_light["color"])
+        # for dir_light in directional_light:
+        #     scene.add_directional_light(dir_light["direction"], dir_light["color"])
+        # for point_light in point_lights:
+        #     scene.add_point_light(point_light["position"], point_light["color"])
         sapien.render.set_camera_shader_dir(camera_shader)
         sapien.render.set_ray_tracing_denoiser(ray_tracing_denoiser)
+
+        self.setup_lighting(scene)
 
         # scene.set_timestep(time_step)
 
@@ -88,10 +91,9 @@ class SapienSceneManager:
         scene.set_ambient_light(self.config.ambient_light)
 
         # Directional light
-        scene.add_directional_light(
-            self.config.directional_light["direction"],
-            self.config.directional_light["color"],
-        )
+
+        for dir_light in self.config.directional_light:
+            scene.add_directional_light(dir_light["direction"], dir_light["color"])
 
         # Point lights
         for light in self.config.point_lights:
@@ -106,7 +108,7 @@ class SapienSceneManager:
     def get_glb_path(self, template_name: str) -> str:
         """Get GLB file path for a template"""
         obj_config_path = (
-            Path(self.config.dataset_root_path)
+            Path(self.global_config.dataset_root_path)
             / "configs/objects"
             / f"{osp.basename(template_name)}.object_config.json"
         )
@@ -173,7 +175,7 @@ class SapienSceneManager:
 
         # Create actor
         builder = scene.create_actor_builder()
-        material = self._create_object_material(use_default=False)
+        # material = self._create_object_material(use_default=False)
         builder.add_visual_from_file(filename=object_file_path)
 
         # Add collision
@@ -210,11 +212,6 @@ class SapienSceneManager:
         urdf_loader.name = f"{template_name}"
         urdf_loader.fix_root_link = articulated_meta["fixed_base"]
         urdf_loader.disable_self_collisions = True
-
-        if "uniform_scale" in articulated_meta:
-            urdf_loader.scale = urdf_loader.uniform_scale = articulated_meta[
-                "uniform_scale"
-            ]
 
         # Position adjustment based on URDF
         base_name = template_name[: template_name.rfind("_")]
@@ -308,9 +305,8 @@ class SapienSceneManager:
         quaternion = self._apply_rotation_correction(quaternion)
 
         builder = scene.create_actor_builder()
-        material = self._create_object_material(use_default=True)
 
-        builder.add_visual_from_file(filename=object_file_path, material=material)
+        builder.add_visual_from_file(filename=object_file_path)
         if collision_path is not None:
             builder.add_multiple_convex_collisions_from_file(filename=collision_path)
         else:
@@ -329,6 +325,7 @@ class EntityExporter:
     def __init__(self):
         self.urdf_processor = URDFProcessor()
         self.config = get_sapien_config()
+        self.global_config = get_config()
 
     @classmethod
     def get_config(cls):
@@ -372,7 +369,6 @@ class EntityExporter:
         # Process entities
         for entity in scene.entities:
             entity_instance = {}
-            print(f"Processing entity: {entity.get_name()}")
             if len(entity.get_name()) == 0:
 
                 continue
@@ -390,7 +386,7 @@ class EntityExporter:
 
                 filename = filename[: filename.rfind("_")]
                 entity_instance["visual_path"] = (
-                    f"{self.config.visual_path_prefix}{filename}.glb"
+                    f"{self.global_config.visual_path_prefix}{filename}.glb"
                 )
 
             elif articulation_idx < len(articulations):
@@ -416,7 +412,7 @@ class EntityExporter:
                 name = articulations[articulation_idx]["name"]
                 name = name[: name.rfind("_")]
                 entity_instance["visual_path"] = (
-                    f"{self.config.urdf_path_prefix}/{name}/{filename}"
+                    f"{self.global_config.urdf_path_prefix}/{name}/{filename}"
                 )
             else:
                 print("Error: articulation index out of range")
@@ -513,11 +509,15 @@ def main():
     #  scene.add_point_light([1.2,-6.5,1.5],[2,2,2])
     scene.add_point_light([1.2 + 0.15, -5 - 0.15, 1.0], [0.4, 0.4, 0.4])
 
+    for i in range(1000):
+        scene.step()
+        scene.update_render()
+
     print(scene.entities, dir(scene), dir(scene.entities[0]))
     for entity in scene.entities:
         print(entity.get_name(), entity.get_pose(), entity.get_components())
 
-    # start simulation
+    # # start simulation
     while not viewer.closed:
         scene.step()
         scene.update_render()

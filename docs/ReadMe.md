@@ -83,15 +83,30 @@ The configuration file exported by the conda environment used by the author can 
 
 ## QuickStart
 
+根据不同，支持
+
+        process-based generation  outcome-based generation  process-based testing outcome-based testing
+
+offline
+
+online
 
 ### Usage Examples 
 
 #### Manual Input Testing (Human Baseline)
 
+跑的方式：
+
+指定是否需要使用重力维护
+
+跑多长的chained task, 跑几轮. 如果场景中指定的task过多，num tasks可能会有重复。
+
+
+
 To run ManiTaskGen on a ReplicaCAD dataset scene and simulate Benchmarking on Embodied decision-making with single-step (level 1 & 2) tasks using manual input decisions, please change the dataset path in `AppConfig`, `RawSceneConfig` and `SapienConfig` classes in `src/utils/config_manager.py` accordingly after installation, then run the following code:
 
 ```shell
-python main.py --config config/default_config.yml --input_json_path /path/to/input/json/scene/file --output_json_path /path/to/output --mode manual --model_name human --adjust_with_gravity True 
+python main.py --config config/default_config.yml --input_json_path /path/to/input/json/scene/file --output_json_path /path/to/output --mode manual --model_name human --adjust_with_gravity True --chained_task_length 3 --num_tasks 100
 ```
 
 To enable item renaming, first enter OpenRouter API key and model address, then set `use_renaming_engine=True` in the command line arguments. This will use a VLM to rename objects based on their descriptions.
@@ -197,6 +212,18 @@ If you want to run the benchmark on other scenes, refer to ``src/preprocessing/b
 
 
 ##  Implementation Details
+
+### Core
+
+the task generation pipeline 
+
+gen scene graph
+
+benchmark executor 
+
+
+
+
 
 【To Be Updated】
 

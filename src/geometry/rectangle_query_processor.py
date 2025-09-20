@@ -35,6 +35,11 @@ class RectangleQuery2D:
         self.current_id += 1
 
     def query_rectangle(self, rectangle, tol=None):
+        """
+
+        Queries the rectangle with an optional tolerance.
+        Returns the indices of the intersecting rectangles and their corresponding data.
+        """
 
         if tol is None:
             tol = self.get_config().EPS / 2

@@ -1,4 +1,3 @@
-import vlm_interactor
 import json
 import os
 import glog
@@ -6,16 +5,24 @@ import sapien
 import time
 
 from src.vlm_interaction import vlm_interactor
+from src.utils.config_manager import get_config
+
+import json
 
 
 class RenamingEngine:
-    def __init__(self, model="GPT4o"):
-        self.interactor = vlm_interactor.vlm_interactor.VLMInteractor(
-            mode="online", model=model
+    def __init__(self):
+        self.interactor = vlm_interactor.VLMInteractor(
+            mode="online", model="openai/gpt-4.1-mini"
         )
         self.interactor.initcount()
         self.interactor.chkcount()
-        self.prompts = json.load(open("./vlm_interactor/prompts/renaming_engine.json"))
+        self.config = get_config()
+        self.prompts = self.config.rename_engine_prompt_template_path
+        if self.prompts is None or not os.path.exists(self.prompts):
+            glog.warning("Prompt template file not found.")
+        with open(self.prompts, "r") as f:
+            self.prompts = json.load(f)
 
     def classify(self, img_path_folder, msg=None):
 
@@ -55,10 +62,7 @@ class RenamingEngine:
                     content_type="text",
                 )
                 status_code, answer1 = self.interactor.send_content_n_request()
-                if (
-                    status_code
-                    == vlm_interactor.vlm_interactor.InteractStatusCode.SUCCESS
-                ):
+                if status_code == vlm_interactor.InteractStatusCode.SUCCESS:
 
                     img_file = image_files[j]
                     print(answer1, img_file[: img_file.rfind(".")])
@@ -82,12 +86,19 @@ class RenamingEngine:
         Rename objects in the scene graph using the renaming engine.
         """
         glog.info("Renaming objects with the renaming engine...")
+        import numpy as np
+
         for node_name, node in scene_graph.nodes.items():
+
             if node.depth > 1:
+
                 node.auto_take_non_ground_object_picture(
                     scene=scene_graph.corresponding_scene,
+                    view="human_focus",
                     width=1280,
                     height=720,
+                    focus_ratio=0.5,
+                    fovy_range=[np.deg2rad(40), np.deg2rad(60)],
                     save_path=os.path.join(image_folder_path, f"{node_name}.jpg"),
                 )
         """
@@ -120,7 +131,7 @@ class RenamingEngine:
 
 def main():
     # Example usage
-    classifier = ItemClassifier()
+    classifier = RenamingEngine()
     img_path_folder = "./image4classify"
     msg = "Classify these items"
     ts = time.perf_counter()
