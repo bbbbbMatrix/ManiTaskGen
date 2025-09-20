@@ -5,21 +5,11 @@
 
 
 [![arXiv](https://img.shields.io/badge/arXiv-2505.20726-df2a2a.svg?style=for-the-badge)](https://arxiv.org/abs/2406.09246)
-[![Python](https://img.shields.io/badge/python-3.10-blue?style=for-the-badge)](https://www.python.org)
-[![Project Page](https://img.shields.io/badge/Project%20Page-Visit-brightgreen?style=for-the-badge&logo=globe)](https://manitaskgen.github.io/)
+[![Website](https://img.shields.io/badge/Project%20Page-Visit-brightgreen?style=for-the-badge&logo=globe)](https://manitaskgen.github.io/)
 
 
 
-This is the official repository for the ManiTaskGen project. It Includes instructions for downloading and running the ManiTaskGen benchmark.
-
-
-
-
-
-## Overview 
-
-This codebase contains a universal task generation framework for ManiSkill-style scenes, facilitating both benchmarking and improvement of embodied decision-making agents. 
-
+This is the official repository for the ManiTaskGen project. It Includes instructions on dataset downloading, environment setting up and commands for ManiTaskGen benchmarks and agent finetuning pipelines.
 
 
 
@@ -77,7 +67,7 @@ This codebase contains a universal task generation framework for ManiSkill-style
 
 For installation, refer to  [INSTALLATION.md](../docs/INSTALLATION.md) 
 
-The configuration file exported by the conda environment used by the author can be found in ``config/env.yml``.
+We also provide the configuration file exported by the conda environment in ``config/env.yml``.
 
 
 
