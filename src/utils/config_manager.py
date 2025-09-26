@@ -257,7 +257,7 @@ class OpenRouterConfig:
     """OpenRouter configuration"""
 
     api_key: str = (
-        "Bearer sk-or-v1-YOUR_API_KEY"  # Replace with your OpenRouter API key
+        "Bearer sk-or-v1-YourAPIKeyHere"  # Replace with your OpenRouter API key
     )
     model: str = (
         "google/gemini-2.5-flash-lite-preview-06-17"  # See https://openrouter.ai for available models. some are listed below:
@@ -368,9 +368,9 @@ class OutcomeBaseGenerationConfig:
 #     prompt_template_path: str = "data/templates/benchmark_prompts.json"
 
 
-# @dataclass
-# class RenameEngineConfig:
-#     prompt_template_path: str = "data/templates/renaming_engine.json"
+@dataclass
+class RenameEngineConfig:
+    model: str = "openai/gpt-4.1-mini"
 
 
 @dataclass
@@ -405,6 +405,7 @@ class AppConfig:
     outcome_based_task_generation: OutcomeBaseGenerationConfig = field(
         default_factory=OutcomeBaseGenerationConfig
     )
+    rename_engine: RenameEngineConfig = field(default_factory=RenameEngineConfig)
 
     # Global configuration
 
@@ -414,7 +415,7 @@ class AppConfig:
     use_renaming_engine: bool = False  # Whether to use renaming engine
     bbox_only: bool = False  # Whether to use bounding box only
     input_json_path: Optional[str] = (
-        "/mnt/windows_e/workplace/task_generation/replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
+        "./replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
     )
     output_json_path: Optional[str] = "./replica_apt_0_parsed.json"  # Output file path
     entity_json_path: Optional[str] = (
@@ -432,6 +433,9 @@ class AppConfig:
 
     dataset_root_path: str = (
         "data/datasets/replica_dataset"  # Path to the SAPIEN dataset root directory
+    )
+    stage_path_prefix: str = (
+        "data/datasets/replica_dataset"  # Path prefix for stage files
     )
     visual_path_prefix: str = (
         "data/datasets/replica_dataset/objects"  # Path prefix for visual objects
@@ -453,37 +457,37 @@ class AppConfig:
     interact_prompt_template_path: str = "data/templates/interact_prompts.json"
 
     scene_graph_pkl_load_path: Optional[str] = (
-        "${run_dir}/data/cache/scene_graph.pkl"  # Path to the input JSON scene file
+        "${run_dir}/cache/scene_graph.pkl"  # Path to the input JSON scene file
     )
     scene_graph_pkl_save_path: Optional[str] = (
-        "${run_dir}/data/cache/scene_graph.pkl"  # Path to the scene graph pickle file
+        "${run_dir}/cache/scene_graph.pkl"  # Path to the scene graph pickle file
     )
     process_based_task_pkl_load_path: Optional[str] = (
-        "${run_dir}/data/cache/process_based_task.pkl"
+        "${run_dir}/cache/process_based_task.pkl"
     )
     process_based_task_pkl_save_path: Optional[str] = (
-        "${run_dir}/data/cache/process_based_task.pkl"
+        "${run_dir}/cache/process_based_task.pkl"
     )
     process_based_task_txt_save_path: Optional[str] = (
-        "${run_dir}/data/output/process_based_task.txt"
+        "${run_dir}/output/process_based_task.txt"
     )
     outcome_based_task_txt_save_path: Optional[str] = (
-        "${run_dir}/data/output/outcome_based_task.txt"
+        "${run_dir}/output/outcome_based_task.txt"
     )
     image4rename_path: Optional[str] = (
-        "${run_dir}/data/images/image4rename"  # Path to the image for renaming
+        "${run_dir}/images/image4rename"  # Path to the image for renaming
     )
     image4interaction_path: Optional[str] = (
-        "${run_dir}/data/images/image4interact"  # Path to the image for interaction
+        "${run_dir}/images/image4interact"  # Path to the image for interaction
     )
     image4vote_path: Optional[str] = (
-        "${run_dir}/data/images/image4vote"  # Path to the image for voting
+        "${run_dir}/images/image4vote"  # Path to the image for voting
     )
     reflection_txt_load_path: Optional[str] = (
-        "${run_dir}/data/reflection/load_reflection.txt"  # Path to the reflection text file
+        "${run_dir}/reflection/load_reflection.txt"  # Path to the reflection text file
     )
     reflection_txt_save_path: Optional[str] = (
-        "${run_dir}/data/reflection/save_reflection.txt"  # Path to save
+        "${run_dir}/reflection/save_reflection.txt"  # Path to save
     )
 
     benchmark_results_save_path: Optional[str] = (
@@ -499,7 +503,6 @@ class AppConfig:
     benchmark_model_name: str = "openai/gpt-4.1-mini"
     generate_mistake_note: bool = True  # Whether to generate mistake notes
     use_mistake_note: int = 1  # Whether to use mistake notes (
-    use_renaming_engine: bool = True  # Whether to use renaming engine
 
     result_file_path: Optional[str] = (
         "${run_dir}/output/result.txt"  # Path to save the result file
@@ -527,7 +530,9 @@ class ConfigManager:
 
     _instance = None
 
-    def __new__(cls, config_file_path: Optional[str] = None):
+    def __new__(
+        cls, config_file_path: Optional[str] = None, run_dir: Optional[str] = None
+    ):
         if cls._instance is None:
             cls._instance = super(ConfigManager, cls).__new__(cls)
             cls._instance._initialized = False
@@ -543,9 +548,13 @@ class ConfigManager:
     def __init__(
         self, config_file_path: Optional[str] = None, run_dir: Optional[str] = None
     ):
-        if self._initialized and self.config_file_path == config_file_path:
+        if (
+            self._initialized
+            and self.config_file_path == config_file_path
+            and self.run_dir == run_dir
+        ):
             return
-
+        # import ipdb; ipdb.set_trace()
         if run_dir:
             self.run_dir = run_dir
         else:
@@ -558,14 +567,15 @@ class ConfigManager:
 
         self.config_file_export_dir = "run/configs_used/"
         self._initialized = True
-        glog.info("config_file_path", config_file_path)
+        # import ipdb; ipdb.set_trace()
+        #  glog.info("config_file_path", config_file_path)
         if config_file_path:
 
             self.load_config(config_file_path)
 
-        self._resolve_all_paths()
-
         self.save_used_config()
+
+        self._resolve_all_paths()
 
     def _resolve_all_paths(self):
 
@@ -759,6 +769,13 @@ class ConfigManager:
                 if hasattr(self.config.outcome_based_task_generation, key):
                     setattr(self.config.outcome_based_task_generation, key, value)
 
+        # Update rename engine configuration
+        if "rename_engine" in config_dict:
+            re_config = config_dict["rename_engine"]
+            for key, value in re_config.items():
+                if hasattr(self.config.rename_engine, key):
+                    setattr(self.config.rename_engine, key, value)
+
         # Update global configuration
         for key in [
             "input_json_path",
@@ -791,6 +808,7 @@ class ConfigManager:
             "rename_engine_prompt_template_path",
             "interact_prompt_template_path",
             "dataset_root_path",
+            "stage_path_prefix",
             "visual_path_prefix",
             "collision_path_prefix",
             "urdf_path_prefix",
@@ -800,6 +818,8 @@ class ConfigManager:
         ]:
             if key in config_dict:
                 setattr(self.config, key, config_dict[key])
+
+        self._resolve_all_paths()
 
     def update_from_args(self, args: argparse.Namespace) -> None:
         """Update configuration from command line arguments"""
@@ -859,7 +879,8 @@ class ConfigManager:
         try:
             # Convert the dataclass to a dictionary
             config_dict = self._config_to_dict(self.config)
-
+            # Ensure the directory exists
+            config_path.parent.mkdir(parents=True, exist_ok=True)
             with open(config_path, "w", encoding="utf-8") as f:
                 yaml.dump(
                     config_dict,
@@ -873,13 +894,13 @@ class ConfigManager:
 
     def _convert_value_to_serializable(self, value: Any) -> Any:
         """Recursively converts values to be YAML-serializable, handling numpy types."""
-        # 检查是否为Numpy的整数类型
+        # Check if the value is a Numpy integer type
         if isinstance(value, np.integer):
             return int(value)
-        # 检查是否为Numpy的浮点数类型
+        # Check if the value is a Numpy floating type
         if isinstance(value, np.floating):
             return float(value)
-        # 检查是否为Numpy数组
+        # Check if the value is a Numpy array
         if isinstance(value, np.ndarray):
             return value.tolist()
 
@@ -890,7 +911,7 @@ class ConfigManager:
         if isinstance(value, dict):
             return {k: self._convert_value_to_serializable(v) for k, v in value.items()}
 
-        # 如果值是另一个dataclass实例，递归转换
+        # Check if the value is another dataclass instance, recursively convert
         if hasattr(value, "__dict__") and not isinstance(value, type):
             return self._config_to_dict(value)
 
@@ -1070,6 +1091,11 @@ def get_task_interaction_config() -> TaskInteractionConfig:
 def get_outcome_based_task_generation_config() -> OutcomeBaseGenerationConfig:
     """Get Outcome Base Generation configuration"""
     return OutcomeBaseGenerationConfig()
+
+
+def get_rename_engine_config() -> RenameEngineConfig:
+    """Get Rename Engine configuration"""
+    return config_manager.config.rename_engine
 
 
 def init_config(config_file_path: Optional[str] = None) -> None:

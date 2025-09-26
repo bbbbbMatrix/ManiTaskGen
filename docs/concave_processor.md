@@ -73,42 +73,23 @@ results = ConcaveProcessor.decompose_concave_polygon(vertices, faces)
 
 ## Algorithm Overview
 
-我们希望把桌面分割成大小适当，且长宽比接近于target_aspect_ratio的矩形。
-为了达到这一点， 
-会经过以下步骤：
+The goal is to decompose desktop surfaces into appropriately sized rectangles with aspect ratios close to the target_aspect_ratio.
+This is achieved through the following pipeline:
 
 ### 1. Concavity Detection
-- Compares actual polygon area with convex hull area. The reason for using this method is to ignore small holes (e.g. water sink) in the whole.
-我们希望把桌面分割成大小适当，且长宽比接近于target_aspect_ratio的矩形。
-为了达到这一点， 
-会经过以下步骤：
+- Compares actual polygon area with convex hull area. This method is used to ignore small holes (e.g., water sinks) in the surface.
 
-(0)- Compares actual polygon area with convex hull area. The reason for using this method is to ignore small holes (e.g. water sink) in the whole.
-（1）取整个平面的bounding box, 进行(strip generation）。根据 Polygon aspect ratio, 选择横着、纵着或者混合切分
-（2）切分之后，尽可能的合并拼在一起接近矩形的图形 通过 ``(_merge_adjacent_rectangles)``
-（3）作Vertex Preservation, 对于每个分割出的矩形区域只保留来自mesh的vertices. 
-### 2. Decomposition Strategy Selection
+### 2. Strip Generation
+- Extract the bounding box of the entire plane and perform strip cutting
+- Based on polygon aspect ratio, select horizontal, vertical, or mixed cutting strategies
 
-Based on polygon aspect ratio:
-- **Wide polygons**: Vertical strip decomposition (horizontal cutting)
-- **Tall polygons**: Horizontal strip decomposition (vertical cutting)
-- **Square-like polygons**: Mixed grid-based decomposition
+### 3. Intelligent Merging  
+- After initial cutting, merge adjacent shapes that together approximate rectangular forms
+- Implemented through `_merge_adjacent_rectangles()` method
 
-### 3. Strip Generation
-- Calculates optimal strip width/height based on target aspect ratio
-- Creates rectangular strips that intersect with the original polygon
-- Generates valid Shapely polygons from intersections
-
-### 4. Intelligent Merging
-- Builds adjacency graph of decomposed rectangles
-- Identifies merge groups using breadth-first search
-- Merges adjacent rectangles that maintain rectangular properties
-
-### 5. Vertex Preservation
-- Filters decomposed polygons to preserve original vertices
-- Maintains geometric accuracy by keeping vertices close to original faces
-- Uses convex hull computation for final polygon generation
-
+### 4. Vertex Preservation
+- For each divided rectangular region, preserve only vertices that originate from the original mesh
+- Maintains geometric fidelity with the source data
 ## Configuration Parameters
 
 ### Key Settings
@@ -122,13 +103,13 @@ concave_threshold: float = 0.1          # Threshold for concavity detection
 eps: float = 1e-6                       # Precision tolerance
 ```
 
-## 使用示例
+## Usage Examples
 
 ConcaveProcessor.decompose_concave_polygon(vertices_3d, faces)
 
-其中vertices_3d, faces为类似trimesh里faces, vertices 
+where vertices_3d and faces are attributes similar to faces and vertices in trimesh
 
-在主程序中的调用位置： src.geometry.object_mesh_processor L550
+Called in the main program at: src.geometry.object_mesh_processor L550
 
 separate_face_division = ConcaveProcessor.decompose_concave_polygon(
                 vertices_3d=separate_face.vertices,

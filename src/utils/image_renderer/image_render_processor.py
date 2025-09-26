@@ -745,7 +745,6 @@ def add_guide_line_labels(
         cuboid_points = info["cuboid_image_points"]
         label_position = info["label_position"]
         color = info["color"]
-        import ipdb
 
         # Draw optimized bounding box and guide line
         img, anchor_pt = draw_optimized_cuboid_and_guideline(

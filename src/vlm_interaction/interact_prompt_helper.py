@@ -44,9 +44,9 @@ class PromptFormatter(ABC):
                 prompt_string = prompt_string.replace(f"{{{key}}}", str(value))
             else:
                 glog.error(f"Unsupported type for key {key}: {type(value)}")
-                import ipdb
+                # import ipdb
 
-                ipdb.set_trace()
+                # ipdb.set_trace()
         return prompt_string
 
 
@@ -229,9 +229,9 @@ class StatePromptManager:
                 return ""
         except KeyError as e:
             glog.error(f"Missing key in prompt templates: {e}")
-            import ipdb
+            # import ipdb
 
-            ipdb.set_trace()
+            # ipdb.set_trace()
         return ""
 
     def generate_state_prompts(self, state: str, context: Dict) -> str:
@@ -339,9 +339,9 @@ class StatePromptManager:
 
         except KeyError as e:
             glog.error(f"Missing key in image description template: {e}")
-            import ipdb
+            # import ipdb
 
-            ipdb.set_trace()
+            # ipdb.set_trace()
 
         return ""
 

@@ -1,62 +1,61 @@
-# Gen Scene Graph 模块文档
+# Gen Scene Graph Module Documentation
 
-## 概述
+## Overview
 
-这个模块的主要功能是从场景配置文件（JSON格式）构建一个**带有平台（platform）信息的层次化场景图（Scene Graph）**。它将3D场景中的物体关系、空间布局和可用空间信息组织成树形结构，为机器人任务规划和空间推理提供基础数据结构。
+This module's main function is to construct a **hierarchical scene graph with platform information** from scene configuration files (JSON format). It organizes 3D scene object relationships, spatial layouts, and available space information into a tree structure, providing foundational data structures for robot task planning and spatial reasoning.
 
-## 核心功能
+## Core Features
 
-### 主要特性
-- **层次化场景表示**：将场景中的物体按照空间包含关系组织成树形结构
-- **平台检测与管理**：自动识别物体表面的可用平台区域
-- **自由空间(receptacle)计算**：计算每个物体周围8个方向的可用空间
-- **接触关系分析**：检测物体间的支撑和接触关系
-- **视觉渲染支持**：提供场景可视化和图像生成功能
+### Main Characteristics
+- **Hierarchical Scene Representation**: Organizes objects in the scene into tree structures based on spatial containment relationships
+- **Platform Detection and Management**: Automatically identifies available platform areas on object surfaces
+- **Free Space (Receptacle) Calculation**: Calculates available space in 8 directions around each object
+- **Contact Relationship Analysis**: Detects support and contact relationships between objects
+- **Visual Rendering Support**: Provides scene visualization and image generation functionality
 
-### 数据结构设计
+### Data Structure Design
 
-#### 1. TreeNode（树节点）
-- **功能**：表示场景中的单个物体，维护它在scene graph中的位置信息，receptacle信息，并在需要获取其图片时根据这些信息自动对焦。
-- **关键属性**：
-  - `name`: 物体名称
-  - `entity_config`: 物体config，用于读取原始的物体config并加载到sapien中。
-  - `parent/children`: 父子节点关系
-  - `convex_hull_2d`: 2D凸包表示.对象定义在src/geometry/convex_hull_processor中.
-  - `free_space`: 8方向自由空间信息. 每个方向的receptacle用矩形的四个顶点组成的list维护，list中的顶点顺序是rear-left, front-left, front-right, rear-right.
-  - `on_platform`: 所属平台
-  - `own_platform`: 物体包含的平台列表。
+#### 1. TreeNode (Tree Node)
+- **Function**: Represents a single object in the scene, maintains its position information in the scene graph, receptacle information, and automatically focuses when obtaining its images based on this information.
+- **Key Attributes**:
+  - `name`: Object name
+  - `entity_config`: Object configuration, used to read the original object config and load it into SAPIEN
+  - `parent/children`: Parent-child node relationships
+  - `convex_hull_2d`: 2D convex hull representation. Object defined in src/geometry/convex_hull_processor
+  - `free_space`: 8-direction free space information. Each direction's receptacle is maintained as a list of four vertices forming a rectangle, with vertex order: rear-left, front-left, front-right, rear-right
+  - `on_platform`: Platform this object belongs to
+  - `own_platform`: List of platforms contained by this object
 
-#### 2. TreePlatform（平台）
-- **功能**：表示物体表面的可用平台区域。维护他在scene graph中的位置信息，并在需要获取其图片时根据这些信息自动对焦。
-- **关键属性**：
-  - `bel_object`: 平台所属的物体。
-  - `convex_hull_2d`: 平台的2D几何形状
-  - `avl_height`: 平台的允许放物品的高度。
-  - `visible_directions`: 可访问方向。Agent是否可以在这个方向上看到平台的大部分，(由TreePlatform.freespace_is_visible判断，具体的计算在（）中)，
-  - `standing_point_list`: 四个方向上，Agent可以fit的位置。如果没有其他物体遮挡，这些点会有一定间隔地均匀分布在离平台适当距离的一条线上。具体的计算在（）中。
-  - `children`: 平台上的物体列表
+#### 2. TreePlatform (Platform)
+- **Function**: Represents available platform areas on object surfaces. Maintains its position information in the scene graph and automatically focuses when obtaining its images based on this information.
+- **Key Attributes**:
+  - `bel_object`: Object that owns this platform
+  - `convex_hull_2d`: Platform's 2D geometric shape
+  - `avl_height`: Platform's allowed height for placing objects
+  - `visible_directions`: Accessible directions. Whether the agent can see most of the platform from this direction (determined by TreePlatform.freespace_is_visible, with specific calculations in ())
+  - `standing_point_list`: Agent-fittable positions in four directions. If not obstructed by other objects, these points are uniformly distributed at regular intervals on a line at an appropriate distance from the platform. Specific calculations in ()
+  - `children`: List of objects on the platform
 
-#### 3. Tree（场景图）
-- **功能**：管理整个场景的层次结构。其属性由TreeNode, TreePlatform对象构成。
-- **关键方法**：
-  - `from_scene_platform_list()`: 从平台列表构建场景图
-  - `calculate_free_space()`: 计算自由空间
-  - `cal_standable_area_for_platforms()`: 计算平台可站立区域。
+#### 3. Tree (Scene Graph)
+- **Function**: Manages the hierarchical structure of the entire scene. Its attributes consist of TreeNode and TreePlatform objects.
+- **Key Methods**:
+  - `from_scene_platform_list()`: Construct scene graph from platform list
+  - `calculate_free_space()`: Calculate free space
+  - `cal_standable_area_for_platforms()`: Calculate standable areas for platforms
 
-【calculate_free_space, cal_standable_area_for_platforms用图介绍】
+[calculate_free_space, cal_standable_area_for_platforms illustrated with diagrams]
 
-##  场景图构建流程
+## Scene Graph Construction Process
 
-### 1.读取场景
+### 1. Scene Loading
 
-分开读取物体(object)的glb和场景(stage)的信息。对于物体，在获取位置信息之后先解析其mesh，计算出它的affordable platforms，其算法逻辑见（）。对于场景，我们注意到构成场景墙壁的mesh常有不成体积的情况，给计算Agent可以fit场景的位置带来不便，因此对于场景mesh统一取用它们的凸包。
+Separately load object GLB files and stage information. For objects, after obtaining position information, first parse their meshes and calculate their affordable platforms. The algorithm logic is detailed in (). For stages, we note that meshes forming scene walls often lack proper volume, making it inconvenient to calculate positions where agents can fit in the scene. Therefore, we uniformly use convex hulls for stage meshes.
 
-### 2.计算物体接触关系
-根据物体和平台的位置关系计算所有物体和平台的接触关系。其逻辑见（scene_parser.SceneElement.calculate_contact_conditions(scene_platform_list)
+### 2. Calculate Object Contact Relationships
+Calculate contact relationships between all objects and platforms based on their positional relationships. The logic is detailed in scene_parser.SceneElement.calculate_contact_conditions(scene_platform_list).
 
-### 3.构建树结构
-先后调用Tree类的三个关键方法，先从物体和平台的接触关系构建场景图，然后计算以每个表面物体为anchor object所定义的receptacle和计算平台的可站立区域。
-
+### 3. Build Tree Structure
+Sequentially call three key methods of the Tree class: first construct the scene graph from object and platform contact relationships, then calculate receptacles defined by each surface object as anchor object, and calculate standable areas for platforms.
 
 ## Configuration Parameters
 
@@ -69,20 +68,14 @@ merge_tolerance: float = 0.1            # Tolerance for rectangle merging
 max_target_strips: int = 8              # Maximum decomposition strips
 concave_threshold: float = 0.1          # Threshold for concavity detection
 eps: float = 1e-6                       # Precision tolerance
+
 ```
 
-## 使用示例
-
+## Usage Example
+```python
 json_tree_path = gen_scene_graph.load_json_file(accurate_entity_path)
 scene_graph_tree = gen_scene_graph.gen_multi_layer_graph_with_free_space(
         json_tree_path
 )
 
-在主程序中的调用位置： main.py L246
-
-
-
-
-### 8方向系统
-[配图]
-
+```

@@ -47,16 +47,20 @@ class ReplicaSceneParser(BaseRawSceneParser):
             / f"configs/objects/{template_name}.object_config.json"
         )
 
-        with open(obj_config_path, "r") as f:
-            obj_config = json.load(f)
+        try:
+            with open(obj_config_path, "r") as f:
+                obj_config = json.load(f)
 
-        if obj_config.get("collision_asset"):
-            relative_collision_path = obj_config["collision_asset"]
-            collision_file_path = os.path.normpath(
-                obj_config_path.parent / relative_collision_path
-            )
-            return collision_file_path
-        else:
+            if obj_config.get("collision_asset"):
+                relative_collision_path = obj_config["collision_asset"]
+                collision_file_path = os.path.normpath(
+                    obj_config_path.parent / relative_collision_path
+                )
+                return collision_file_path
+            else:
+
+                return None
+        except:
 
             return None
 
@@ -227,7 +231,7 @@ class ReplicaSceneParser(BaseRawSceneParser):
         background_template_name = data["stage_instance"]["template_name"]
 
         bg_path = os.path.join(
-            self.global_config.dataset_root_path, f"{background_template_name}.glb"
+            self.global_config.stage_path_prefix, f"{background_template_name}.glb"
         )
 
         output_data = {

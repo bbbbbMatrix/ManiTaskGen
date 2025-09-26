@@ -14,7 +14,7 @@ from scipy.spatial.transform import Rotation
 import logging
 
 
-from .base_parser import BaseRawSceneParser, RawSceneParserFactory
+from base_parser import BaseRawSceneParser, RawSceneParserFactory
 
 logger = logging.getLogger(__name__)
 

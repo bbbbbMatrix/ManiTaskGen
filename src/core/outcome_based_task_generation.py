@@ -389,7 +389,7 @@ class OutcomeBasedTaskPattern:
             placeholder = match.group(0)
 
             if placeholder.startswith("[PLATFORM"):
-                # 使用正则提取索引
+
                 platform_match = re.match(r"\[PLATFORM(\d+)\]", placeholder)
                 if platform_match:
                     index = int(platform_match.group(1))
@@ -1213,10 +1213,6 @@ def main():
     vlm_voter = VLMVoter()
     for task in outcome_based_task_generator.task_list:
         vlm_voter.is_task_feasible(task, scene_graph)
-
-    import ipdb
-
-    ipdb.set_trace()
 
     # Example from pattern.txt for SUB-OBJECT-CATEGORY0
     pattern_locatel = "Locate all [SUB-OBJECT0] in the room, group them by size, and place them in descending order along the edge of [PLATFORM0]."

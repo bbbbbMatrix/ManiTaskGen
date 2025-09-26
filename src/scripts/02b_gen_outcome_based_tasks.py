@@ -54,6 +54,13 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        "--output_dir",
+        type=str,
+        default=None,
+        help="Output directory for results",
+    )
+
+    parser.add_argument(
         "--entity_json_path",
         type=str,
         default=None,
@@ -129,7 +136,9 @@ def main(args):
 
     # 0.5 Initialize the Scene, add shaders and lights.
     config_path = args.config
-    config_manager = ConfigManager(config_file_path=config_path)
+    config_manager = ConfigManager(
+        config_file_path=config_path, output_dir=args.output_dir
+    )
     update_config_from_args(config_manager, args)
 
     sapien_scene_manager = visualize_scene_sapien.SapienSceneManager()
@@ -165,6 +174,7 @@ def main(args):
         with open(rename_dict_path, "r") as f:
             rename_dict = json.load(f)
     else:
+        glog.warning("No renaming dict found, using empty dict.")
         rename_dict = {}
 
     scene_graph.rename_all_features(rename_dict)

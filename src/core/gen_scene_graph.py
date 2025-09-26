@@ -1272,10 +1272,6 @@ class TreeNode:
         return major_category, minor_category
 
     def renew_heading(self, heading):
-        if "wall_cabinet_02_19" in self.name:
-            import ipdb
-
-            ipdb.set_trace()
         self.heading = heading
         self.object.convex_hull_2d.heading = heading
         if self.name != "GROUND":
@@ -2367,8 +2363,8 @@ class TreeNode:
             standing_direction = None
             for dir in range(0, 8, 2):
                 if (
-                    self.is_freespace_big_enough(dir)
-                    and self.freespace_is_standable(dir)
+                    bel_ground_node.is_freespace_big_enough(dir)
+                    and bel_ground_node.freespace_is_standable(dir)
                     and bel_ground_node.freespace_is_visible(
                         dir, bel_ground_platform_id
                     )
@@ -2379,6 +2375,7 @@ class TreeNode:
                 glog.error(
                     f"This object {self.name} has no available standing direction"
                 )
+
                 standing_direction = 0
 
         # standing_direction = 0

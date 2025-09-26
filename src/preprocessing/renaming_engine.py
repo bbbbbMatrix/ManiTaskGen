@@ -6,18 +6,20 @@ import time
 
 from src.vlm_interaction import vlm_interactor
 from src.utils.config_manager import get_config
+from src.utils.config_manager import get_rename_engine_config
 
 import json
 
 
 class RenamingEngine:
     def __init__(self):
-        self.interactor = vlm_interactor.VLMInteractor(
-            mode="online", model="openai/gpt-4.1-mini"
-        )
+        self.rename_engine_config = get_rename_engine_config()
+        self.model = self.rename_engine_config.model
+        self.interactor = vlm_interactor.VLMInteractor(mode="online", model=self.model)
         self.interactor.initcount()
         self.interactor.chkcount()
         self.config = get_config()
+
         self.prompts = self.config.rename_engine_prompt_template_path
         if self.prompts is None or not os.path.exists(self.prompts):
             glog.warning("Prompt template file not found.")
@@ -101,25 +103,6 @@ class RenamingEngine:
                     fovy_range=[np.deg2rad(40), np.deg2rad(60)],
                     save_path=os.path.join(image_folder_path, f"{node_name}.jpg"),
                 )
-        """
-        def auto_take_non_ground_object_picture(
-        self,
-        scene,
-        view="human_full",  # 'human_focus', 'human_full', 'top_focus', 'top_full'
-        mark_object=False,  # if True, mark all the object on the same platform with cuboid.
-        only_mark_itself=False,  # if True, only mark itself
-        mark_freespace=False,
-        diagonal_mode="old",  # 'old', 'new_largest_rect', 'new_all', 'new_combined_freespace'
-        need_afford_rect=None,  # If not none, only mark the freespaces with size larger than it.
-        standing_direction=0,
-        width=640,
-        height=480,
-        focus_ratio=0.8,
-        fovy_range=[np.deg2rad(5), np.deg2rad(60)],
-        save_path=None,
-    )
-        
-        """
 
         rename_dict = self.classify(
             img_path_folder=image_folder_path,

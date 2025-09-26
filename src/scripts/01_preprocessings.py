@@ -53,6 +53,13 @@ def parse_arguments():
         help="Path to the configuration file, None for default config.",
     )
 
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default=None,
+        help="Output directory for results",
+    )
+
     # Important global configuration parameters - these will override settings in config file
     parser.add_argument(
         "--input_json_path",
@@ -71,9 +78,6 @@ def parse_arguments():
         type=str,
         default=None,
         help="Path to the entity JSON file",
-    )
-    parser.add_argument(
-        "--output_dir", type=str, default=None, help="Output directory for results"
     )
 
     parser.add_argument(
@@ -149,19 +153,34 @@ def parse_arguments():
     return parser.parse_args()
 
 
+def update_config_from_args(config_manager, args):
+    """Update configuration using command line arguments, command line args have higher priority"""
+    config_dict = {}
+
+    args_dict = vars(args)
+    for key, value in args_dict.items():
+        if value is not None:
+            config_dict[key] = value
+
+    config_manager._update_config_from_dict(config_dict)
+
+
 def main(args):
 
     os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
-    current_path = os.path.dirname(os.path.abspath(__file__))
 
     # 0. Initialize the configuration manager
     # We only need to load the config once.
 
     config_path = args.config
+    run_dir = args.output_dir
 
-    config_manager = ConfigManager(config_file_path=config_path)
-    # update_config_from_args(config_manager, args)
+    glog.info(args.output_dir)
+    glog.info(args.config)
 
+    config_manager = ConfigManager(config_file_path=config_path, run_dir=run_dir)
+
+    update_config_from_args(config_manager, args)
     # export the final config in this run, named by the timestamp
 
     if not os.path.exists(config_manager.config_file_export_dir):
@@ -172,6 +191,9 @@ def main(args):
             f"used_config_{int(time.time())}.yaml",
         )
     )
+
+    glog.info(args.output_dir)
+    glog.info(args.config)
 
     # import ipdb
     # ipdb.set_trace()
@@ -242,10 +264,22 @@ def main(args):
         glog.info("Using renaming engine to rename the objects.")
         rename_engine = renaming_engine.RenamingEngine()
         scene_graph.corresponding_scene = scene
+        # import ipdb; ipdb.set_trace()
         rename_dict = rename_engine.rename_objects_with_engine(
             scene_graph, main_config.image4rename_path
         )
         scene_graph.rename_all_features(rename_dict)
+        json.dump(
+            rename_dict,
+            open(
+                os.path.join(
+                    config_manager.config_file_export_dir,
+                    f"rename_dict.json",
+                ),
+                "w",
+            ),
+            indent=4,
+        )
 
     # entity_json_path = './parsed_scene_iTHOR_1.json'
 

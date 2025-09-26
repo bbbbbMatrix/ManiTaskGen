@@ -122,9 +122,9 @@ class VLMInteractor:
                 }
             )
             msg = VLM_response
-            import ipdb
+            # import ipdb
 
-            ipdb.set_trace()
+            # ipdb.set_trace()
 
             pass
 

@@ -251,6 +251,15 @@ class SapienSceneManager:
         bg = builder.build_static(name="scene_background")
         bg.set_pose(bg_pose)
 
+        for entity in scene.entities:
+            for component in entity.get_components():
+                if isinstance(component, sapien.pysapien.render.RenderBodyComponent):
+                    component.visibility = 0.15
+                    scene.step()
+                    scene.update_render()
+
+        # import ipdb; ipdb.set_trace()
+
         # Load objects
         for obj in data["object_instances"]:
             if "name" in obj and obj["name"] == "GROUND":

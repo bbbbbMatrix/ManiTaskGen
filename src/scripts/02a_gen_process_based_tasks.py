@@ -54,6 +54,10 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        "--output_dir", type=str, default=None, help="Output directory for results"
+    )
+
+    parser.add_argument(
         "--atomic_task_pkl_load_path",
         type=str,
         default=None,
@@ -67,8 +71,12 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "--output_dir", type=str, default=None, help="Output directory for results"
+        "--scene_graph_pkl_load_path",
+        type=str,
+        default=None,
+        help="Path to load scene graph pickle file, overrides config if provided.",
     )
+
     parser.add_argument(
         "--process_tasks_pkl_path",
         type=str,
@@ -94,6 +102,8 @@ def update_config_from_args(config_manager, args):
         if value is not None:
             config_dict[key] = value
 
+    config_manager._update_config_from_dict(config_dict)
+
 
 def main(args):
 
@@ -105,7 +115,9 @@ def main(args):
 
     config_path = args.config
 
-    config_manager = ConfigManager(config_file_path=config_path)
+    config_manager = ConfigManager(
+        config_file_path=config_path, run_dir=args.output_dir
+    )
     update_config_from_args(config_manager, args)
 
     # export the final config in this run, named by the timestamp
@@ -146,12 +158,8 @@ def main(args):
             )
             rename_dict = json.load(open(main_config.rename_dict_path, "r"))
         else:
-            glog.info("Using renaming engine to rename the objects.")
-            rename_engine = renaming_engine.RenamingEngine()
-            scene_graph.corresponding_scene = scene
-            rename_dict = rename_engine.rename_objects_with_engine(
-                scene_graph, main_config.image4rename_path
-            )
+            glog.warning("No renaming dict found, using empty dict.")
+            rename_dict = {}
     scene_graph.rename_all_features(rename_dict)
     #     scene_graph.rename_all_features(rename_dict)
 
@@ -162,6 +170,14 @@ def main(args):
     chained_task.generate_task(max_task_num=2, task_length=3)
 
     if main_config.process_based_task_pkl_save_path is not None:
+
+        os.makedirs(
+            os.path.dirname(main_config.process_based_task_pkl_save_path), exist_ok=True
+        )
+        os.makedirs(
+            os.path.dirname(main_config.process_based_task_txt_save_path), exist_ok=True
+        )
+
         with open(main_config.process_based_task_pkl_save_path, "wb") as f:
             pickle.dump(chained_task, f)
 

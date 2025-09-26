@@ -22,7 +22,7 @@ class RunContext:
         else:
             run_name = f"run_{timestamp}"
 
-        run_dir = f"data/runs/{run_name}"
+        run_dir = f"runs/{run_name}"
 
         # Create directory structure
         subdirs = [

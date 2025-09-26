@@ -222,11 +222,11 @@ class GroundCoverageAnalyzer:
 
             if polygons:
                 # Merge all triangles into a single polygon
-                glog.info(f"Found {len(polygons)} valid faces in the mesh.")
+                #  glog.info(f"Found {len(polygons)} valid faces in the mesh.")
                 merged_polygon = unary_union(polygons)
-                glog.info(
-                    f"Merged polygon has {len(merged_polygon.geoms) if isinstance(merged_polygon, MultiPolygon) else 1} components."
-                )
+                # glog.info(
+                #     f"Merged polygon has {len(merged_polygon.geoms) if isinstance(merged_polygon, MultiPolygon) else 1} components."
+                # )
                 return merged_polygon
 
         # Fall back to convex hull if no valid faces found or mesh has no faces

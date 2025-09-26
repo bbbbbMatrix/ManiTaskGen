@@ -131,7 +131,9 @@ def main(args):
 
     config_path = args.config
 
-    config_manager = ConfigManager(config_file_path=config_path)
+    config_manager = ConfigManager(
+        config_file_path=config_path, run_dir=args.output_dir
+    )
     update_config_from_args(config_manager, args)
 
     # export the final config in this run, named by the timestamp
@@ -155,9 +157,7 @@ def main(args):
     entity_json_path = main_config.entity_json_path
     sapien_scene_manager = visualize_scene_sapien.SapienSceneManager()
     scene = sapien_scene_manager.create_scene()
-    import ipdb
 
-    ipdb.set_trace()
     sapien_scene_manager.load_objects_from_json(scene, json_file_path=output_json_path)
 
     if main_config.scene_graph_pkl_load_path is not None and os.path.exists(
@@ -183,6 +183,8 @@ def main(args):
         )
         with open(main_config.process_based_task_pkl_load_path, "rb") as f:
             chained_task = pickle.load(f)
+    else:
+        glog.warning("No  pkl file found.")
 
     initial_atomic_task = copy.deepcopy(chained_task)
     initial_scene_graph = copy.deepcopy(scene_graph)
@@ -200,13 +202,10 @@ def main(args):
             )
             rename_dict = json.load(open(main_config.rename_dict_path, "r"))
         else:
-            glog.info("Using renaming engine to rename the objects.")
-            rename_engine = renaming_engine.RenamingEngine()
-            scene_graph.corresponding_scene = scene
-            rename_dict = rename_engine.rename_objects_with_engine(
-                scene_graph, main_config.image4rename_path
-            )
-        scene_graph.rename_all_features(rename_dict)
+            glog.warning("No rename dict found, using empty dict.")
+            rename_dict = {}
+
+    scene_graph.rename_all_features(rename_dict)
 
     # 5 test tasks
     initial_atomic_task = copy.deepcopy(chained_task)
@@ -241,9 +240,6 @@ def main(args):
         manual_vlm_interactor = vlm_interactor.VLMInteractor(
             mode=main_config.mode, model=main_config.model_name
         )
-        import ipdb
-
-        ipdb.set_trace()
         scene_graph.corresponding_scene = another_scene
         scene_graph.rename_all_features(rename_dict)
         scene_graph.corresponding_scene = scene
