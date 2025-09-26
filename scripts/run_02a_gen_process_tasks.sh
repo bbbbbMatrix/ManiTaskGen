@@ -13,6 +13,13 @@ args=(
     --output_dir "$RUN_DIR"
 )
 
+if [[ -n "$CONFIG_FILE" ]]; then
+    args+=(--config "$CONFIG_FILE")
+    log_info "Using config file in bash: $CONFIG_FILE"
+fi
+
+
+
 # Only add arguments if we want to override defaults or if files exist in our run directory
 if [[ -f "$SCENE_GRAPH_PKL" ]]; then
     args+=(--scene_graph_pkl_load_path "$SCENE_GRAPH_PKL")

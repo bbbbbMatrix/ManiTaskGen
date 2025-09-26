@@ -11,7 +11,7 @@ SRC_DIR="$BASE_DIR/src"
 SCRIPTS_DIR="$SRC_DIR/scripts"
 
 # Create run-specific directories
-RUN_DIR="$DATA_DIR/run_$TIMESTAMP"
+RUN_DIR="$BASE_DIR/runs"
 CACHE_DIR="$RUN_DIR/cache"
 IMAGES_DIR="$RUN_DIR/images"
 RESULTS_DIR="$RUN_DIR/results"

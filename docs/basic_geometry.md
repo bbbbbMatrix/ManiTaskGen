@@ -1,43 +1,44 @@
 # Basic Geometries Module
 
-本文档介绍basic_geometry部分, 代码中的基础几何计算模块
+This document introduces the basic_geometry module, which provides fundamental geometric computation functionality in the codebase.
 
 ## Introduction
 
-这个模块提供了2D和3D几何计算的基础功能，包括点、线、矩形、三角形等几何对象的操作。程序中所有集合计算。
+This module provides basic functionality for 2D and 3D geometric calculations, including operations on geometric objects such as points, lines, rectangles, and triangles. All geometric computations in the program are handled here.
 
-主要用于几何碰撞检测、空间分析和物体放置等任务。
+It is primarily used for geometric collision detection, spatial analysis, and object placement tasks.
 
-## Main Features.
-- 2D几何操作
-  - 点操作
-    - 点旋转
-    - 点到线段、直线距离
-    - 点到直线垂足
-    - 点是否在矩形内
-    - 点是否在多边形内
-    - 点是否在平行线内
-    - 点是否在线段上
-  - 直线和线段操作
-    - 线线交点
-    - 线段间是否有交
-    - 根据线段求以其为对角线的矩形
-  - 矩形操作
-    - 平行矩形交
-    - 平行矩形交面积
-    - 矩形是否可被放入矩形并中
-    - 矩形旋转
-    - 求向量夹角cos
-- 3D几何操作：点到平面距离、光线三角形相交、四元数旋转等
-  - 点操作
-    - 点到线段、直线、平面、三角形距离
-  - 直线操作
-    - 射线与三角形的交
-  - 向量操作
-    - 求向量夹角的quat
-    - 向量转quat,rpy
+## Main Features
 
-## 架构设计
-- `Basic2DGeometry`: 2D几何操作的静态方法集合
-- `Basic3DGeometry`: 3D几何操作的静态方法集合
-- 配置管理：通过 `get_basic_geometry_config()` 获取精度参数
+- 2D Geometric Operations
+  - Point Operations
+    - Point rotation
+    - Distance from point to line segment/line
+    - Perpendicular foot from point to line
+    - Whether point is inside rectangle
+    - Whether point is inside polygon
+    - Whether point is between parallel lines
+    - Whether point is on line segment
+  - Line and Line Segment Operations
+    - Line-line intersection
+    - Whether line segments intersect
+    - Finding rectangle with line segment as diagonal
+  - Rectangle Operations
+    - Parallel rectangle intersection
+    - Parallel rectangle intersection area
+    - Whether rectangle can fit inside another rectangle
+    - Rectangle rotation
+    - Calculate cosine of vector angle
+- 3D Geometric Operations: Point-to-plane distance, ray-triangle intersection, quaternion rotation, etc.
+  - Point Operations
+    - Distance from point to line segment/line/plane/triangle
+  - Line Operations
+    - Ray-triangle intersection
+  - Vector Operations
+    - Calculate quaternion for vector angle
+    - Vector to quaternion/RPY conversion
+
+## Architecture Design
+- `Basic2DGeometry`: Collection of static methods for 2D geometric operations
+- `Basic3DGeometry`: Collection of static methods for 3D geometric operations
+- Configuration Management: Precision parameters obtained through `get_basic_geometry_config()`

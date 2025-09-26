@@ -8,6 +8,9 @@ print_config
 
 log_step "Starting 01_preprocessings.py"
 
+cd "$BASE_DIR"
+
+log_info "Current working directory: $BASE_DIR"
 # Build optional arguments
 args=(
     --output_dir "$RUN_DIR"
@@ -16,24 +19,10 @@ args=(
 # Only add specific arguments if we want to override defaults
 if [[ -n "$CONFIG_FILE" ]]; then
     args+=(--config "$CONFIG_FILE")
+    log_info "Using config file in bash: $CONFIG_FILE"
 fi
 
-# Add output paths to use our run-specific directory
-if [[ -n "$PARSED_JSON" ]]; then
-    args+=(--output_json_path "$PARSED_JSON")
-fi
 
-if [[ -n "$SCENE_GRAPH_PKL" ]]; then
-    args+=(--scene_graph_pkl_save_path "$SCENE_GRAPH_PKL")
-fi
-
-if [[ -n "$RENAME_DICT_JSON" ]]; then
-    args+=(--rename_dict_path "$RENAME_DICT_JSON")
-fi
-
-if [[ -n "$IMAGES_DIR" ]]; then
-    args+=(--image4rename_path "$IMAGES_DIR/image4rename")
-fi
 
 # Run preprocessing script with optional arguments
 run_python_script "01_preprocessings.py" "${args[@]}"
