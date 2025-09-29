@@ -64,7 +64,7 @@ def parse_arguments():
         help="Path to load atomic task pickle file",
     )
     parser.add_argument(
-        "--rename_dict",
+        "--rename_dict_path",
         type=str,
         default=None,
         help="Path to load atomic task pickle file",
@@ -149,6 +149,7 @@ def main(args):
         raise ValueError("Please provide a valid scene graph pickle file path.")
 
     rename_dict = {}
+    import ipdb; ipdb.set_trace()
     if main_config.use_renaming_engine:
         if main_config.rename_dict_path is not None and os.path.exists(
             main_config.rename_dict_path

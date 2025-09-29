@@ -92,7 +92,12 @@ def parse_arguments():
     parser.add_argument(
         "--model_name", type=str, default=None, help="Model name for VLM interaction"
     )
-
+    parser.add_argument(
+        "--rename_dict_path",
+        type=str,
+        default=None,
+        help="Path to load atomic task pickle file",
+    )
     # File path configuration
     parser.add_argument(
         "--scene_graph_pkl_save_path",

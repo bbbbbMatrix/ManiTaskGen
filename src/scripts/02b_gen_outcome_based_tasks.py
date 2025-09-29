@@ -137,7 +137,7 @@ def main(args):
     # 0.5 Initialize the Scene, add shaders and lights.
     config_path = args.config
     config_manager = ConfigManager(
-        config_file_path=config_path, output_dir=args.output_dir
+        config_file_path=config_path, run_dir=args.output_dir
     )
     update_config_from_args(config_manager, args)
 

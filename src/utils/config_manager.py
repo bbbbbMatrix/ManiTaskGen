@@ -412,7 +412,7 @@ class AppConfig:
     adjust_with_gravity: bool = (
         True  # Whether to adjust gravity (may affect object pose)
     )
-    use_renaming_engine: bool = False  # Whether to use renaming engine
+    use_renaming_engine: bool = True  # Whether to use renaming engine
     bbox_only: bool = False  # Whether to use bounding box only
     input_json_path: Optional[str] = (
         "./replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
@@ -495,7 +495,7 @@ class AppConfig:
     )
 
     rename_dict_path: Optional[str] = (
-        "${run_dir}/data/cache/rename_dict.json"  # Path to the renaming dictionary
+        "${run_dir}/cache/rename_dict.json"  # Path to the renaming dictionary
     )
 
     image_path: Optional[str] = "${run_dir}/data/images"  # Path to save images
@@ -507,7 +507,7 @@ class AppConfig:
     result_file_path: Optional[str] = (
         "${run_dir}/output/result.txt"  # Path to save the result file
     )
-    manitaskot_pattern_file: str = "${run_dir}/data/templates/manitask_ot200.txt"
+    manitaskot_pattern_file: str = "data/templates/manitask_ot200.txt"
 
 
 """
