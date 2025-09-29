@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 import json
 import glog
 
-from src.utils.config_manager import get_config
-
 
 @dataclass
 class PromptTemplate:
@@ -44,9 +42,9 @@ class PromptFormatter(ABC):
                 prompt_string = prompt_string.replace(f"{{{key}}}", str(value))
             else:
                 glog.error(f"Unsupported type for key {key}: {type(value)}")
-                # import ipdb
+                import ipdb
 
-                # ipdb.set_trace()
+                ipdb.set_trace()
         return prompt_string
 
 
@@ -149,16 +147,12 @@ class StatePromptManager:
 
     def __init__(
         self,
-        prompt_templates: str = None,
+        prompt_templates: str = "./vlm_interactor/prompts/task_interact_prompts.json",
         formatter: PromptFormatter = {
             "basic": BasicPromptFormatter(),
             "image": ImagePromptFormatter(),
         },
     ):
-        config = get_config()
-        if prompt_templates is None:
-            prompt_templates = config.prompt_template_path
-
         try:
             with open(prompt_templates, "r", encoding="utf-8") as f:
                 self.prompt_templates = json.load(f)  # Use load instead of loads
@@ -229,9 +223,9 @@ class StatePromptManager:
                 return ""
         except KeyError as e:
             glog.error(f"Missing key in prompt templates: {e}")
-            # import ipdb
+            import ipdb
 
-            # ipdb.set_trace()
+            ipdb.set_trace()
         return ""
 
     def generate_state_prompts(self, state: str, context: Dict) -> str:
@@ -339,9 +333,9 @@ class StatePromptManager:
 
         except KeyError as e:
             glog.error(f"Missing key in image description template: {e}")
-            # import ipdb
+            import ipdb
 
-            # ipdb.set_trace()
+            ipdb.set_trace()
 
         return ""
 
@@ -539,189 +533,3 @@ class ReflectionPromptManager:
             or prompt_type in ReflectionPromptManager.regular_prompt_types
         ):
             return self.__generate_regular_text_prompt(**kwargs)
-
-
-class FeasibilityPromptFormatter(PromptFormatter):
-    """
-    Formatter for task feasibility evaluation prompts.
-    """
-
-    def __init__(self, prompt_templates_path: str = None):
-        if prompt_templates_path is None:
-            prompt_templates_path = "./vlm_interaction/feasibility_prompts.json"
-
-        try:
-            with open(prompt_templates_path, "r", encoding="utf-8") as f:
-                self.prompt_templates = json.load(f)
-        except FileNotFoundError:
-            glog.error(f"Cannot find prompt template file: {prompt_templates_path}")
-            raise
-        except json.JSONDecodeError as e:
-            glog.error(f"JSON format error: {e}")
-            raise
-
-    def format_prompt(self, template_key: str, **kwargs) -> str:
-        """
-        Format the prompt using the template key and keyword arguments.
-        """
-        if template_key not in self.prompt_templates:
-            glog.error(f"Template key '{template_key}' not found")
-            return ""
-
-        template_config = self.prompt_templates[template_key]
-        template = template_config["content"]
-        required_vars = template_config.get("required_variables", [])
-
-        # Check for missing required variables
-        missing_vars = [var for var in required_vars if var not in kwargs]
-        if missing_vars:
-            glog.warning(
-                f"Missing required variables for {template_key}: {missing_vars}"
-            )
-
-        return self._replace_value(template, **kwargs)
-
-    def get_system_prompt(
-        self,
-        task_description: str,
-        platform_name: str = None,
-        multilayer_object_name: str = None,
-    ) -> str:
-        """
-        Generate the main system prompt for feasibility evaluation.
-        """
-        return self.format_prompt(
-            "system_prompt",
-            task_description=task_description,
-            platform_name=platform_name or "None",
-            multilayer_object_name=multilayer_object_name or "None",
-        )
-
-    def get_platform_introduction(
-        self, platform_name: str, child_name_list: List[str], image_count: int = 1
-    ) -> str:
-        """
-        Generate introduction text for platform images.
-        """
-        child_names_str = ", ".join(child_name_list) if child_name_list else "No items"
-        return self.format_prompt(
-            "platform_introduction",
-            platform_name=platform_name,
-            child_name_list=child_names_str,
-            image_count=image_count,
-        )
-
-    def get_multilayer_introduction(self) -> str:
-        """
-        Generate introduction text for multilayer object images.
-        """
-        return self.format_prompt("multilayer_introduction")
-
-    def get_multilayer_layer_description(
-        self, platform_name: str, child_name_list: List[str], is_top_layer: bool = False
-    ) -> str:
-        """
-        Generate description for each layer of multilayer object.
-        """
-        child_names_str = ", ".join(child_name_list) if child_name_list else "No items"
-        top_layer_text = "And this is the top layer." if is_top_layer else ""
-
-        return self.format_prompt(
-            "multilayer_layer_description",
-            platform_name=platform_name,
-            child_name_list=child_names_str,
-            is_top_layer=top_layer_text,
-        )
-
-
-class FeasibilityPromptFormatter(PromptFormatter):
-    """
-    Formatter for task feasibility evaluation prompts.
-    """
-
-    def __init__(self, prompt_templates_path: str = None):
-        if prompt_templates_path is None:
-            prompt_templates_path = "./src/utils/prompts/voting_prompts.json"
-
-        try:
-            with open(prompt_templates_path, "r", encoding="utf-8") as f:
-                self.prompt_templates = json.load(f)
-        except FileNotFoundError:
-            glog.error(f"Cannot find prompt template file: {prompt_templates_path}")
-            raise
-        except json.JSONDecodeError as e:
-            glog.error(f"JSON format error: {e}")
-            raise
-
-    def format_prompt(self, template_key: str, **kwargs) -> str:
-        """
-        Format the prompt using the template key and keyword arguments.
-        """
-        if template_key not in self.prompt_templates:
-            glog.error(f"Template key '{template_key}' not found")
-            return ""
-
-        template_config = self.prompt_templates[template_key]
-        template = template_config["content"]
-        required_vars = template_config.get("required_variables", [])
-
-        # Check for missing required variables
-        missing_vars = [var for var in required_vars if var not in kwargs]
-        if missing_vars:
-            glog.warning(
-                f"Missing required variables for {template_key}: {missing_vars}"
-            )
-
-        return self._replace_value(template, **kwargs)
-
-    def get_system_prompt(
-        self,
-        task_description: str,
-        platform_name_list: str = None,
-        multilayer_object_name_list: str = None,
-    ) -> str:
-        """
-        Generate the main system prompt for feasibility evaluation.
-        """
-        return self.format_prompt(
-            "system_prompt",
-            task_description=task_description,
-            platform_name_list=platform_name_list or "None",
-            multilayer_object_name_list=multilayer_object_name_list or "None",
-        )
-
-    def get_platform_introduction(
-        self, platform_name: str, child_name_list: List[str], image_count: int = 1
-    ) -> str:
-        """
-        Generate introduction text for platform images.
-        """
-        child_names_str = ", ".join(child_name_list) if child_name_list else "No items"
-        return self.format_prompt(
-            "platform_introduction",
-            platform_name=platform_name,
-            child_name_list=child_names_str,
-            image_count=image_count,
-        )
-
-    def get_multilayer_introduction(self) -> str:
-        """
-        Generate introduction text for multilayer object images.
-        """
-        return self.format_prompt("multilayer_introduction")
-
-    def get_multilayer_layer_description(
-        self, platform_name: str, child_name_list: List[str], is_top_layer: bool = False
-    ) -> str:
-        """
-        Generate description for each layer of multilayer object.
-        """
-        child_names_str = ", ".join(child_name_list) if child_name_list else "No items"
-        top_layer_text = "And this is the top layer." if is_top_layer else ""
-
-        return self.format_prompt(
-            "multilayer_layer_description",
-            platform_name=platform_name,
-            child_name_list=child_names_str,
-            is_top_layer=top_layer_text,
-        )
