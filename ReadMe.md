@@ -109,7 +109,8 @@ The following table shows the features and IOs for each script:
 | ``scripts/run_02a_gen_process_based_task.sh`` | generate process based tasks                                 | data/cache/scene_graph.pkl<br />                             | data/cache/process_based_task.pkl<br />data/output/process_based_task.txt |
 | ``scripts/run_02b_gen_outcome_based_task.sh`` | generate outcome based tasks                                 | data/cache/scene_graph.pkl<br />data/cache/entity_scene.json | <br />data/output/outcome_based_task.txt                     |
 | ``scripts/run_03_run_benchmark.sh``           | run benchmark                                                | data/cache/process_based_task.pkl<br />data/cache/reflection_notes.txt(optional) | data/images/image4interact/xxx.png<br />data/output/results.txt |
-| ``scripts/config.sh``                         | A auxiliary script for setting paths                         | /                                                            | /                                                            |
+| ``scripts/run_99_item_modification_only.sh``                         | run item_modification interaction                        | /                                                            | ``visualizations/final_scene_graph.json``                                                           |
+| ``scripts/config.sh``                         | A auxiliary script for setting paths                         | /                                                            | /                                                           |
 
 Note that the part 02a&02b requires ``scene_graph.pkl`` and part 03 requires ``process_based_task.pkl``, which means you have to run former scripts before the latter scripts in order to avoid errors.
 

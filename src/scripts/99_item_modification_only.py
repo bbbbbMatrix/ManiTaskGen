@@ -266,91 +266,18 @@ def main(args):
 
     final_scene_graph = interactive_scene_modifier.scene_graph
 
-    with open("final_scene_graph.json", "w") as f:
-        json.dump(final_scene_graph.to_dict(), f, indent=4)
+    scene_graph_visualizer = visualization_tools.SceneGraphVisualizer()
+    # scene_graph_visualizer.export_tree_to_dot(
+    #     scene_graph.nodes["GROUND"],
+    #     output_file="final_scene_graph",
+    #     format="png",
+    #     include_properties=True,
+    # )
+    scene_graph_visualizer.export_tree_to_json(
+        final_scene_graph.nodes["GROUND"],
+        output_file="final_scene_graph",
+    )
 
-    #         another_scene.update_render()
-
-    # for i in task_list:
-
-    #     task = task_sample[i]
-
-    #     another_scene = sapien.Scene()
-    #     another_scene.set_timestep(1 / 100)
-    #     another_scene.add_ground(altitude=0)
-    #     sapien_scene_manager.load_objects_from_json(
-    #         another_scene, json_file_path=output_json_path
-    #     )
-    #     another_scene.set_ambient_light([0.5, 0.5, 0.5])
-    #     another_scene.add_directional_light([0, 1, -1], [0.5, 0.5, 0.5])
-
-    #     for j in range(1000):
-
-    #         another_scene.step()
-    #         another_scene.update_render()
-
-    #     # description of task has moved into apply function.
-    #     manual_vlm_interactor = vlm_interactor.VLMInteractor(
-    #         mode=main_config.mode, model=main_config.model_name
-    #     )
-    #     scene_graph.corresponding_scene = another_scene
-    #     scene_graph.rename_all_features(rename_dict)
-    #     scene_graph.corresponding_scene = scene
-    #     scene_graph.rename_all_features(rename_dict)
-
-    #     glog.info(task)
-
-    #     # return TaskStatusCode.SUCCESS or TaskStatusCode.FAILURE
-    #     intermediate_task, intermediate_task_id = None, None
-
-    #     task = benchmark_executor.BenchmarkExecutor(
-    #         task=task,
-    #         task_id=i,
-    #         intermediate_task=intermediate_task,
-    #         intermediate_task_id=intermediate_task_id,
-    #         scene_graph=scene_graph,
-    #         scene=another_scene,
-    #         vlm_interactor=manual_vlm_interactor,
-    #         model_name=main_config.model_name,
-    #         generate_mistake_note=main_config.generate_mistake_note,
-    #         use_mistake_note=main_config.use_mistake_note,
-    #     )
-
-    #     task.apply_action(state=benchmark_executor.InteractStates.NAVIGATION)
-    #     result.append([task.status, task.partial_score])
-    #     histories.append(task.action_history_list)
-    #     scene = sapien.Scene()
-    #     scene.set_timestep(1 / 100)
-    #     scene.add_ground(altitude=0)
-
-    #     sapien_scene_manager.load_objects_from_json(
-    #         scene, json_file_path=output_json_path
-    #     )
-    #     scene.set_ambient_light([0.5, 0.5, 0.5])
-    #     scene.add_directional_light([0, 1, -1], [0.5, 0.5, 0.5])
-
-    #     for j in range(1000):
-    #         scene.step()
-    #         scene.update_render()
-
-    #     scene_graph = copy.deepcopy(initial_scene_graph)
-    #     atomic_task = copy.deepcopy(initial_atomic_task)
-
-    #     # import ipdb; ipdb.set_trace()
-    #     # start_task_msg_buffer = ""
-    #     total_score += sum(task.out_of_order_partial_scores)
-    #     total_sr += int(task.status == True)
-    #     with open(main_config.result_file_path, "a") as f:
-    #         f.write(f"Task {i}: {task.status}, Score: {task.partial_score}\n")
-    #         f.write(
-    #             f"Out-of-order Subtask Scores: {task.out_of_order_partial_scores}\n"
-    #         )
-    #         f.write(f"Task Info: {task.task.__repr_rough__()}\n")
-    #         f.write(f"History: {task.action_history_list}\n")
-
-    # with open(main_config.result_file_path, "a") as f:
-    #     f.write(f"Total Score: {total_score  / len(task_list)}\n")
-    #     f.write(f"Total Success Rate: {total_sr / len(task_list)}\n")
 
 
 # %%
