@@ -1,8 +1,8 @@
 """
 custom_geometry_helper_new/convex_hull_processor.py
 This module provides functionality to process convex hulls in 2D space.
-In the pipline, because platforms are maintained as convexes, it is used to handle geometric operations such as refining receptacles. 
- 
+In the pipline, because platforms are maintained as convexes, it is used to handle geometric operations such as refining receptacles.
+
 
 
 """

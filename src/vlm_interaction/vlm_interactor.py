@@ -21,7 +21,7 @@ class VLMInteractor:
     config = get_vlm_interactor_config()
     MAX_INTERACTION_COUNT = config.MAX_INTERACTION_COUNT if config else 20
 
-    def __init__(self, mode="debug", model="GPT4o"):
+    def __init__(self, mode="debug", model="GPT4o", max_interaction_count=20):
         # Reserved for VLM object if offline testing
         self.VLM = None
         # timestamp
@@ -30,6 +30,11 @@ class VLMInteractor:
         self.mode = mode
         self.conversation = []
         self.model_name = model
+        self.MAX_INTERACTION_COUNT = (
+            max_interaction_count
+            if max_interaction_count
+            else VLMInteractor.MAX_INTERACTION_COUNT
+        )
         if self.mode == "online":
             # from src.vlm_interaction.VLMEvalKit.vlmeval.config import supported_VLM
             config_manager = get_config_manager()

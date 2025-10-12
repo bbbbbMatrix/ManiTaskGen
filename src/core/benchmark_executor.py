@@ -1010,6 +1010,7 @@ class BenchmarkExecutor:
         generate_mistake_note=False,
         use_mistake_note=0,
         reflection_file_path=None,
+        no_task=False,
     ):
         self.config = get_benchmark_executor_config()
         self.global_config = get_config()
@@ -1024,6 +1025,35 @@ class BenchmarkExecutor:
         self.platform_name_list = [
             platform.get_name_for_interaction() for platform in self.platform_list
         ]
+        self.vlm_interactor = vlm_interactor
+        self.picture_width = self.config.picture_width
+        self.picture_height = self.config.picture_height
+        self.image_path = self.global_config.image_path
+        self.at_place = -1
+        self.standing_direction = 0
+        self.object_in_hand = None
+
+        self.action_history_list = []
+        self.status_history_list = []
+
+        self.state_prompt_helper = StatePromptManager(
+            prompt_templates=self.global_config.benchmark_prompt_template_path
+        )
+        self.hint_prompt_helper = HintPromptManager(
+            prompt_templates=self.global_config.benchmark_prompt_template_path
+        )
+        self.reflection_prompt_helper = ReflectionPromptManager(
+            prompt_templates=self.global_config.reflection_prompt_template_path
+        )
+        self.standing_direction_while_placing = {}
+
+        if no_task:
+            self.task = None
+            self.task_id = None
+            self.benchmarking_mode = False
+
+            return
+
         self.task = task
         # Initialize chained task system
         self.chained_task_list = []
@@ -1038,7 +1068,7 @@ class BenchmarkExecutor:
         if hasattr(task, "subtask_list") and task.subtask_list:
             # Task is a TaskChain
             self.chained_task_list = task.subtask_list
-            self.is_chained_task_mode = True
+            self.benchmarking_mode = True
             #   self.task = self.chained_task_list[0]  # Current task
             self._update_prohibited_objects()
         else:
@@ -1046,7 +1076,7 @@ class BenchmarkExecutor:
             self.chained_task_list = [task]
             if intermediate_task is not None:
                 self.chained_task_list.insert(0, intermediate_task)
-            self.is_chained_task_mode = len(self.chained_task_list) > 1
+            self.benchmarking_mode = len(self.chained_task_list) > 1
             #   self.task = self.chained_task_list[0]
             self._update_prohibited_objects()
 
@@ -1061,7 +1091,7 @@ class BenchmarkExecutor:
         # Legacy dual task support
         self.is_dual_task_mode = intermediate_task is not None
 
-        if self.is_chained_task_mode:
+        if self.benchmarking_mode:
             task_descriptions = [
                 f"Task {i+1}: {task.__repr__()} "
                 for i, task in enumerate(self.chained_task_list)
@@ -1075,30 +1105,11 @@ class BenchmarkExecutor:
             self.task_initial_information = task.initial_state_information()
 
         self.state = InteractStates.DEFAULT
-        self.vlm_interactor = vlm_interactor
-        self.picture_width = self.config.picture_width
-        self.picture_height = self.config.picture_height
+
         self.reflection_file_path = reflection_file_path
 
         self.status = (None,)
 
-        self.at_place = -1
-        self.standing_direction = 0
-        self.object_in_hand = None
-        self.image_path = self.global_config.image_path
-        self.standing_direction_while_placing = {}
-
-        self.state_prompt_helper = StatePromptManager(
-            prompt_templates=self.global_config.benchmark_prompt_template_path
-        )
-        self.hint_prompt_helper = HintPromptManager(
-            prompt_templates=self.global_config.benchmark_prompt_template_path
-        )
-        self.reflection_prompt_helper = ReflectionPromptManager(
-            prompt_templates=self.global_config.reflection_prompt_template_path
-        )
-        self.action_history_list = []
-        self.status_history_list = []
         self.partial_score = 0
         self.debug_mode = debug_mode
         self.generate_mistake_note = generate_mistake_note
@@ -1128,8 +1139,6 @@ class BenchmarkExecutor:
 
     def calc_intermediate_task_partial_score(self):
         """Calculate partial score for the intermediate task (dual task mode only)"""
-        if not self.is_dual_task_mode:
-            return 0
 
         def judge_dict_equal_for_partial_score(dict1, dict2):
             if len(dict1) != len(dict2):
@@ -1151,8 +1160,6 @@ class BenchmarkExecutor:
 
     def if_intermediate_task_finished(self):
         """Check if the intermediate task is completed (dual task mode only)"""
-        if not self.is_dual_task_mode:
-            return True  # In single task mode, intermediate task is always considered complete
 
         self.intermediate_partial_score = max(
             self.intermediate_partial_score, self.calc_intermediate_task_partial_score()
@@ -1613,7 +1620,9 @@ class BenchmarkExecutor:
         platform_bel_object = self.scene_graph.nodes[platform.bel_object]
 
         # Use the comprehensive prohibited objects list for chained tasks
-        prohibit = self.prohibited_objects_list.copy()
+        prohibit = (
+            [] if not self.benchmarking_mode else self.prohibited_objects_list.copy()
+        )
 
         if platform.children[object_id - 1].name in prohibit:
             attempt_moving_destination_prompt = (
@@ -2061,6 +2070,24 @@ class BenchmarkExecutor:
         current_path = self.image_path
         width, height = self.picture_width, self.picture_height
 
+        def get_task_description():
+            if self.benchmarking_mode:
+                if self.state == InteractStates.NAVIGATION:
+                    return (
+                        self.task.__repr_rough__()
+                        + self.task.initial_state_information()
+                    )
+                else:
+                    return self.task.__repr_rough__()
+            else:
+                return "No task assigned."
+            # if self.benchmarking_mode:
+            #     return [task.__repr__() for task in self.chained_task_list]
+            # elif self.is_dual_task_mode:
+            #     return [self.intermediate_task.__repr__(), self.task.__repr__()]
+            # else:
+            #     return [self.task.__repr__()]
+
         while True:
             platform = self.platform = platform_list[self.at_place]
             platform_bel_object = self.platform_bel_object = (
@@ -2068,7 +2095,7 @@ class BenchmarkExecutor:
             )
 
             # Enhanced task completion checking for chained tasks
-            if self.is_chained_task_mode:
+            if self.benchmarking_mode:
                 # Check if current task is completed
                 self.update_task_status()
                 if self._check_current_task_completion():
@@ -2084,24 +2111,23 @@ class BenchmarkExecutor:
                         # All tasks completed
                         glog.info("All chained tasks completed!")
 
-            # Record status history
-            self.status_history_list.append(
-                {
-                    "holding": (
-                        self.object_in_hand.name
-                        if self.object_in_hand is not None
-                        else "nothing"
-                    ),
-                    "at_platform": (
-                        platform.get_name_for_interaction()
-                        if platform is not None
-                        else "none"
-                    ),
-                }
-            )
+                # Record status history
+                self.status_history_list.append(
+                    {
+                        "holding": (
+                            self.object_in_hand.name
+                            if self.object_in_hand is not None
+                            else "nothing"
+                        ),
+                        "at_platform": (
+                            platform.get_name_for_interaction()
+                            if platform is not None
+                            else "none"
+                        ),
+                    }
+                )
 
-            # Update partial scores for all tasks during execution
-            if self.is_chained_task_mode:
+                # Update partial scores for all tasks during execution
                 for i in range(len(self.chained_task_list)):
                     if i <= self.current_task_index:
                         # Calculate partial score for this task
@@ -2124,8 +2150,7 @@ class BenchmarkExecutor:
                 navigation_state_prompt = NavigationState.generate_prompt(
                     scene_description="",
                     platform_list=platform_name_list,
-                    task_description=task.__repr_rough__()
-                    + task.initial_state_information(),
+                    task_description=get_task_description(),
                     steps_used=self.vlm_interactor.interaction_count,
                     total_steps=self.vlm_interactor.MAX_INTERACTION_COUNT,
                     location_action_list=[
@@ -2146,26 +2171,16 @@ class BenchmarkExecutor:
                     content_type="text",
                 )
 
-                for chained_subtask in self.chained_task_list:
-                    self.__handle_ambiguous_item(
-                        task=chained_subtask,
-                        task_id=self.task_id,
-                        task_order=self.chained_task_list.index(chained_subtask) + 1,
-                    )
+                if self.benchmarking_mode:
+                    for chained_subtask in self.chained_task_list:
+                        self.__handle_ambiguous_item(
+                            task=chained_subtask,
+                            task_id=self.task_id,
+                            task_order=self.chained_task_list.index(chained_subtask)
+                            + 1,
+                        )
 
-                # if self.is_dual_task_mode:
-                #     self.__handle_ambiguous_item(
-                #         task=self.intermediate_task,
-                #         task_id=self.intermediate_task_id,
-                #         task_order=1,
-                #     )
-                # self.__handle_ambiguous_item(
-                #     task=self.task,
-                #     task_id=self.task_id,
-                #     task_order=2 if self.is_dual_task_mode else 1,
-                # )
-
-                if self.use_mistake_note:
+                if self.benchmarking_mode and self.use_mistake_note:
                     self._add_mistake_notes()
 
                 self.vlm_interactor.add_content(
@@ -2208,7 +2223,7 @@ class BenchmarkExecutor:
                 idle_state_prompt = IdleState.generate_prompt(
                     scene_description="",
                     platform_list=platform_name_list,
-                    task_description=task.__repr_rough__(),
+                    task_description=get_task_description(),
                     steps_used=self.vlm_interactor.interaction_count,
                     total_steps=self.vlm_interactor.MAX_INTERACTION_COUNT,
                     platform_name=platform.get_name_for_interaction(),
@@ -2292,7 +2307,7 @@ class BenchmarkExecutor:
                 holding_state_prompt = HoldingEmptyPlatformState.generate_prompt(
                     scene_description="",
                     platform_list=platform_name_list,
-                    task_description=task.__repr_rough__(),
+                    task_description=get_task_description(),
                     steps_used=self.vlm_interactor.interaction_count,
                     total_steps=self.vlm_interactor.MAX_INTERACTION_COUNT,
                     platform_name=platform.get_name_for_interaction(),
@@ -2380,7 +2395,7 @@ class BenchmarkExecutor:
                     HoldingOccupiedPlatformState.generate_prompt(
                         scene_description="",
                         platform_list=platform_name_list,
-                        task_description=task.__repr_rough__(),
+                        task_description=get_task_description(),
                         steps_used=self.vlm_interactor.interaction_count,
                         total_steps=self.vlm_interactor.MAX_INTERACTION_COUNT,
                         platform_name=platform.get_name_for_interaction(),
@@ -2480,7 +2495,7 @@ class BenchmarkExecutor:
             elif action_type == ActionType.SHOW_OBJECT:
                 self.__show_object(
                     action_param,
-                    save_path=f"{self.config.image_save_base_path}/{self.model}/Task{id}_ShowObject_object_{self.vlm_interactor.interaction_count}.png",
+                    save_path=f"{self.global_config.image_path}/{self.model}/Task{id}_ShowObject_object_{self.vlm_interactor.interaction_count}.png",
                     # f"{current_path}/image4interact/{self.model}/Task{id}_ShowObject_object_{self.vlm_interactor.interaction_count}.png",
                 )
 
@@ -2493,6 +2508,10 @@ class BenchmarkExecutor:
                     content=invalid_action_hint, role="user", content_type="text"
                 )
                 glog.info("Invalid action type")
+
+        if not self.benchmarking_mode:
+            return True, None
+
         self.update_task_status()
         self.status = self.if_task_finished()
 
@@ -2825,7 +2844,7 @@ class BenchmarkExecutor:
 
     def get_final_scores(self):
         """Get final scores for all tasks in the chain"""
-        if self.is_chained_task_mode:
+        if self.benchmarking_mode:
             # For chained tasks, return the maximum partial score achieved for each task
             final_scores = []
             for i, task in enumerate(self.chained_task_list):
@@ -2852,15 +2871,6 @@ class BenchmarkExecutor:
                 ]
             else:
                 return [self.partial_score]
-
-    def get_task_descriptions(self):
-        """Get descriptions of all tasks in the chain"""
-        if self.is_chained_task_mode:
-            return [task.__repr__() for task in self.chained_task_list]
-        elif self.is_dual_task_mode:
-            return [self.intermediate_task.__repr__(), self.task.__repr__()]
-        else:
-            return [self.task.__repr__()]
 
 
 def main():

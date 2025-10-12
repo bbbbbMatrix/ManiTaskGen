@@ -1,0 +1,24 @@
+# Minimal requirements for ManiTaskGen
+# Core robotics and simulation libraries
+mani_skill==3.0.0b15
+numpy==1.26.4
+sapien==3.0.0b1
+
+# Mathematics and geometry libraries
+transforms3d==0.4.2
+
+# 3D processing and spatial libraries
+trimesh==4.5.2
+shapely==2.0.6
+rtree==1.4.1
+manifold3d==3.2.1
+
+# Utilities
+graphviz
+jsonschema
+colorama==0.4.6
+glog
+ipdb
+
+# For VLMEvalKit (installed separately)
+torchvision==0.21.0

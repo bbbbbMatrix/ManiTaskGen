@@ -415,7 +415,7 @@ class AppConfig:
     use_renaming_engine: bool = True  # Whether to use renaming engine
     bbox_only: bool = False  # Whether to use bounding box only
     input_json_path: Optional[str] = (
-        "./replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
+        "./data/datasets/replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
     )
     output_json_path: Optional[str] = "./replica_apt_0_parsed.json"  # Output file path
     entity_json_path: Optional[str] = (

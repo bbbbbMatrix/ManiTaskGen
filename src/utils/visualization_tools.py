@@ -37,11 +37,7 @@ class SceneGraphVisualizer:
             Path to generated file
         """
 
-        tree_dict = {
-            "name": tree_root.name, 
-            "depth": tree_root.depth,
-            "children":[]
-        }
+        tree_dict = {"name": tree_root.name, "depth": tree_root.depth, "children": []}
         output_path = self.output_dir / output_file
 
         def add_node_recursive(node):
@@ -51,15 +47,15 @@ class SceneGraphVisualizer:
                 "depth": getattr(node, "depth", None),
                 "children": [],
                 "neighbors": [],
-                "refined_receptacles": [], 
+                "refined_receptacles": [],
                 "raw_receptacles": [],
                 "heading": [],
             }
             if hasattr(node, "children"):
-                
+
                 for child in node.children:
                     node_dict["children"].append(add_node_recursive(child))
-                    
+
             # EIGHT_DIRECTIONS = [
             #     'rear',
             #     'rear-left',
@@ -69,35 +65,52 @@ class SceneGraphVisualizer:
             #     'front-right',
             #     'right','rear-right'
             # ]
-            
-            if hasattr(node, 'free_space'):
+
+            if hasattr(node, "free_space"):
                 for dir in range(len(EIGHT_DIRECTIONS)):
-                    if node.free_space and node.free_space[dir] and "Objects" in node.free_space[dir]:
-                        neighbor_names = [getattr(obj, 'name', str(obj)) for obj in node.free_space[dir]["Objects"]]
+                    if (
+                        node.free_space
+                        and node.free_space[dir]
+                        and "Objects" in node.free_space[dir]
+                    ):
+                        neighbor_names = [
+                            getattr(obj, "name", str(obj))
+                            for obj in node.free_space[dir]["Objects"]
+                        ]
                         if len(neighbor_names) > 0:
                             if node.name != tree_root.name:
-                                node_dict["neighbors"].append({
-                                    EIGHT_DIRECTIONS[dir]: neighbor_names
-                                })
-                            node_dict["refined_receptacles"].append({
-                                EIGHT_DIRECTIONS[dir]: [point.tolist() for point in node.free_space[dir]["Critical_space"]]
-            
-                            })
-                            node_dict["raw_receptacles"].append({
-                                EIGHT_DIRECTIONS[dir]: [point.tolist() for point in node.free_space[dir]["Available_space"]]
-            
-                            })
-                            node_dict["heading"] = {
-                                EIGHT_DIRECTIONS[dir]: node.heading
-                            }
+                                node_dict["neighbors"].append(
+                                    {EIGHT_DIRECTIONS[dir]: neighbor_names}
+                                )
+                            node_dict["refined_receptacles"].append(
+                                {
+                                    EIGHT_DIRECTIONS[dir]: [
+                                        point.tolist()
+                                        for point in node.free_space[dir][
+                                            "Critical_space"
+                                        ]
+                                    ]
+                                }
+                            )
+                            node_dict["raw_receptacles"].append(
+                                {
+                                    EIGHT_DIRECTIONS[dir]: [
+                                        point.tolist()
+                                        for point in node.free_space[dir][
+                                            "Available_space"
+                                        ]
+                                    ]
+                                }
+                            )
+                            node_dict["heading"] = {EIGHT_DIRECTIONS[dir]: node.heading}
 
             return node_dict
-        
+
         tree_dict = add_node_recursive(tree_root)
-        
-        with open(f'{output_path}.json', "w", encoding="utf-8") as f:
+
+        with open(f"{output_path}.json", "w", encoding="utf-8") as f:
             json.dump(tree_dict, f, indent=2, ensure_ascii=False)
-        
+
         return str(output_path)
 
     def export_tree_to_dot(

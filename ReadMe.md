@@ -65,7 +65,7 @@ This is the official repository for the ManiTaskGen project. It Includes instruc
 
 ## Installation
 
-For installation, refer to  [INSTALLATION.md](../docs/INSTALLATION.md) 
+For installation, refer to  [INSTALLATION.md](./docs/INSTALLATION.md) 
 
 We also provide the configuration file exported by the conda environment in ``config/env.yml``.
 
@@ -73,159 +73,49 @@ We also provide the configuration file exported by the conda environment in ``co
 
 ## QuickStart
 
+## Environment Setup
+
+Please follow the instructions in [INSTALLATION.md](./docs/INSTALLATION.md) to set up the environment.
 
 ### Usage Examples 
+
+
+### Maniskill-style Scenes (AI2THOR & ReplicaCAD)
 
 First, set the configuration file in 'scripts/config.sh'. 
 
 Move or link the dataset under the "data/dataset" directory. there are two empty folders named "replica_dataset" and "ai2thor" for ReplicaCAD and AI2THOR datasets respectively, please substitute your own dataset. 
 
-Then, modify the config file from the example global config file. The two config you probably have to modify is ``input_json_path`` and ``oepnrouter/api_key``.  After that, run the following codes to 
+Then, modify the config file from the example global config file. The two config you probably have to modify is ``input_json_path`` and ``openrouter/api_key``.  After that, run the following codes:
 
 
 
 ```bash
-CONFIG_FILE=path/to/config.yaml bash scripts/run_01_preprocessing.sh     # gen scene graph & rename objects
-CONFIG_FILE=path/to/config.yaml bash scripts/run_02a_gen_process_tasks.sh# gen process based tasks
-CONFIG_FILE=path/to/config.yaml bash scripts/run_02b_gen_outcome_tasks.sh# gen outcome based tasks
-CONFIG_FILE=path/to/config.yaml bash scripts/run_013_run_benchmark.sh    # run benchmark
+CONFIG_FILE=path/to/config.yaml bash scripts/run_01_preprocessings.sh 
+CONFIG_FILE=path/to/config.yaml bash scripts/run_99_item_modification_only.sh   # run item modification interaction
 ```
 
+For first time usage, you can just run:
+
+```bash
+CONFIG_FILE=config/default_config.yml bash scripts/run_01_preprocessings.sh 
+CONFIG_FILE=config/default_config.yml bash scripts/run_99_item_modification_only.sh   # run item modification interaction
+```
+
+It's recommended to set ``path/to/config.yaml`` to ``latest_config/used_config.yaml`` after you modified the config file for the first time, so that the latest config will be used by default.
 
 
 The following table shows the features and IOs for each script:
 
 | Scripts                                       | Feature                                                      | Input                                                        | Output(default path)                                         |
 | --------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ``scripts/run_01_preprocessing.sh``           | (a) Parse original dataset, generate scene graph and dump them<br />(b) Rename objects | data/datasets/ai2thor                                        | runs/cache/entity_scene.json<br />runs/cache/scene_graph.pkl<br />runs/visualizations/scene_graph.dot,<br />runs/visualizations/scene_graph.txt<br />data/cache/rename_dict.json<br />data/images/image4rename/xxx.png |
-| ``scripts/run_02a_gen_process_based_task.sh`` | generate process based tasks                                 | data/cache/scene_graph.pkl<br />                             | data/cache/process_based_task.pkl<br />data/output/process_based_task.txt |
-| ``scripts/run_02b_gen_outcome_based_task.sh`` | generate outcome based tasks                                 | data/cache/scene_graph.pkl<br />data/cache/entity_scene.json | <br />data/output/outcome_based_task.txt                     |
-| ``scripts/run_03_run_benchmark.sh``           | run benchmark                                                | data/cache/process_based_task.pkl<br />data/cache/reflection_notes.txt(optional) | data/images/image4interact/xxx.png<br />data/output/results.txt |
-| ``scripts/config.sh``                         | A auxiliary script for setting paths                         | /                                                            | /                                                            |
-
-Note that the part 02a&02b requires ``scene_graph.pkl`` and part 03 requires ``process_based_task.pkl``, which means you have to run former scripts before the latter scripts in order to avoid errors.
-
-
-
-
-
-```shell
-
-
-
-#### Manual Input Testing (Human Baseline)
-
-To run ManiTaskGen on a ReplicaCAD dataset scene and simulate Benchmarking on Embodied decision-making with single-step (level 1 & 2) tasks using manual input decisions, please change the dataset path in `AppConfig`, `RawSceneConfig` and `SapienConfig` classes in `src/utils/config_manager.py` accordingly after installation, then run the following code:
-
-​```shell
-python main.py --config config/default_config.yml --input_json_path /path/to/input/json/scene/file --output_json_path /path/to/output --mode manual --model_name human --adjust_with_gravity True 
-```
-
-To enable item renaming, first enter OpenRouter API key and model address, then set `use_renaming_engine=True` in the command line arguments. This will use a VLM to rename objects based on their descriptions.
-
-```shell
-python main.py --config config/default_config.yml --input_json_path /path/to/input/json/scene/file --output_json_path /path/to/output --mode manual --model_name human --adjust_with_gravity True --use_renaming_engine True
-```
-
-As intermediate results, after the code execution, the `./output/` directory will contain the following files:
-
-- `scene_graph.pkl`: The scene graph of the parsed scene. If this file exists in subsequent runs, it can be loaded directly to skip the scene graph generation step.
-- `atomic_task.pkl`: The atomic tasks generated from the scene. Similarly, if this file exists, it can be loaded directly to skip the atomic task generation step.
-- `scene_graph.dot`: The scene graph in DOT format for visualization purposes.
-- `tasks.txt`: The generated subtasks in text format for reference.
-- `image4rename/`: A directory containing images used for object renaming.
-- `rename_dict.json`: A JSON file containing the renaming dictionary generated by the renaming engine.
-
-#### Online testing
-
-For online testing, please first enter your OpenRouter API key and model address in `default_config.yml`. Then run the following code:
-
-```shell
-python main.py --config config/default_config.yml --input_json_path /path/to/input/json/scene/file --output_json_path /path/to/output --mode online --model_name {model_name} --adjust_with_gravity True
-```
-
-#### For multi-step tasks
-
-To test level 3 tasks, you need to set `use_lv3_task=True` （in `default_config.yml` or command line arguments）. This will enable the generation of multi-step tasks. The following command can be used:
-
-```shell
-python main.py --config config/default_config.yml --input_json_path /path/to/input/json/scene/file --output_json_path /path/to/output --mode manual --model_name human --use_lv3_task
-```
-
-#### Inference-time Fine-tuning with Reflection Notes
-
-For reflection-based methods to achieve inference-time fine-tuning of VLM agents, you need to first store reflection notes in one run, then load the first few lines of the reflection notes generated in the first run during the second run:
-
-```shell
-# First run: Generate and save reflection notes
-python main.py --config config/default_config.yml --input_json_path /path/to/input/json/scene/file --output_json_path /path/to/output --mode online --model_name {model_name} --adjust_with_gravity --generate_mistake_note --reflection_txt_save_path /path/to/reflection/notes --use_mistake_note 0
-
-# Second run: Load and use reflection notes
-python main.py --config config/default_config.yml --input_json_path /path/to/input/json/scene/file --output_json_path /path/to/output --mode online --model_name {model_name} --adjust_with_gravity --reflection_txt_load_path /path/to/reflection/notes --use_mistake_note 5
-```
-
-### Configuration Priority
-
-1. **Command line arguments** (highest priority)
-2. **Configuration file** (medium priority)  
-3. **Default values** (lowest priority)
-
-Command line arguments will override any settings in the configuration file, allowing for flexible experimentation without modifying configuration files.
-
-The following tables summarizes the core global configuration parameters and their default values. For configurations on specific modules, please refer to the "Implementation Details" of that module and the `config/default_config.yml` file.
-
-
-### Core Configuration
-
-| Parameter               | Type   | Default  | Description                                                  |
-| ----------------------- | ------ | -------- | ------------------------------------------------------------ |
-| `adjust_with_gravity`   | `bool` | `true`   | Enable gravity simulation. When the original scene has **collision path for objects** and **exists floating or irrational placements**, this can be set to `True` to adjust object poses with gravity. |
-| `use_renaming_engine`   | `bool` | `false`  | Enable object renaming. When the original scene has ambiguous names, like the `ReplicaCAD`, this can be set to `True` to use a VLM to rename objects. |
-| `bbox_only`             | `bool` | `false`  | Use bbox-only mode. Every objects will be treated as cuboids, mainly for RGBD scenes. Benchmarking is disabled in this mode. |
-| `mode`                  | `str`  | `manual` | Execution mode. `"online"` for API-based VLM, `"manual"` for human tests. |
-| `model_name`            | `str`  | `human`  | Model name for VLM interaction. Affects the path for saving images during interaction. |
-| `task_num`              | `int`  | `5`      | The number of tasks given to VLM in total.                   |
-| `use_lv3_task`          | `bool` | `false`  | Whether to use level 3 tasks (dual tasks with intermediate steps). |
-| `generate_mistake_note` | `bool` | `false`  | Whether to generate mistake notes for reflection.            |
-| `use_mistake_note`      | `int`  | `0`      | How many trial notes in the reflection file are to use.      |
-| `cache_enabled`         | `bool` | `true`   | Whether to enable caching for performance optimization.      |
-| `random_seed`           | `int`  | `null`   | Random seed for reproducibility. If null, uses system time.  |
-| `log_level`             | `str`  | `INFO`   | Logging level. Options: `DEBUG`, `INFO`, `WARNING`, `ERROR`. |
-
-### File Paths
-
-| Parameter                  | Type  | Default                         | Description                                   |
-| -------------------------- | ----- | ------------------------------- | --------------------------------------------- |
-| `input_json_path`          | `str` | `apt_0.scene_instance.json`     | Input scene file path.                        |
-| `output_json_path`         | `str` | `./replica_apt_0_parsed.json`   | Parsed output file path.                      |
-| `entity_json_path`         | `str` | `./replica_apt_0_entities.json` | Entity file path after gravity adjustment.    |
-| `output_dir`               | `str` | `./output/`                     | Output directory for all generated files.     |
-| `image4rename_path`        | `str` | `./image4rename/`               | Path for images used in VLM renaming process. |
-| `rename_dict_path`         | `str` | `./rename_dict.json`            | Path to the renaming dictionary file.         |
-| `result_file_path`         | `str` | `./result.txt`                  | Path to save benchmark results.               |
-| `reflection_txt_load_path` | `str` | `./load_reflection.txt`         | Path for loading reflection notes.            |
-| `reflection_txt_save_path` | `str` | `./save_reflection.txt`         | Path for saving reflection notes.             |
-
-### Pickle Files
-
-| Parameter                   | Type       | Default             | Description                                         |
-| --------------------------- | ---------- | ------------------- | --------------------------------------------------- |
-| `scene_graph_pkl_load_path` | `str/null` | `./scene_graph.pkl` | Scene graph load path. If exists, skip generation.  |
-| `scene_graph_pkl_save_path` | `str/null` | `./scene_graph.pkl` | Scene graph save path for future use.               |
-| `atomic_task_pkl_load_path` | `str/null` | `./atomic_task.pkl` | Atomic tasks load path. If exists, skip generation. |
-| `atomic_task_pkl_save_path` | `str/null` | `./atomic_task.pkl` | Atomic tasks save path for future use.              |
-
-
-## Adding Custom Datasets
-
-Aside from AI2THOR and ReplicaCAD, other maniskill-style scenes can also be parsed with ``src/preprocessing/maniskill_parser.py``. 
-
-If you want to run the benchmark on other scene datasets with different formats, refer to ``src/preprocessing/base_parser.py``, ``src/preprocessing/maniskill_parser.py`` and ``src/preprocessing/sunrgbd_parser.py`` to add new parsers.
-
-
-
-
-
+| ``scripts/run_01_preprocessing.sh``                         | (a) Parse original dataset, generate scene graph and dump them<br>(b) Rename objects interaction                        | data/datasets/ai2thor                                                           | runs/cache/entity_scene.json
+runs/cache/scene_graph.pkl
+runs/visualizations/scene_graph.dot,
+runs/visualizations/scene_graph.txt
+data/cache/rename_dict.json
+data/images/image4rename/xxx.png                                                     |
+| ``scripts/run_99_item_modification_only.sh``                         | run item_modification interaction                        | /                                                            | visualizations/final_scene_graph.json                                                           |
 
 
 

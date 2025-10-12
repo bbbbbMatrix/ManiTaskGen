@@ -1,6 +1,6 @@
 """
 SUNRGBD Dataset Parser
-Handles parsing and processing of SUNRGBD dataset including RGB-D images, 
+Handles parsing and processing of SUNRGBD dataset including RGB-D images,
 camera parameters, and 3D bounding box annotations.
 """
 
