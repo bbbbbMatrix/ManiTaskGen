@@ -4,6 +4,7 @@ from enum import Enum
 from src.geometry.convex_hull_processor import ConvexHullProcessor_2d
 from src.geometry.basic_geometries import Basic2DGeometry
 from src.utils.string_convertor import StringConvertor
+import copy
 
 import itertools
 import jsonschema
@@ -82,7 +83,7 @@ class Task:
         self.item = item
         self.destination = destination
         self.type = type
-        self.feature = feature
+        self.feature = [feature] if isinstance(feature, str) else feature
         """
         MOVE_TO_EMPTY_PLATFORM:
         feature = {}
@@ -115,6 +116,11 @@ class Task:
         return self._goal_primitive_expression
 
     def generate_default_intermediate_state(self):
+        """
+        Generates a default intermediate state list based on the item and destination, used for calculating the IP.
+
+        """
+
         item_platform_name = (
             self.item.get_bel_ground_platform().get_name_for_interaction()
         )
@@ -175,43 +181,60 @@ class Task:
         )
         print(headed_bbox[3] - headed_bbox[0], headed_bbox[1] - headed_bbox[0])
 
-    def is_ambiguous(self, scene_graph_tree):
+    def is_ambiguous(self, scene_graph):
+        """
+
+        Checks if the task is ambiguous based on the scene graph tree.
+        The ambiguity is determined by the ambiguity of all the items involved in the tasks.
+
+        Args:
+            scene_graph: SceneGraphTree object
+        Returns:
+            bool: True if the task is ambiguous, False otherwise.
+
+        """
+
         if (
             self.type == TaskType.MOVE_TO_EMPTY_PLATFORM
             or self.type == TaskType.MOVE_TO_EMPTY_PLATFORM_9_GRID
         ):
-            return scene_graph_tree.nodes[self.item.name].is_ambiguous
+            return scene_graph.nodes[self.item.name].is_ambiguous
         elif (
             self.type == TaskType.MOVE_AROUND_OBJECT
             or self.type == TaskType.MOVE_TO_OBJECT_FREESPACE_9_GRID
         ):
+
             return (
-                scene_graph_tree.nodes[self.item.name].is_ambiguous
-                or scene_graph_tree.nodes[self.feature[0]].is_ambiguous
+                scene_graph.nodes[self.item.name].is_ambiguous
+                or scene_graph.nodes[self.feature[0]].is_ambiguous
             )
         elif self.type == TaskType.MOVE_TO_MIDDLE_OF_OBJECTS:
             return (
-                scene_graph_tree.nodes[self.item.name].is_ambiguous
-                or scene_graph_tree.nodes[self.feature[0]].is_ambiguous
-                or scene_graph_tree.nodes[self.feature[1]].is_ambiguous
+                scene_graph.nodes[self.item.name].is_ambiguous
+                or scene_graph.nodes[self.feature[0]].is_ambiguous
+                or scene_graph.nodes[self.feature[1]].is_ambiguous
             )
         pass
 
-    def task_debug(self, scene_graph_tree, id=-1):
-        img_save_path = f'./image4debug/goal/Task{id}_{self.item.get_name_for_interaction()}_{self.destination.get_name_for_interaction()}_{[feature.split("/") for feature in self.feature ]if self.feature is not None else None}.png'
-        scene_graph_tree.update_platform_children()
+    def task_auto_finish(self, scene_graph):
+        """ """
 
-        scene_graph_tree.remove_node(self.item.name)
-
-        scene_graph_tree.add_node(
+        scene_graph.update_platform_children()
+        scene_graph.remove_node(self.item.name)
+        scene_graph.add_node(
             self.item.name,
             self.destination.bel_object,
             self.destination.name,
             self.goal_translation,
         )
+        return scene_graph
 
-        item_node = scene_graph_tree.nodes[self.item.name]
-        destination_bel_object = scene_graph_tree.nodes[self.destination.bel_object]
+    def task_debug(self, scene_graph, id=-1):
+        img_save_path = f'./image4debug/goal/Task{id}_{self.item.get_name_for_interaction()}_{self.destination.get_name_for_interaction()}_{[feature.split("/") for feature in self.feature ]if self.feature is not None else None}.png'
+        scene_graph = self.task_auto_finish(scene_graph)
+
+        item_node = scene_graph.nodes[self.item.name]
+        destination_bel_object = scene_graph.nodes[self.destination.bel_object]
         standing_direction = [
             dir
             for dir in range(0, 8, 2)
@@ -224,13 +247,11 @@ class Task:
             )
             return
         img = item_node.auto_take_non_ground_object_picture(
-            scene=scene_graph_tree.corresponding_scene,
+            scene=scene_graph.corresponding_scene,
             view="human_focus",
             mark_object=False,
             only_mark_itself=False,
             mark_freespace=False,
-            diagonal_mode="old",
-            need_afford_rect=None,
             standing_direction=standing_direction[0],
             width=1366,
             height=768,
@@ -241,21 +262,22 @@ class Task:
 
         goal_translation = self.goal_translation
 
-    def check_task_success(self, scene_graph_tree):
+    def check_task_success(self, scene_graph):
         """
         wait to be implemented
+        maybe don't need to be implemented
 
         """
         if self.type == TaskType.MOVE_TO_EMPTY_PLATFORM:
-            return self.check_empty_platform(scene_graph_tree)
+            return self.check_empty_platform(scene_graph)
         elif self.type == TaskType.MOVE_TO_EMPTY_PLATFORM_9_GRID:
-            return self.check_empty_platform_9_grid(scene_graph_tree)
+            return self.check_empty_platform_9_grid(scene_graph)
         elif self.type == TaskType.MOVE_AROUND_OBJECT:
-            return self.check_around_object(scene_graph_tree)
+            return self.check_around_object(scene_graph)
         elif self.type == TaskType.MOVE_TO_OBJECT_FREESPACE_9_GRID:
-            return self.check_object_freespace_9_grid(scene_graph_tree)
+            return self.check_object_freespace_9_grid(scene_graph)
         elif self.type == TaskType.MOVE_TO_MIDDLE_OF_OBJECTS:
-            return self.check_middle_of_objects(scene_graph_tree)
+            return self.check_middle_of_objects(scene_graph)
         pass
 
     def __repr__(self):
@@ -368,11 +390,11 @@ class Task:
 
     def generate_goal_information(
         self,
-        scene_graph_tree,
+        scene_graph,
         width=683,
         height=384,
         id=-1,
-        model="ai2thor-claude-3-5-haiku",
+        model="human",
         current_path=os.path.dirname(os.path.abspath(__file__)),
         detailed_pic_explanation=True,
     ):
@@ -384,7 +406,7 @@ class Task:
         source_platform_name = (
             self.item.get_bel_ground_platform().get_name_for_interaction()
         )
-        source_object = scene_graph_tree.nodes[self.item.get_bel_ground_object().name]
+        source_object = scene_graph.nodes[self.item.get_bel_ground_object().name]
         source_item_name = StringConvertor.get_noslash_name_wo_id(self.item.name)
         source_item_id = [
             id
@@ -393,7 +415,7 @@ class Task:
         ][0] + 1
 
         destination_platform_name = self.destination.get_name_for_interaction()
-        destination_object = scene_graph_tree.nodes[self.destination.bel_object]
+        destination_object = scene_graph.nodes[self.destination.bel_object]
 
         available_directions = [
             dir
@@ -414,7 +436,7 @@ class Task:
         goal_explanation_list.append(goto_source_platform_explanation)
         goal_picture_list.append([])
 
-        platform_img, platform_img_list = scene_graph_tree.auto_take_platform_picture(
+        platform_img, platform_img_list = scene_graph.auto_take_platform_picture(
             platform_name=source_platform.name,
             view="human_full",
             mark_object=True,
@@ -435,13 +457,13 @@ class Task:
             f"pick_up_object_{source_item_id}_of_current_platform"
         )
         pickup_source_item_explanation = f"Now you see single or multiple images of the current platform, they are {image_name_list}, showing you the items on the platform and their index in one or more view angles. We can recognize the number of {source_item_name} is {source_item_id},  and pick up {source_item_name} from the current platform."
-        scene_graph_tree.remove_node(self.item.name)
+        scene_graph.remove_node(self.item.name)
 
         goal_action_list.append(pickup_source_item_action)
         goal_explanation_list.append(pickup_source_item_explanation)
         goal_picture_list.append(image_name_list)
 
-        platform_img, platform_img_list = scene_graph_tree.auto_take_platform_picture(
+        platform_img, platform_img_list = scene_graph.auto_take_platform_picture(
             platform_name=source_platform.name,
             view="human_full",
             mark_object=True,
@@ -479,18 +501,16 @@ class Task:
         ) < destination_object.get_bbox_line_length(available_directions[1]):
             first_standing_direction = available_directions[1]
             first_standing_direction_id = 1
-            platform_img, platform_img_list = (
-                scene_graph_tree.auto_take_platform_picture(
-                    platform_name=self.destination.name,
-                    view="human_full",
-                    mark_object=True,
-                    mark_freespace=len(self.destination.children) == 0,
-                    standing_direction=available_directions[0],
-                    width=width,
-                    height=height,
-                    focus_ratio=0.6,
-                    save_path=f"{current_path}/image4reflection/{model}/Task{id}_before_rotate_view.png",
-                )
+            platform_img, platform_img_list = scene_graph.auto_take_platform_picture(
+                platform_name=self.destination.name,
+                view="human_full",
+                mark_object=True,
+                mark_freespace=len(self.destination.children) == 0,
+                standing_direction=available_directions[0],
+                width=width,
+                height=height,
+                focus_ratio=0.6,
+                save_path=f"{current_path}/image4reflection/{model}/Task{id}_before_rotate_view.png",
             )
             n_platform_img_list = len(platform_img_list)
             image_name_list = [
@@ -508,7 +528,7 @@ class Task:
         place_destination_platform_explanation = ""
         freespace_list = []
 
-        platform_img, platform_img_list = scene_graph_tree.auto_take_platform_picture(
+        platform_img, platform_img_list = scene_graph.auto_take_platform_picture(
             platform_name=self.destination.name,
             view="human_full",
             mark_object=True,
@@ -574,7 +594,7 @@ class Task:
             ]
 
             empty_platform_prompt = Task.generate_pic_description(
-                self,
+                # self,
                 pic_type="empty",
                 child_name_list=[],
                 child_node=None,
@@ -595,7 +615,7 @@ class Task:
                 glog.error("MOVE_AROUND_OBJECT task without feature is invalid.")
                 return [], []
 
-            dest_item_node = scene_graph_tree.nodes[self.feature[0]]
+            dest_item_node = scene_graph.nodes[self.feature[0]]
             dest_item_name = StringConvertor.get_noslash_name_wo_id(self.feature[0])
             freespace_num = dest_item_node.get_num_of_critical_space()
             dest_item_id = [
@@ -607,7 +627,7 @@ class Task:
             freespace_list = [(dest_item_id, i) for i in range(1, freespace_num + 1)]
 
             occupied_platform_prompt = Task.generate_pic_description(
-                self,
+                #  self,
                 pic_type="occupied",
                 child_name_list=child_name_list,
                 child_node=None,
@@ -620,15 +640,13 @@ class Task:
             )
 
             # next step's picture
-            object_to_show = scene_graph_tree.nodes[self.feature[0]]
+            object_to_show = scene_graph.nodes[self.feature[0]]
             img = object_to_show.auto_take_non_ground_object_picture(
-                scene=scene_graph_tree.corresponding_scene,
+                scene=scene_graph.corresponding_scene,
                 view="human_focus",
                 mark_object=False,
                 only_mark_itself=False,
                 mark_freespace=True,
-                diagonal_mode="old",
-                need_afford_rect=None,
                 standing_direction=standing_direction,
                 width=width,
                 height=height,
@@ -654,7 +672,7 @@ class Task:
                 )
                 return [], []
 
-            dest_item_node = scene_graph_tree.nodes[self.feature[0]]
+            dest_item_node = scene_graph.nodes[self.feature[0]]
             dest_item_name = StringConvertor.get_noslash_name_wo_id(self.feature[0])
             dest_item_id = [
                 id
@@ -670,7 +688,7 @@ class Task:
                 if direction_id != -1:
                     break
                 platform_img, platform_img_list = (
-                    scene_graph_tree.auto_take_platform_picture(
+                    scene_graph.auto_take_platform_picture(
                         platform_name=self.destination.name,
                         view="human_full",
                         mark_object=True,
@@ -712,7 +730,7 @@ class Task:
             freespace_list = [(dest_item_id, direction_id)]
 
             occupied_platform_prompt = Task.generate_pic_description(
-                self,
+                #   self,
                 pic_type="occupied",
                 child_name_list=child_name_list,
                 child_node=None,
@@ -724,15 +742,13 @@ class Task:
                 f"Because we want to place item near {dest_item_name} , we check the freespace of {dest_item_name} (or the number you think correct) to see if you've recognized the correct item and where is available for placing the object. Repeat if you find your recognition is wrong or you need to check the freespace of other objects."
             )
 
-            object_to_show = scene_graph_tree.nodes[self.feature[0]]
+            object_to_show = scene_graph.nodes[self.feature[0]]
             img = object_to_show.auto_take_non_ground_object_picture(
-                scene=scene_graph_tree.corresponding_scene,
+                scene=scene_graph.corresponding_scene,
                 view="human_focus",
                 mark_object=False,
                 only_mark_itself=False,
                 mark_freespace=True,
-                diagonal_mode="old",
-                need_afford_rect=None,
                 standing_direction=first_standing_direction,
                 width=width,
                 height=height,
@@ -747,7 +763,7 @@ class Task:
             goal_picture_list.append(image_name_list)
 
             object_prompt = Task.generate_pic_description(
-                self,
+                #   self,
                 pic_type="object",
                 child_name_list=[],
                 child_node=dest_item_node,
@@ -764,8 +780,8 @@ class Task:
             )
             """
         elif self.type == TaskType.MOVE_TO_MIDDLE_OF_OBJECTS:
-            dest_item_node_a = scene_graph_tree.nodes[self.feature[0]]
-            dest_item_node_b = scene_graph_tree.nodes[self.feature[1]]
+            dest_item_node_a = scene_graph.nodes[self.feature[0]]
+            dest_item_node_b = scene_graph.nodes[self.feature[1]]
 
             dest_item_a_name = StringConvertor.get_noslash_name_wo_id(self.feature[0])
             dest_item_b_name = StringConvertor.get_noslash_name_wo_id(self.feature[1])
@@ -806,7 +822,7 @@ class Task:
             ] + [(select_item_id_b, dir) for dir in ab_dir if dir != -1]
 
             occupied_platform_prompt = Task.generate_pic_description(
-                self,
+                #    self,
                 pic_type="occupied",
                 child_name_list=child_name_list,
                 child_node=None,
@@ -818,15 +834,13 @@ class Task:
                 f"Because we want to place item near {dest_item_a_name} , we check the freespace of {dest_item_a_name} (or the number you think correct) to see if you've recognized the correct item and where is available for placing the object. Repeat if you find your recognition is wrong or you need to check the freespace of other objects."
             )
 
-            object_to_show = scene_graph_tree.nodes[self.feature[0]]
+            object_to_show = scene_graph.nodes[self.feature[0]]
             img = object_to_show.auto_take_non_ground_object_picture(
-                scene=scene_graph_tree.corresponding_scene,
+                scene=scene_graph.corresponding_scene,
                 view="human_focus",
                 mark_object=False,
                 only_mark_itself=False,
                 mark_freespace=True,
-                diagonal_mode="old",
-                need_afford_rect=None,
                 standing_direction=first_standing_direction,
                 width=width,
                 height=height,
@@ -841,7 +855,7 @@ class Task:
             goal_picture_list.append(image_name_list)
 
             object_prompt = Task.generate_pic_description(
-                self,
+                #   self,
                 pic_type="object",
                 child_name_list=[],
                 child_node=dest_item_node_a,
@@ -853,15 +867,13 @@ class Task:
                 f"Because we also want to place item near {dest_item_b_name} , we should further check the freespace of {dest_item_b_name} (or the number you think correct) to see if you've recognized the correct item and where is available for placing the object. Repeat if you find your recognition is wrong or you need to check the freespace of other objects."
             )
 
-            object_to_show = scene_graph_tree.nodes[self.feature[1]]
+            object_to_show = scene_graph.nodes[self.feature[1]]
             img = object_to_show.auto_take_non_ground_object_picture(
-                scene=scene_graph_tree.corresponding_scene,
+                scene=scene_graph.corresponding_scene,
                 view="human_focus",
                 mark_object=False,
                 only_mark_itself=False,
                 mark_freespace=True,
-                diagonal_mode="old",
-                need_afford_rect=None,
                 standing_direction=first_standing_direction,
                 width=width,
                 height=height,
@@ -876,7 +888,7 @@ class Task:
             goal_picture_list.append(image_name_list)
 
             object_prompt = Task.generate_pic_description(
-                self,
+                #    self,
                 pic_type="object",
                 child_name_list=[],
                 child_node=dest_item_node_b,
@@ -894,8 +906,40 @@ class Task:
         pass
 
 
+class TaskChain:
+
+    def __init__(self, subtask_list=None):
+        if subtask_list is not None:
+            self.subtask_list = subtask_list
+        self.subtask_list = []
+
+    def __repr__(self):
+
+        repr_str = f"TaskChain with {len(self.subtask_list)} subtasks:\n"
+        for i, subtask in enumerate(self.subtask_list):
+            repr_str += f"Subtask {i+1}: {subtask}"
+
+        return repr_str
+
+    def __repr_rough__(self):
+        repr_str = ""
+        for i, subtask in enumerate(self.subtask_list):
+            repr_str += subtask.__repr_rough__()
+            if i < len(self.subtask_list) - 1:
+                repr_str += ", THEN "
+        return repr_str
+
+    def initial_state_information(self):
+        if len(self.subtask_list) == 0:
+            return "No subtasks in the task chain."
+        else:
+            return " and ".join(
+                [subtask.initial_state_information() for subtask in self.subtask_list]
+            )
+
+
 class TaskGeneration:
-    MIN_PLATFORM_LENGTH = 0.03
+
     direction_mapping = {
         (0, 0): "rear-left",
         (0, 1): "left",
@@ -922,25 +966,283 @@ class TaskGeneration:
         (2, 1): "front",
     }
 
-    def __init__(self, scene_graph_tree=None, items=[], places=[]):
-        self.scene_graph_tree = scene_graph_tree
+    def __init__(self, scene_graph=None, items=[], places=[]):
+        self.scene_graph = scene_graph
         self.tasks = []
-        self.place_for_index = {}
-        scene_graph_tree.update_platform_children()
-        for node in scene_graph_tree.get_ground_object_list():
-            for platform in node.own_platform:
-                self.place_for_index[platform.name] = platform
+
+        # self.place_for_index = {}
+        scene_graph.update_platform_children()
+        # for node in scene_graph.get_ground_object_list():
+        #     for platform in node.own_platform:
+        #         self.place_for_index[platform.name] = platform
+
+    @classmethod
+    def get_config(cls):
+        from ..utils.config_manager import get_atomic_task_config
+
+        return get_atomic_task_config()
 
     def parse_from_file(self, tree_file=None, node_details_file=None):
         if tree_file:
-            self.scene_graph_tree.parse_tree_from_file(tree_file)
+            self.scene_graph.parse_tree_from_file(tree_file)
         if node_details_file:
-            self.scene_graph_tree.parse_node_details_from_file(node_details_file)
+            self.scene_graph.parse_node_details_from_file(node_details_file)
 
-    def generate_task_from_scene_graph_tree(self, root_node=None):
+    def generate_single_subtask(self, cur_scene_graph, fixed_object_list=[]):
+        """
 
-        item_node_list = self.scene_graph_tree.get_non_ground_object_list()
-        place_node_list = self.scene_graph_tree.get_ground_object_list()
+        Generate a single subtask given the current state of the scene graph.
+
+        To generate a chained subtask, we can call this function multiple times and combine the results.
+
+
+
+        """
+
+        item_node_list = cur_scene_graph.get_non_ground_object_list()
+        place_node_list = cur_scene_graph.get_ground_object_list()
+
+        platform_list = []
+        for place_node in place_node_list:
+            tmp_platform_list = [
+                platform
+                for platform in place_node.own_platform
+                if any(
+                    len(platform.standing_point_list[dir // 2]) > 0
+                    and platform.freespace_is_visible(dir)
+                    and place_node.freespace_is_standable(dir)
+                    for dir in range(0, 8, 2)
+                )
+            ]
+
+            platform_list.extend(tmp_platform_list)
+
+        item_platform_pairs = [
+            (item_node, platform)
+            for item_node in item_node_list
+            for platform in platform_list
+            if (item_node.top - item_node.bottom) <= platform.avl_height
+        ]
+        if len(item_platform_pairs) == 0:
+            glog.info("No item or platform to generate task.")
+            return None
+
+        import random
+
+        random.shuffle(item_platform_pairs)
+
+        for item_node, platform in item_platform_pairs:
+            if item_node.name in fixed_object_list:
+                continue
+            available_directions = [
+                dir
+                for dir in range(0, 8, 2)
+                if len(platform.standing_point_list[dir // 2]) > 0
+                and platform.freespace_is_visible(dir)
+            ]
+            if len(available_directions) == 0:
+                continue
+            available_direction = random.choice(available_directions)
+
+            goal_translation_height = (
+                platform.bottom + (item_node.top - item_node.bottom) * 0.5
+            )
+
+            result_tuple = platform.get_fitable_tasks_any_number(
+                item_node,
+                all_standing_directions=available_directions,
+            )
+            # import ipdb
+            # ipdb.set_trace()
+            if result_tuple and len(result_tuple) == 8:
+                (
+                    result,
+                    put_on_platform,
+                    put_around_object_list,
+                    put_on_object_dir_list,
+                    put_between_2_object_list,
+                    put_around_object_dict,
+                    put_on_object_dir_dict,
+                    put_between_2_object_dict,
+                ) = result_tuple
+            else:
+                raise ValueError(
+                    "Unexpected return value from get_fitable_tasks_any_number"
+                )
+            #   glog.info('Result from get_fitable_tasks_any_number: %s, %s, %s, %s', item_node.name, platform.name, put_around_object_dict, put_around_object_list)
+            if result == "non_empty":
+                if put_on_platform:
+                    task_options = [
+                        (
+                            TaskType.MOVE_AROUND_OBJECT,
+                            put_around_object_list,
+                            put_around_object_dict,
+                        ),
+                        (
+                            TaskType.MOVE_TO_OBJECT_FREESPACE_9_GRID,
+                            put_on_object_dir_list,
+                            put_on_object_dir_dict,
+                        ),
+                        (
+                            TaskType.MOVE_TO_MIDDLE_OF_OBJECTS,
+                            put_between_2_object_list,
+                            put_between_2_object_dict,
+                        ),
+                    ]
+                    random.shuffle(task_options)
+                    for task_type, feature_list, feature_dict in task_options:
+                        if len(feature_list) > 0:
+                            random_feature = random.choice(feature_list)
+                            goal_translation_2d = feature_dict[random_feature]
+                            goal_translation_3d = [
+                                goal_translation_2d[0],
+                                goal_translation_2d[1],
+                                goal_translation_height,
+                            ]
+                            # print(task_type)
+                            # import ipdb; ipdb.set_trace()
+                            new_task = Task(
+                                item=item_node,
+                                destination=platform,
+                                type=task_type,
+                                feature=random_feature,
+                                goal_translation=goal_translation_3d,
+                                need_merge_freespace=not platform.single_freespace_available(
+                                    item_node, single_type=random_feature
+                                ),
+                            )
+                            # print(new_task)
+                            return new_task
+
+                pass
+            else:
+                platform_convex_hull_2d = platform.convex_hull_2d
+                platform_bounding_box = (
+                    platform_convex_hull_2d.get_headed_bbox_instance()
+                )
+
+                if "center" in result:
+                    direction = random.randint(0, 9)
+                    if direction == 9:
+                        continue
+                    new_task = Task(
+                        item=item_node,
+                        destination=platform,
+                        type=TaskType.MOVE_TO_EMPTY_PLATFORM_9_GRID,
+                        feature=[NINE_DIRECTIONS[direction]],
+                        goal_translation=np.append(
+                            platform.get_dir_point(
+                                dir=(
+                                    NINE_DIRECTIONS[
+                                        (direction + available_direction) % 8
+                                    ]
+                                    if direction < 8
+                                    else "center"
+                                ),
+                                item_node=item_node,
+                            ),
+                            [goal_translation_height],
+                        ),
+                        need_merge_freespace=not platform.single_freespace_available(
+                            item_node, single_type="empty"
+                        ),
+                    )
+                    return new_task
+                elif "wholetable" in result:
+                    new_task = Task(
+                        item=item_node,
+                        destination=platform,
+                        type=TaskType.MOVE_TO_EMPTY_PLATFORM,
+                        feature=None,
+                        goal_translation=np.append(
+                            platform.get_dir_point(dir="center", item_node=item_node),
+                            [goal_translation_height],
+                        ),
+                        need_merge_freespace=not platform.single_freespace_available(
+                            item_node, single_type="empty"
+                        ),
+                    )
+                    return new_task
+                else:
+                    continue
+
+        glog.info("No suitable item or platform to generate task.")
+
+        # Find the first task that can be generated.
+
+        pass
+
+    def generate_task_chain(
+        self, cur_scene_graph, chain_num=None, fixed_object_list=None
+    ):
+        """
+        Generate a task chain given the current state of the scene graph.
+
+        This function generates a chain of tasks until the maximum number of tasks is reached or no more tasks can be generated.
+
+        """
+
+        scene_graph = copy.deepcopy(cur_scene_graph)
+
+        task_chain = TaskChain()
+        chain_num = chain_num if chain_num is not None else self.CHAIN_NUM
+        fixed_object_list = fixed_object_list if fixed_object_list is not None else []
+
+        for _ in range(chain_num):
+            new_task = self.generate_single_subtask(cur_scene_graph, fixed_object_list)
+            if new_task is None:
+                break
+            new_task.item = copy.deepcopy(scene_graph.nodes[new_task.item.name])
+            new_task.destination = copy.deepcopy(
+                scene_graph.platforms[new_task.destination.name]
+            )
+            task_chain.subtask_list.append(new_task)
+            if (
+                new_task.type == TaskType.MOVE_TO_OBJECT_FREESPACE_9_GRID
+                or new_task.type == TaskType.MOVE_AROUND_OBJECT
+            ):
+                fixed_object_list.append(new_task.feature[0])
+            if new_task.type == TaskType.MOVE_TO_MIDDLE_OF_OBJECTS:
+                fixed_object_list.extend(new_task.feature)
+
+            cur_scene_graph = new_task.task_auto_finish(cur_scene_graph)
+
+        return task_chain
+
+    def generate_task(self, task_length=None, max_task_num=None):
+
+        task_length = (
+            task_length
+            if task_length is not None
+            else self.get_config().get("task_length", 1)
+        )
+        max_task_num = (
+            max_task_num
+            if max_task_num is not None
+            else self.get_config().get("max_task_num", 10)
+        )
+
+        self.CHAIN_NUM = task_length
+        self.MAX_TASK_NUM = max_task_num
+
+        for _ in range(self.MAX_TASK_NUM):
+            self.tasks.append(self.generate_task_chain(self.scene_graph))
+
+        glog.info(f"Generated {len(self.tasks)} tasks.")
+
+        pass
+
+    def generate_task_from_scene_graph(self):
+        """
+        generate tasks from the scene graph.
+
+        This function generates 1 task given the current state of the scene graph.
+
+        """
+
+        item_node_list = self.scene_graph.get_non_ground_object_list()
+        place_node_list = self.scene_graph.get_ground_object_list()
+
         object_task_info_dict = {}
         glog.info(
             len(item_node_list)
@@ -966,6 +1268,7 @@ class TaskGeneration:
                     )
                     and (platform.avl_height > 0.05 or len(platform.children) > 0)
                 ]
+
                 # glog.info([platform.name for platform in platform_list])
                 for place_platform in platform_list:
 
@@ -977,11 +1280,7 @@ class TaskGeneration:
                         if len(place_platform.standing_point_list[dir // 2]) > 0
                         and place_platform.freespace_is_visible(dir)
                     ]
-                    if len(available_directions) == 0 and place_platform.name not in [
-                        "objects/RoboTHOR_hemnes_day_bed_0",
-                        "objects/RoboTHOR_hemnes_day_bed_1",
-                        "objects/RoboTHOR_hemnes_day_bed_2",
-                    ]:
+                    if len(available_directions) == 0:
                         continue
                     available_directions = (
                         available_directions[:1] if len(available_directions) else [0]
@@ -1000,6 +1299,14 @@ class TaskGeneration:
                         item_node, all_standing_directions=available_directions
                     )
 
+                    goal_translation_height = (
+                        place_platform.bottom + (item_node.top - item_node.bottom) * 0.5
+                    )
+
+                    # if len(put_around_object_list) > 0:
+                    #     import ipdb
+                    #     ipdb.set_trace()
+
                     if result == "non_empty":
                         if put_on_platform:
                             if (
@@ -1008,14 +1315,22 @@ class TaskGeneration:
                                 and put_between_2_object_list == []
                             ):
                                 continue
+
+                            goal_translation_2d = list(put_on_object_dir_dict.values())[
+                                0
+                            ]
+                            goal_translation_3d = [
+                                goal_translation_2d[0],
+                                goal_translation_2d[1],
+                                goal_translation_height,
+                            ]
+
                             new_empty_platform_task = Task(
                                 item=item_node,
                                 destination=place_platform,
                                 type=TaskType.MOVE_TO_EMPTY_PLATFORM,
                                 feature=None,
-                                goal_translation=list(put_on_object_dir_dict.values())[
-                                    0
-                                ],
+                                goal_translation=goal_translation_3d,
                                 need_merge_freespace=not place_platform.single_freespace_available(
                                     item_node, single_type="all"
                                 ),
@@ -1029,9 +1344,10 @@ class TaskGeneration:
                                     destination=place_platform,
                                     type=TaskType.MOVE_AROUND_OBJECT,
                                     feature=[put_around_object_info],
-                                    goal_translation=put_around_object_dict[
-                                        put_around_object_info
-                                    ],
+                                    goal_translation=np.append(
+                                        put_around_object_dict[put_around_object_info],
+                                        [goal_translation_height],
+                                    ),
                                     need_merge_freespace=not place_platform.single_freespace_available(
                                         item_node, single_type=put_around_object_info
                                     ),
@@ -1047,9 +1363,10 @@ class TaskGeneration:
                                         put_on_object_dir_info[0],
                                         put_on_object_dir_info[1],
                                     ],
-                                    goal_translation=put_on_object_dir_dict[
-                                        put_on_object_dir_info
-                                    ],
+                                    goal_translation=np.append(
+                                        put_on_object_dir_dict[put_on_object_dir_info],
+                                        [goal_translation_height],
+                                    ),
                                     need_merge_freespace=not place_platform.single_freespace_available(
                                         item_node,
                                         single_type=[
@@ -1075,9 +1392,12 @@ class TaskGeneration:
                                         put_between_2_object_info[0],
                                         put_between_2_object_info[1],
                                     ],
-                                    goal_translation=put_between_2_object_dict[
-                                        put_between_2_object_info
-                                    ],
+                                    goal_translation=np.append(
+                                        put_between_2_object_dict[
+                                            put_between_2_object_info
+                                        ],
+                                        [goal_translation_height],
+                                    ),
                                     need_merge_freespace=not place_platform.single_freespace_available(
                                         item_node, single_type=put_between_2_object_info
                                     ),
@@ -1098,8 +1418,11 @@ class TaskGeneration:
                                 destination=place_platform,
                                 type=TaskType.MOVE_TO_EMPTY_PLATFORM,
                                 feature=None,
-                                goal_translation=place_platform.get_dir_point(
-                                    dir="center", item_node=item_node
+                                goal_translation=np.append(
+                                    place_platform.get_dir_point(
+                                        dir="center", item_node=item_node
+                                    ),
+                                    [goal_translation_height],
                                 ),
                                 need_merge_freespace=not place_platform.single_freespace_available(
                                     item_node, single_type="empty"
@@ -1113,48 +1436,24 @@ class TaskGeneration:
                                     destination=place_platform,
                                     type=TaskType.MOVE_TO_EMPTY_PLATFORM_9_GRID,
                                     feature=[NINE_DIRECTIONS[i]],
-                                    goal_translation=place_platform.get_dir_point(
-                                        dir=(
-                                            NINE_DIRECTIONS[
-                                                (i + available_directions[0]) % 8
-                                            ]
-                                            if i < 8
-                                            else "center"
+                                    goal_translation=np.append(
+                                        place_platform.get_dir_point(
+                                            dir=(
+                                                NINE_DIRECTIONS[
+                                                    (i + available_directions[0]) % 8
+                                                ]
+                                                if i < 8
+                                                else "center"
+                                            ),
+                                            item_node=item_node,
                                         ),
-                                        item_node=item_node,
+                                        [goal_translation_height],
                                     ),
                                     need_merge_freespace=not place_platform.single_freespace_available(
                                         item_node, single_type="empty"
                                     ),
                                 )
                                 self.tasks.append(new_empty_platform_task)
-                        # elif "diagonal" in result:
-                        #     for i in range(1, 8, 2):
-                        #         new_empty_platform_task = Task(
-                        #             item=item_node,
-                        #             destination=place_platform,
-                        #             type=TaskType.MOVE_TO_EMPTY_PLATFORM_9_GRID,
-                        #             feature=[NINE_DIRECTIONS[i]],
-                        #         )
-                        #         self.tasks.append(new_empty_platform_task)
-                        # elif "horizontal" in result:
-                        #     for i in range(2, 8, 4):
-                        #         new_empty_platform_task = Task(
-                        #             item=item_node,
-                        #             destination=place_platform,
-                        #             type=TaskType.MOVE_TO_EMPTY_PLATFORM_9_GRID,
-                        #             feature=[NINE_DIRECTIONS[i]],
-                        #         )
-                        #         self.tasks.append(new_empty_platform_task)
-                        # elif "vertical" in result:
-                        #     for i in range(0, 7, 4):
-                        #         new_empty_platform_task = Task(
-                        #             item=item_node,
-                        #             destination=place_platform,
-                        #             type=TaskType.MOVE_TO_EMPTY_PLATFORM_9_GRID,
-                        #             feature=[NINE_DIRECTIONS[i]],
-                        #         )
-                        #         self.tasks.append(new_empty_platform_task)
                         pass
 
                     pass
@@ -1168,12 +1467,12 @@ def main():
     pass
 
 
-# scene_graph_tree = SceneGraphTree()
-# scene_graph_tree.parse_tree_from_file()
-# scene_graph_tree.print_tree(scene_graph_tree.root)
-# scene_graph_tree.parse_node_details_from_file()
+# scene_graph = SceneGraphTree()
+# scene_graph.parse_tree_from_file()
+# scene_graph.print_tree(scene_graph.root)
+# scene_graph.parse_node_details_from_file()
 
-# atomic_motions = TaskGeneration(scene_graph_tree)
+# atomic_motions = TaskGeneration(scene_graph)
 # atomic_motions.generate_items_and_places()
 # $atomic_motions.generate_tasks()
 

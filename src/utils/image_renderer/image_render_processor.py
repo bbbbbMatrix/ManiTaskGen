@@ -12,8 +12,28 @@ import cv2
 import logging
 import glog
 from src.utils.config_manager import get_image_renderer_config
+import os
 
 config = get_image_renderer_config()
+
+
+def get_font(font_size):
+    default_fonts = [
+        "arial.ttc",
+        "/System/Library/Fonts/Arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/Windows/Fonts/Arial.ttf",
+        "/usr/share/fonts/TTF/arial.ttf",
+    ]
+
+    font = ImageFont.load_default()
+    for font_path in default_fonts:
+        try:
+            font = ImageFont.truetype(font_path, font_size)
+            break
+        except IOError:
+            continue
+    return font
 
 
 def create_and_mount_camera(
@@ -285,7 +305,9 @@ def auto_get_optimal_camera_pose_for_object(
         pass
 
     fovy_32 = 2 * np.arctan(np.tan(optimal_fovy / 2) * 2)
-
+    # print('optimal_roll:', optimal_roll)
+    # print('optimal_pitch:', optimal_pitch)
+    # print('optimal_yaw:', optimal_yaw)
     optimal_pose = sapien.Pose(
         p=[camera_xy[0], camera_xy[1], optimal_z],
         q=transforms3d.euler.euler2quat(
@@ -713,7 +735,9 @@ def add_guide_line_labels(
     # Sort first, draw closer objects first (reduce crossings)
     label_info.sort(key=lambda x: calculate_depth(x["cuboid_image_points"]))
 
-    font = ImageFont.truetype("msmincho.ttc", int(config.font_size))
+    font_size = config.font_size * width // config.width
+
+    font = get_font(font_size)
     draw = ImageDraw.Draw(img)
 
     for info in label_info:
@@ -721,7 +745,6 @@ def add_guide_line_labels(
         cuboid_points = info["cuboid_image_points"]
         label_position = info["label_position"]
         color = info["color"]
-        import ipdb
 
         # Draw optimized bounding box and guide line
         img, anchor_pt = draw_optimized_cuboid_and_guideline(
@@ -733,12 +756,12 @@ def add_guide_line_labels(
         draw_circle.ellipse(
             [
                 (
-                    label_position[0] - config.font_size * 2 // 3,
-                    label_position[1] - config.font_size * 2 // 3,
+                    label_position[0] - font_size * 2 // 3,
+                    label_position[1] - font_size * 2 // 3,
                 ),
                 (
-                    label_position[0] + config.font_size * 2 // 3,
-                    label_position[1] + config.font_size * 2 // 3,
+                    label_position[0] + font_size * 2 // 3,
+                    label_position[1] + font_size * 2 // 3,
                 ),
             ],
             fill=color,
@@ -748,8 +771,8 @@ def add_guide_line_labels(
         draw = ImageDraw.Draw(img)
         draw.text(
             (
-                int(label_position[0] - config.font_size // 2),
-                int(label_position[1] - config.font_size // 2),
+                int(label_position[0] - font_size // 2),
+                int(label_position[1] - font_size // 2),
             ),
             str(obj_id),
             font=font,
@@ -985,7 +1008,7 @@ def auto_render_image_refactored(
         camera_name="camera",
     )
     img = render_image(scene, camera)
-
+    number_font_size = number_font_size * height // config.height
     circled_numbers = [
         "①",
         "②",
@@ -1002,7 +1025,9 @@ def auto_render_image_refactored(
 
     colors = get_high_contrast_colors()
     number_idx = 0
-    font = ImageFont.truetype("msmincho.ttc", number_font_size, encoding="unic")
+
+    font = get_font(number_font_size)
+
     img = add_guide_line_labels(
         img,
         might_mark_object_cuboid_list,
@@ -1055,8 +1080,9 @@ def auto_render_image_refactored(
         number_idx += 1
 
     img = img.convert("RGB")
-
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     img.save(save_path)
+
     camera.disable()
 
     for entity in scene.entities:
@@ -1065,6 +1091,11 @@ def auto_render_image_refactored(
         for component in entity.get_components():
             if isinstance(component, sapien.pysapien.render.RenderBodyComponent):
                 component.visibility = 1.0
+
+    for entity in scene.entities:
+        if entity.name == "camera_mount" or len(entity.name) < 1:
+            scene.remove_entity(entity)
+            break
 
     return img
 

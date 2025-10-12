@@ -1,12 +1,5 @@
 # %%
-"""
-todo:
-refactorize this.
-
-implement check every object's
-
-
-"""
+""" """
 
 # %%
 import json
@@ -297,7 +290,9 @@ class TreePlatform:
         """
         major_category = set()
         minor_category = set()
+        child_info_list = []
         for child in self.children:
+
             major_category.add(StringConvertor.get_category(child.name))
             minor_category.add(StringConvertor.get_name_wo_id(child.name))
 
@@ -455,6 +450,9 @@ class TreePlatform:
                 return i
         return -1
 
+    def get_child_name_list(self):
+        return [child.name for child in self.children]
+
     def get_dir_point(self, item_node=None, dir="center"):
         object_node_convex = ConvexHullProcessor_2d(
             vertices=item_node.object.convex_hull_2d.vertices, heading=self.heading
@@ -557,6 +555,15 @@ class TreePlatform:
         target,
         min_step=0.02,
     ):
+        """
+
+        Args:
+            obstacle_list: list of obstacles, each obstacle is a list of vertices
+            freespace_list: list of freespace, each freespace is a list of vertices
+            target: target rectangle to place, a list of vertices
+            min_step: minimum step size to consider for placing the target
+
+        """
         table_vertices = self.convex_hull_2d.get_headed_bbox_instance()
         rotation_angle = np.arctan2(self.heading[1], self.heading[0])
 
@@ -626,7 +633,10 @@ class TreePlatform:
 
         if len(obstacle_list) == 0:
             result = ""
-            if target_x_len < x_max - x_min and target_y_len < y_max - y_min:
+            if (
+                target_x_len < (x_max - x_min) * 0.9
+                and target_y_len < (y_max - y_min) * 0.9
+            ):
                 result = "wholetable"
             if (
                 target_x_len < (x_max - x_min) / 3 * 2
@@ -800,12 +810,16 @@ class TreePlatform:
             min_step=0.01,
         )
 
-        if len(all_standing_directions) == 0:
+        put_around_object_task_dict = {}
+        put_on_object_dir_task_dict = {}
+        put_between_2_object_task_dict = {}
+
+        if all_standing_directions is None or len(all_standing_directions) == 0:
             return ("non_empty", False, [], [], [], {}, {}, {})
 
         for i, put_around_object_task in enumerate(put_around_object_list):
-            put_around_object_dict[child_name_list[put_around_object_task]] = (
-                put_around_object_dict.pop(put_around_object_task)
+            put_around_object_task_dict[child_name_list[put_around_object_task]] = (
+                put_around_object_dict.get(put_around_object_task)
             )
             put_around_object_list[i] = child_name_list[put_around_object_task]
         for i, put_on_object_task in enumerate(put_on_object_dir_list):
@@ -817,7 +831,7 @@ class TreePlatform:
                     ],
                 )
 
-                put_on_object_dir_dict[new_key] = put_on_object_dir_dict.pop(
+                put_on_object_dir_task_dict[new_key] = put_on_object_dir_dict.get(
                     put_on_object_task
                 )
 
@@ -828,7 +842,7 @@ class TreePlatform:
                 child_name_list[put_between_2_object_task[0]],
                 child_name_list[put_between_2_object_task[1]],
             )
-            put_between_2_object_dict[new_key] = put_between_2_object_dict.pop(
+            put_between_2_object_task_dict[new_key] = put_between_2_object_dict.get(
                 put_between_2_object_task
             )
             put_between_2_object_list[i] = new_key
@@ -836,16 +850,17 @@ class TreePlatform:
 
         put_on_object_dir_list = list(set(put_on_object_dir_list))
         put_between_2_object_list = list(set(put_between_2_object_list))
-
+        # import ipdb
+        # ipdb.set_trace()
         return (
             result,
             put_on_platform,
             put_around_object_list,
             put_on_object_dir_list,
             put_between_2_object_list,
-            put_around_object_dict,
-            put_on_object_dir_dict,
-            put_between_2_object_dict,
+            put_around_object_task_dict,
+            put_on_object_dir_task_dict,
+            put_between_2_object_task_dict,
         )
 
 
@@ -1101,6 +1116,9 @@ class TreeNode:
 
         return self
 
+    def get_info(self):
+        major_category = StringConvertor.get_category(self.name)
+
     def get_bel_ground_object(self):
         #   if self.bel_ground_object is not None or self.depth <= 1:
         #        return self.bel_ground_object
@@ -1123,7 +1141,6 @@ class TreeNode:
     def get_bel_ground_platform(self):
         #       if self.bel_ground_platform is not None or self.depth <= 1:
         #         return self.bel_ground_platform
-
         tmp_node = self.parent
         tmp_platform = self.on_platform
         while tmp_node.depth > 1:
@@ -1133,6 +1150,9 @@ class TreeNode:
         self.bel_ground_platform = tmp_platform
         self.bel_ground_object = tmp_node
         return self.bel_ground_platform
+
+    def get_child_name_list(self):
+        return [child.name for child in self.children]
 
     def get_children_per_platform(self):
         if len(self.children_per_platform) == 0:
@@ -1180,7 +1200,6 @@ class TreeNode:
             if self.is_freespace_big_enough(i, min_width):
                 res += 1
 
-        glog.warning("freespace dir might be illegal")
         return -1 if not self.is_freespace_big_enough(dir) else res
 
     def get_freespace_id_on_picture(self, freespace_dir, min_width=0.03):
@@ -1248,10 +1267,6 @@ class TreeNode:
         return major_category, minor_category
 
     def renew_heading(self, heading):
-        if "wall_cabinet_02_19" in self.name:
-            import ipdb
-
-            ipdb.set_trace()
         self.heading = heading
         self.object.convex_hull_2d.heading = heading
         if self.name != "GROUND":
@@ -1788,6 +1803,7 @@ class TreeNode:
             if (platform.bbox[1][0] - platform.bbox[0][0])
             * (platform.bbox[1][1] - platform.bbox[0][1])
             > max_size * 0.25
+            and platform.convex_hull_2d.vertices.shape[0] >= 4
         ]
 
     def at_which_part(self):
@@ -1830,21 +1846,21 @@ class TreeNode:
 
         return result_direction_list
 
-    def get_fitable_pose(self, avl_height, place_bbox):
-        if self.top - self.bottom > avl_height:
-            return None
-        return self.object.convex_hull_2d.get_fit_in_translation(place_bbox)
+    # def get_fitable_pose(self, avl_height, place_bbox):
+    #     if self.top - self.bottom > avl_height:
+    #         return None
+    #     return self.object.convex_hull_2d.get_fit_in_translation(place_bbox)
 
-    def get_fitable_pose_for_list(self, avl_height, rectangle_list, heading=None):
-        if self.top - self.bottom > avl_height:
-            return None
-        if heading is not None:
-            self.object.convex_hull_2d.heading = heading
-        target_rect = self.object.convex_hull_2d.get_headed_bbox_instance()
-        placement = Basic2DGeometry.find_optimal_placement_with_rotation(
-            self.object.convex_hull_2d, rectangle_list
-        )
-        pass
+    # def get_fitable_pose_for_list(self, avl_height, rectangle_list, heading=None):
+    #     if self.top - self.bottom > avl_height:
+    #         return None
+    #     if heading is not None:
+    #         self.object.convex_hull_2d.heading = heading
+    #     target_rect = self.object.convex_hull_2d.get_headed_bbox_instance()
+    #     placement = Basic2DGeometry.find_optimal_placement_with_rotation(
+    #         self.object.convex_hull_2d, rectangle_list
+    #     )
+    #     pass
 
     def rotate_free_space(self, front):
         if front == 0:
@@ -2319,9 +2335,7 @@ class TreeNode:
         mark_object=False,  # if True, mark all the object on the same platform with cuboid.
         only_mark_itself=False,  # if True, only mark itself
         mark_freespace=False,
-        diagonal_mode="old",  # 'old', 'new_largest_rect', 'new_all', 'new_combined_freespace'
-        need_afford_rect=None,  # If not none, only mark the freespaces with size larger than it.
-        standing_direction=0,
+        standing_direction=None,
         width=640,
         height=480,
         focus_ratio=0.8,
@@ -2341,6 +2355,25 @@ class TreeNode:
 
         bel_ground_platform_id = int(bel_ground_platform.name.split("_")[-1])
 
+        if standing_direction is None:
+            standing_direction = None
+            for dir in range(0, 8, 2):
+                if (
+                    bel_ground_node.is_freespace_big_enough(dir)
+                    and bel_ground_node.freespace_is_standable(dir)
+                    and bel_ground_node.freespace_is_visible(
+                        dir, bel_ground_platform_id
+                    )
+                ):
+                    standing_direction = dir
+                    break
+            if standing_direction is None:
+                glog.error(
+                    f"This object {self.name} has no available standing direction"
+                )
+
+                standing_direction = 0
+
         # standing_direction = 0
 
         self_center = self.get_center()
@@ -2358,8 +2391,7 @@ class TreeNode:
             if "top" not in view
             else self.get_center()
         )
-        # import ipdb
-        # ipdb.set_trace()
+
         if "top" in view:
             z_range = [
                 bel_ground_platform.bottom + 0.1,
@@ -2418,14 +2450,13 @@ class TreeNode:
             might_mark_cuboid_list.append(child_3d_bbox)
 
         if mark_freespace:
-            if diagonal_mode == "old":
-                for dir in range(0, 8, 1):
-                    if not self.is_freespace_big_enough(dir):
-                        continue
-                    might_mark_freespace_rect_list.append(
-                        self.free_space[dir]["Critical_space"]
-                    )
-                    might_mark_freespace_id_list.append(dir)
+            for dir in range(0, 8, 1):
+                if not self.is_freespace_big_enough(dir):
+                    continue
+                might_mark_freespace_rect_list.append(
+                    self.free_space[dir]["Critical_space"]
+                )
+                might_mark_freespace_id_list.append(dir)
 
         for i, rect in enumerate(might_mark_freespace_rect_list):
             might_mark_freespace_rect_list[i] = [
@@ -2454,13 +2485,13 @@ class TreeNode:
         import os
 
         current_path = os.path.dirname(os.path.abspath(__file__))
-        glog.info(
-            [
-                child.name
-                for child in self.bel_ground_platform.children
-                if child.name != self.name
-            ]
-        )
+        # glog.info(
+        #     [
+        #         child.name
+        #         for child in self.bel_ground_platform.children
+        #         if child.name != self.name
+        #     ]
+        # )
         img = image_render_processor.auto_render_image_refactored(
             scene,
             name=self.name,
@@ -2504,16 +2535,12 @@ class TreeNode:
 
         platform = self.own_platform[platform_id]
 
-        if len(platform.standing_point_list) == 0:
-            glog.warning(
-                f"This ground object {self.name} has no standing_points in direction {standing_direction}"
-            )
-            return None
-
         camera_xy = camera_xy if "top" not in view else self.get_center()
         camera_xy_list = []
 
-        if not any(len(point) > 0 for point in platform.standing_point_list):
+        if len(platform.standing_point_list) == 0 or not any(
+            len(point) > 0 for point in platform.standing_point_list
+        ):
             glog.warning(
                 f"This ground object {self.name} has no standing_points in direction {standing_direction}"
             )
@@ -2551,7 +2578,7 @@ class TreeNode:
             np.append(point, platform.bottom) for point in platform_cuboid_bbox
         ]
         platform_cuboid_bbox_top = [
-            np.append(point, platform.bottom + platform.avl_height)
+            np.append(point, platform.bottom + platform_children_top_max)
             for point in platform_cuboid_bbox
         ]
         platform_cuboid_bbox = platform_cuboid_bbox_bottom + platform_cuboid_bbox_top
@@ -2609,7 +2636,8 @@ class TreeNode:
                     ]
                     might_mark_freespace_rect_list.append(rect_part_3d)
                     might_mark_freespace_id_list.append(i * 3 + j)
-
+        # import ipdb
+        # ipdb.set_trace()
         optimal_pose, optimal_fovy = (
             image_render_processor.auto_get_optimal_camera_pose_for_object(
                 view=view,
@@ -2622,6 +2650,7 @@ class TreeNode:
                 focus_ratio=focus_ratio,
             )
         )
+
         img = None
         img = image_render_processor.auto_render_image_refactored(
             scene,
@@ -2756,6 +2785,12 @@ class Tree:
         return major_categories, minor_categories
 
     def rename_all_features(self, new_name_map):
+        """
+        Args:
+
+
+        """
+
         new_nodes_dict = {}
         new_platform_dict = {}
         for node_name, node in self.nodes.items():
@@ -2783,9 +2818,12 @@ class Tree:
             for edge, platform in self.edges.items()
         }
 
-        for entity in self.corresponding_scene.entities:
-            new_entity_name = StringConvertor.rename_with_map(entity.name, new_name_map)
-            entity.set_name(new_entity_name)
+        if self.corresponding_scene is not None:
+            for entity in self.corresponding_scene.entities:
+                new_entity_name = StringConvertor.rename_with_map(
+                    entity.name, new_name_map
+                )
+                entity.set_name(new_entity_name)
 
         return
 
@@ -2822,6 +2860,7 @@ class Tree:
                 continue
 
             standing_points_list = []
+
             for dir in range(0, 8, 2):
                 standing_points, rectangles = self.mesh_checker.analyze_coverage(
                     platform.free_space[dir]["Available_space"],
@@ -2830,11 +2869,11 @@ class Tree:
                 standing_points_list.append(standing_points)
 
             self.platforms[platform_name].standing_point_list = standing_points_list
-            for dir in range(0, 8, 2):
-                print(platform.free_space[dir]["Available_space"])
-            print(
-                platform.convex_hull_2d.get_headed_bbox_instance(), standing_points_list
-            )
+            # for dir in range(0, 8, 2):
+            #     print(platform.free_space[dir]["Available_space"])
+            # print(
+            #     platform.convex_hull_2d.get_headed_bbox_instance(), standing_points_list
+            # )
             # ipdb.set_trace()
 
         pass
@@ -2960,9 +2999,6 @@ class Tree:
                 self.platforms[new_name] = platform
                 self.nodes[node_name].own_platform[i].name = new_name
 
-        import ipdb
-
-        ipdb.set_trace()
         #   glog.info('contacts: %s', contacts)
 
         for contact in contacts:
@@ -2971,8 +3007,8 @@ class Tree:
                 print("contact[0] should be a platform but belong is None")
                 continue
             if contact[1].belong is not None:
-                continue
                 print("contact[1] should be a object but belong is not None")
+                continue
             if (
                 self.nodes[self.nodes[contact[0].belong].name].parent
                 == self.nodes[contact[1].name]
@@ -3039,7 +3075,7 @@ class Tree:
 
                 self.dfs_for_freespace(child)
 
-        if node.depth > 1:
+        if node.depth >= 1:
             for i in range(len(node.children)):
                 child = node.children[i]
                 child.reset_free_space()
@@ -3052,6 +3088,10 @@ class Tree:
                     continue
                 child1, child2 = node.children[i], node.children[j]
                 child1_obj, child2_obj = child1.object, child2.object
+
+                # if 'lamp_02' in child1.name:
+                #     import ipdb
+                #     ipdb.set_trace()
 
                 # Must belong to the same platform.
                 if child1.on_platform.name != child2.on_platform.name:
@@ -3258,7 +3298,9 @@ class Tree:
                         or bottom < -1e10
                         or top > 1e10
                     ):
-                        print("overflow", node_name)
+                        glog.warning(
+                            f"Free space of {node_name} in direction {EIGHT_DIRECTIONS[left_part]} is invalid, skip cutting with stage {stage_obj.name}"
+                        )
 
                     cuboid = MeshProcessor.create_cuboid_from_vertices(cuboid_vertices)
                     # print(bottom, top, rect,    cuboid.mesh.volume)
@@ -3487,7 +3529,7 @@ class Tree:
         node = self.get_node(name)
         # import ipdb
         # ipdb.set_trace()
-        if node is not None:
+        if node is not None and self.corresponding_scene is not None:
             for entity in self.corresponding_scene.entities:
                 if node.name in entity.get_name():
                     entity.remove_from_scene()
@@ -3522,19 +3564,20 @@ class Tree:
                 rpy[0] + np.deg2rad(90), rpy[1], rpy[2], axes="sxyz"
             )
 
-            builder = self.corresponding_scene.create_actor_builder()
-            builder.add_visual_from_file(filename=object_file_path)
-            if collision_path is not None:
-                builder.add_multiple_convex_collisions_from_file(
-                    filename=collision_path
-                )
-            else:
-                builder.add_convex_collision_from_file(filename=object_file_path)
-            # import ipdb
+            if self.corresponding_scene is not None:
+                builder = self.corresponding_scene.create_actor_builder()
+                builder.add_visual_from_file(filename=object_file_path)
+                if collision_path is not None:
+                    builder.add_multiple_convex_collisions_from_file(
+                        filename=collision_path
+                    )
+                else:
+                    builder.add_convex_collision_from_file(filename=object_file_path)
+                # import ipdb
 
-            # ipdb.set_trace()
-            mesh = builder.build_static(name=name)
-            mesh.set_pose(sapien.Pose(p=position, q=quaternion))
+                # ipdb.set_trace()
+                mesh = builder.build_static(name=name)
+                mesh.set_pose(sapien.Pose(p=position, q=quaternion))
 
     def remove_node(self, name):
         node = self.get_node(name)
@@ -3570,9 +3613,9 @@ class Tree:
 
             self.remove_node_from_scene(name)
             node.update_all_child()
-            import ipdb
+            # import ipdb
 
-            ipdb.set_trace()
+            # ipdb.set_trace()
 
             for child in node.all_children:
                 self.remove_node_from_scene(child.name)
@@ -3593,7 +3636,7 @@ class Tree:
             return
         node.update_all_child()
         node_add_list = [node] + node.all_children
-        relative_translation = np.array(translation) - np.array(
+        relative_translation = np.array(translation[:2]) - np.array(
             [
                 node.entity_config["centroid_translation"]["x"],
                 node.entity_config["centroid_translation"]["y"],
@@ -3607,9 +3650,7 @@ class Tree:
             platform.bottom,
             platform.bottom + platform.avl_height,
         ]
-        import ipdb
 
-        ipdb.set_trace()
         for n in node_add_list:
             n.removed = False
 
@@ -3663,6 +3704,12 @@ class Tree:
         self.nodes[node_name].display_unique_information()
         pass
 
+    def move_node(self, node_name, parent_name, platform_name, translation):
+        self.remove_node(node_name)
+        self.add_node(node_name, parent_name, platform_name, translation)
+
+        pass
+
 
 def print_tree(node, depth=0):
     print("  " * depth + f"Object Name: {node.name}")
@@ -3687,9 +3734,7 @@ def print_tree(node, depth=0):
 def gen_multi_layer_graph_with_free_space(json_data):
 
     all_objects = [obj for obj in json_data["object_instances"]]
-    import ipdb
 
-    ipdb.set_trace()
     scene_platform_list = []
     stage = [
         {
@@ -3778,33 +3823,31 @@ def gen_multi_layer_graph_with_free_space(json_data):
         for i in contacts_id
     ]
 
-    scene_graph_tree = Tree()
-    scene_graph_tree.from_scene_platform_list(sorted_scene_platform_list, contacts)
+    scene_graph = Tree()
+    scene_graph.from_scene_platform_list(sorted_scene_platform_list, contacts)
 
     # import ipdb
     # ipdb.set_trace()
 
-    scene_graph_tree.calculate_free_space()
+    scene_graph.calculate_free_space()
 
-    # scene_graph_tree.clean_zero_area_free_space()
-    scene_graph_tree.cal_standable_area_for_platforms()
-    scene_graph_tree.cut_free_space_with_stage(stage_list)
+    # scene_graph.clean_zero_area_free_space()
+    scene_graph.cal_standable_area_for_platforms()
+    scene_graph.cut_free_space_with_stage(stage_list)
 
-    scene_graph_tree.update_platform_children()
+    scene_graph.update_platform_children()
 
     for obj_instance in all_objects:
         if "name" not in obj_instance and "template_name" in obj_instance:
             obj_instance["name"] = obj_instance["template_name"]
-        if scene_graph_tree.get_node(obj_instance["name"]) is None:
+        if scene_graph.get_node(obj_instance["name"]) is None:
             print(obj_instance["name"], "not in the tree")
         else:
-            scene_graph_tree.nodes[obj_instance["name"]].entity_config = obj_instance
+            scene_graph.nodes[obj_instance["name"]].entity_config = obj_instance
 
-    # scene_graph_tree.clean_zero_area_free_space()
-    if "cabinet_3_body" in scene_graph_tree.nodes.keys():
-        print(scene_graph_tree.nodes["cabinet_3_body"].heading)
-        pass
-    return scene_graph_tree
+    # scene_graph.clean_zero_area_free_space()
+
+    return scene_graph
 
 
 def main():
@@ -3829,9 +3872,9 @@ def main():
         help="Path to the output text file.",
     )
     parser.add_argument(
-        "--output_scene_graph_tree",
+        "--output_scene_graph",
         type=str,
-        default="./result/scene_graph_tree_0.txt",
+        default="./result/scene_graph_0.txt",
         required=False,
         help="Path to the output text file.",
     )
@@ -3839,7 +3882,7 @@ def main():
 
     input_file_path = args.input
     output_file_path = args.output
-    output_scene_graph_path = args.output_scene_graph_tree
+    output_scene_graph_path = args.output_scene_graph
     input_json = load_json_file(input_file_path)
 
     with open(output_file_path, "w") as output_file:

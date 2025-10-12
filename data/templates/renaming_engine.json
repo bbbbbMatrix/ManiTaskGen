@@ -1,0 +1,19 @@
+{
+  "task_config": {
+    "system_prompt": "You are a professional item classification and naming assistant. You need to provide a unique and meaningful name for each item based on indoor object images.",
+    "user_prompt": "I need your help to classify and rename a series of indoor object images. Each image contains an item to be named, marked with a white cubic box. Please follow these requirements:\n\n1. Naming Rules:\n- Each item name must be unique\n- Names should reflect the item's category and characteristics\n- Use English naming format '{category}_{specific_name}', no non-alphabetic characters allowed\n\n2. Naming Examples:\n- A red mug -> kitchenware_red_mug\n- A textbook -> book_textbook\n- A desk lamp -> electronics_desk_lamp\n\nPlease review the images and provide standardized names according to the above rules.  The following images are the items to be classified, one item per image.\n",
+    "per_pic_prompt": "The provided image contains an item, probably be placed on some table platform,  waited to be rename. Note that we want you to rename the item should be some item on a platform, so you need to distinguish it with its containing object (e.g. table, shoe rack, wall cabinet etc.) Please provide a UNIQUE name for the item in the image. Follow the naming rules and classification guidelines provided in the system prompt. Your response should be a single line, the new name, with '_' concating different words, e.g.'utensil_white_soap_dispenser' (without quotes).Don't include redundant characters, don't include characters other than alphabets and underlines,  and don't coincide with any previous name you've given in the context. \n",
+    "temperature": 0.2,
+    "max_tokens": 500
+  },
+  "file_config": {
+    "input_dir": "dataset/original",
+    "output_dir": "dataset/renamed",
+    "supported_formats": [".jpg", ".jpeg", ".png"],
+    "log_file": "rename_mapping.json"
+  },
+  "model_config": {
+    "model": "GPT4o",
+    "api_key": "${ANTHROPIC_API_KEY}"
+  }
+}

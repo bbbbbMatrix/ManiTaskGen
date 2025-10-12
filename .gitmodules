@@ -1,0 +1,4 @@
+[submodule "src/vlm_interaction/VLMEvalKit"]
+	path = src/vlm_interaction/VLMEvalKit
+	url = https://github.com/ManiacWallnut/VLMEvalkit-public.git
+	branch = master

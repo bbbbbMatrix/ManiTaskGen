@@ -12,17 +12,22 @@ conda create -name manitaskgen python==3.10.16
 conda activate manitaskgen
 ```
 
+## Clone the repository
 
+```shell
+git clone https://github.com/bbbbbMatrix/ManiTaskGen.git
+cd ManiTaskGen
+cd src/vlm_interaction
+git clone https://github.com/ManiacWallnut/VLMEvalKit.git
+cd ../..
+```
 
 ## Install dependencies and requirements
 
 ```shell
-conda install pinocchio -c conda-forge
-conda install pytorch==2.6.0 torchvision==0.21.0
-pip install -r requirements.txt
+bash install.sh
 ```
 
-If you have issues with library linking make sure that the conda libraries are in your LD_LIBRARY_PATH (e.g `export LD_LIBRARY_PATH=/path/to/anaconda/envs/myenv/lib:$LD_LIBRARY_PATH`).
 
 
 
@@ -63,11 +68,7 @@ If you have issues when downloading with maniskill, The datasets can also be dow
 
 Download from the official website: ``https://rgbd.cs.princeton.edu/``
 
-Though unable to benchmark, you can run the following command to parse the sunrgbd scene, and get a json file for building scene graph and generating tasks:
 
-```shell
-python src/preprocessing/sunrgbd_parser.py --scene_path=path/to/SUNRGBD/dataset --output_path=/path/to/output/folder
-```
 
 ## Setting Up VLM APIs
 

@@ -222,11 +222,11 @@ class GroundCoverageAnalyzer:
 
             if polygons:
                 # Merge all triangles into a single polygon
-                glog.info(f"Found {len(polygons)} valid faces in the mesh.")
+                #  glog.info(f"Found {len(polygons)} valid faces in the mesh.")
                 merged_polygon = unary_union(polygons)
-                print(
-                    f"Merged polygon has {len(merged_polygon.geoms) if isinstance(merged_polygon, MultiPolygon) else 1} components."
-                )
+                # glog.info(
+                #     f"Merged polygon has {len(merged_polygon.geoms) if isinstance(merged_polygon, MultiPolygon) else 1} components."
+                # )
                 return merged_polygon
 
         # Fall back to convex hull if no valid faces found or mesh has no faces
@@ -386,62 +386,71 @@ class GroundCoverageAnalyzer:
         Args:
             rect_vertices: Four vertices of L×0.5 meter rectangle (unit: meters) [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
             min_rect_size: Minimum rectangle size threshold (unit: meters, default 0.5 meters = 50 cm)
-            z_threshold: Z coordinate threshold (unit: meters) for mesh projection
 
         Returns:
             List of uncovered large rectangle regions, each element is (rectangle vertices, geometric center), units in meters
 
-        * When passing in, rect_vertices(0, 1) should be the length of the rectangle.
-
+        * When passing in, one edge should be approximately min_rect_size, the other edge will be divided.
         """
 
         min_rect_size = (
             self.get_config().min_rect_size if min_rect_size is None else min_rect_size
         )
 
-        if (
-            np.abs(np.linalg.norm(rect_vertices[1] - rect_vertices[0]) - min_rect_size)
-            < self.get_config().eps
-        ):
-            rect_vertices = (
-                rect_vertices[1:] + rect_vertices[:1]
-            )  # Ensure rect_vertices[0, 1] is the length of rectangle
+        standing_point_distance = self.get_config().standing_point_distance
 
-        # Convert all meshes to 2D polygons
-        obstacle_polygons = self.get_ground_polygons()
+        # Calculate lengths of adjacent edges
+        edge1_length = np.linalg.norm(rect_vertices[1] - rect_vertices[0])
+        edge2_length = np.linalg.norm(rect_vertices[2] - rect_vertices[1])
 
-        orientation = rect_vertices[1] - rect_vertices[0]
-        orientation_length = np.linalg.norm(orientation)
-        orientation = (
-            orientation / orientation_length
-            if orientation_length > 0
-            else np.array([1, 0])
-        )
+        # Determine which edge is approximately min_rect_size (short edge)
+        # and which edge is the long edge (b) that needs to be divided
+        if abs(edge1_length - min_rect_size) < abs(edge2_length - min_rect_size):
+            # Edge 0->1 is the short edge (~min_rect_size), Edge 1->2 is the long edge (b)
+            long_edge_start = rect_vertices[1]
+            long_edge_end = rect_vertices[2]
+            long_edge_length = edge2_length
+            # Width vector: from the start of the long edge pointing to the corresponding short edge endpoint
+            width_vector = rect_vertices[0] - rect_vertices[1]
+        else:
+            # Edge 1->2 is the short edge (~min_rect_size), Edge 0->1 is the long edge (b)
+            long_edge_start = rect_vertices[0]
+            long_edge_end = rect_vertices[1]
+            long_edge_length = edge1_length
+            # Width vector: from the start of the long edge pointing to the corresponding short edge endpoint
+            width_vector = rect_vertices[3] - rect_vertices[0]
 
-        max_pieces = int(np.ceil(orientation_length / min_rect_size))
+        # Calculate how many pieces to divide the long edge into
+        max_pieces = int(np.ceil(long_edge_length / standing_point_distance))
 
-        # Calculate length of each small rectangle
-        piece_length = orientation_length / max_pieces
+        # Calculate length of each piece along the long edge
+        piece_length = long_edge_length / max_pieces
 
-        rotated_rectangle_bounds = self.get_rotated_rectangle_bounds(rect_vertices)
+        # Direction vector along the long edge
+        long_edge_direction = (long_edge_end - long_edge_start) / long_edge_length
 
         sample_point_list = []
         rectangle_list = []
 
         for i in range(max_pieces):
-            # Calculate four vertices of current small rectangle
-            piece_start = rect_vertices[0] + i * piece_length * orientation
-            piece_end = rect_vertices[0] + (i + 1) * piece_length * orientation
+            # Calculate start and end points of current piece along the long edge
+            piece_start_on_long_edge = (
+                long_edge_start + i * piece_length * long_edge_direction
+            )
+            piece_end_on_long_edge = (
+                long_edge_start + (i + 1) * piece_length * long_edge_direction
+            )
 
-            # Calculate four vertices of small rectangle
+            # Calculate the four vertices of the current small rectangle
+            # Order: long edge start -> long edge end -> long edge end + width -> long edge start + width
             piece_vertices = np.array(
                 [
-                    piece_start,
-                    piece_end,
-                    piece_end
-                    + np.array([-orientation[1], orientation[0]]) * min_rect_size,
-                    piece_start
-                    + np.array([-orientation[1], orientation[0]]) * min_rect_size,
+                    piece_start_on_long_edge,  # Start point on the long edge
+                    piece_end_on_long_edge,  # End point on the long edge
+                    piece_end_on_long_edge
+                    + width_vector,  # Long edge end + width vector
+                    piece_start_on_long_edge
+                    + width_vector,  # Long edge start + width vector
                 ]
             )
 

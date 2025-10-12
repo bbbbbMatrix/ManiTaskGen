@@ -1,5 +1,5 @@
 """
-scene_graph_tree_new/affordable_platform.py
+scene_graph_new/affordable_platform.py
 
 This module defines the AffordablePlatform class, which represents a platform in a scene graph.
 It includes methods for maintaining an affordable platform, such as calculating the platform's height, area, and intersection with rectangles.

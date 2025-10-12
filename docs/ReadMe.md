@@ -76,11 +76,41 @@ We also provide the configuration file exported by the conda environment in ``co
 
 ### Usage Examples 
 
+First, set the configuration file in 'scripts/config.sh'. 
+
+Move or link the dataset under the "data/dataset" directory. there are two empty folders named "replica_dataset" and "ai2thor" for ReplicaCAD and AI2THOR datasets respectively, please substitute your own dataset. 
+
+
+Then, you can run the following code to generate tasks and benchmark VLM agents on ReplicaCAD or AI2THOR datasets. One run will generate a new folder named "run_{timestamp}" under the "runs/" directory to save all the outputs.
+
+``bash scripts/run_01_preprocessing.sh ``  outputs
+
+| Scripts                           | Feature                                                      | Input                                                        | Output(default path)                                         |
+| --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| run_whole_process.sh              | step 01+02a+03                                               | Dataset                                                      | Benchmarking results                                         |
+| run_01_preprocessing.sh           | (a) Parse original dataset, generate scene graph and dump them<br />(b) Rename objects | Dataset                                                      | /cache/entity_scene.json<br />/cache/scene_graph.pkl<br />/visualizations/scene_graph.dot,<br />/visualizations/scene_graph.txt<br />data/cache/rename_dict.json<br />data/images/image4rename/xxx.png |
+| run_02a_gen_process_based_task.sh | generate process_based with set                              | data/cache/scene_graph.pkl<br />data/cache/entity_scene.json | data/cache/process_based_task.pkl<br />data/output/process_based_task.txt |
+| run_02b_gen_outcome_based_task.sh |                                                              | data/cache/scene_graph.pkl<br />data/cache/entity_scene.json | data/cache/                                                  |
+| run_03_run_benchmark.sh           |                                                              | data/cache/process_based_task.pkl                            |                                                              |
+| run_01e_preprocessing_sunrgbd.sh  | preprocessing for sunrgbd dataset                            | SunRGBD Dataset                                              |                                                              |
+| config.sh                         | A auxiliary script for setting paths                         | /                                                            | /                                                            |
+
+
+
+
+
+
+
+```shell
+
+
+
+
 #### Manual Input Testing (Human Baseline)
 
 To run ManiTaskGen on a ReplicaCAD dataset scene and simulate Benchmarking on Embodied decision-making with single-step (level 1 & 2) tasks using manual input decisions, please change the dataset path in `AppConfig`, `RawSceneConfig` and `SapienConfig` classes in `src/utils/config_manager.py` accordingly after installation, then run the following code:
 
-```shell
+​```shell
 python main.py --config config/default_config.yml --input_json_path /path/to/input/json/scene/file --output_json_path /path/to/output --mode manual --model_name human --adjust_with_gravity True 
 ```
 
@@ -184,7 +214,6 @@ The following tables summarizes the core global configuration parameters and the
 Aside from AI2THOR and ReplicaCAD, other maniskill-style scenes can also be parsed with ``src/preprocessing/maniskill_parser.py``. 
 
 If you want to run the benchmark on other scene datasets with different formats, refer to ``src/preprocessing/base_parser.py``, ``src/preprocessing/maniskill_parser.py`` and ``src/preprocessing/sunrgbd_parser.py`` to add new parsers.
-
 
 
 

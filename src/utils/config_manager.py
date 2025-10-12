@@ -1,3 +1,4 @@
+from code import interact
 import yaml
 import argparse
 from dataclasses import dataclass, field
@@ -6,17 +7,14 @@ from pathlib import Path
 import os
 import numpy as np
 import json
+
+# from core import outcome_based_task_generation
 import glog
+from src.utils.run_context import PathResolver
 
 
 @dataclass
 class RawSceneConfig:
-    dataset_root_path: str = (
-        "path/to/dataset"  # Path to the Replica dataset root directory
-    )
-    object_config_path: str = (
-        "path/to/object/config"  # Path to the object configuration
-    )
 
     desired_objects: List[str] = field(default_factory=lambda: None)
     not_desired_objects: List[str] = field(
@@ -52,16 +50,6 @@ class RawSceneConfig:
 
 @dataclass
 class SapienConfig:
-    dataset_root_path: str = (
-        "path/to/dataset"  # Path to the SAPIEN dataset root directory
-    )
-    visual_path_prefix: str = "path/to/visual/objects"  # Path prefix for visual objects
-    collision_path_prefix: str = (
-        "path/to/collision/objects"  # Path prefix for collision objects, don't need if the dataset has no collision objects
-    )
-    urdf_path_prefix: str = (
-        "path/to/urdf"  # Path prefix for URDF files, don't need if the dataset has no URDF files
-    )
 
     camera_shader: str = "default"
     ray_tracing_denoiser: str = "none"
@@ -77,26 +65,18 @@ class SapienConfig:
         default_factory=lambda: [
             {"position": [1.989, -5.822, 1], "color": [0.5, 0.5, 0.5]},
             {"position": [2 + 0.15, -5.75 - 0.15, 1.0], "color": [0.4, 0.4, 0.4]},
-            {"position": [1.2 + 0.15, -5.75 - 0.15, 1.0], "color": [0.4, 0.4, 0.4]},
-            {"position": [1.6 + 0.15, -6.5 - 0.15, 1.0], "color": [0.4, 0.4, 0.4]},
-            {"position": [1.6 + 0.15, -5 - 0.15, 1.0], "color": [0.4, 0.4, 0.4]},
-            {"position": [2 + 0.15, -6.5 - 0.15, 1.0], "color": [0.4, 0.4, 0.4]},
-            {"position": [2 + 0.15, -5.0 - 0.15, 1.0], "color": [0.4, 0.4, 0.4]},
-            {"position": [2 - 0.1, -6.35, 1], "color": [0.4, 0.4, 0.4]},
-            {"position": [2 + 0.1, -6.35, 1], "color": [0.4, 0.4, 0.4]},
-            {"position": [1.2 + 0.15, -5 - 0.15, 1], "color": [0.4, 0.4, 0.4]},
         ]
     )
 
-    camera_position: Dict[str, float] = field(
-        default_factory=lambda: {"x": -5, "y": 0, "z": 6}
-    )
-    camera_rotation: Dict[str, float] = field(
-        default_factory=lambda: {"r": 0, "p": -np.arctan2(2, 4), "y": 0}
-    )
-    camera_parameters: Dict[str, float] = field(
-        default_factory=lambda: {"near": 0.05, "far": 100, "fovy": 1}
-    )
+    # camera_position: Dict[str, float] = field(
+    #     default_factory=lambda: {"x": -5, "y": 0, "z": 6}
+    # )
+    # camera_rotation: Dict[str, float] = field(
+    #     default_factory=lambda: {"r": 0, "p": -np.arctan2(2, 4), "y": 0}
+    # )
+    # camera_parameters: Dict[str, float] = field(
+    #     default_factory=lambda: {"near": 0.05, "far": 100, "fovy": 1}
+    # )
 
     default_material: Dict[str, Any] = field(
         default_factory=lambda: {
@@ -143,11 +123,13 @@ class ImageRendererConfig:
     """Image Renderer configuration"""
 
     EPS = 1e-6
-    default_fovy: float = 75.0
-    default_fovy_range: List[float] = field(default_factory=lambda: [10.0, 100.0])
+    default_fovy: float = np.deg2rad(60.0)  # Default field of view in radians
+    default_fovy_range: List[float] = field(
+        default_factory=lambda: [np.deg2rad(10.0), np.deg2rad(100.0)]
+    )
     default_focus_ratio: float = 0.5
-    default_near = 0.1
-    default_far = 100.0
+    default_near: float = 0.1
+    default_far: float = 100.0
     default_camera_xy: List[float] = field(default_factory=lambda: [0.0, 0.0])
     z_range: List[float] = field(
         default_factory=lambda: [0.2, 2.5]
@@ -209,7 +191,7 @@ class ConcaveProcessorConfig:
     min_polygon_area = 0.1  # Minimum polygon area threshold
     target_aspect_ratio = 1.8  # Target aspect ratio
     max_target_strips = 4  # Maximum target strips
-    merge_tolerance = 0.01  # Merging tolerance
+    merge_tolerance = 0.01  # Tolerance for merging polygons
     concave_threshold = (
         0.2  # Concavity threshold for determining if a polygon is concave
     )
@@ -223,10 +205,11 @@ class GroundCoverageConfig:
     eps = 1e-3
     resolution: float = 0.01  # Grid resolution (meters)
     min_rect_size: float = 0.4  # Minimum rectangle size
+    standing_point_distance: float = 0.8  # Distance from standing point to object
     global_bounds: List[float] = field(
         default_factory=lambda: [-5.0, 5.0, -5.0, 5.0]
     )  # Global bounds (min_x, max_x, min_y, max_y)
-    z_range: List[float] = field(default_factory=lambda: [0.2, 1])  # Z-axis range
+    z_range: List[float] = field(default_factory=lambda: [0.1, 1])  # Z-axis range
 
 
 @dataclass
@@ -253,13 +236,11 @@ class TaskPrimitiveConfig:
 
 
 @dataclass
-class AtomicTaskConfig:
+class ProcessbasedTaskConfig:
     """Atomic task configuration"""
 
-    max_intermediate_states: int = 10
-    default_timeout: float = 30.0
-    validation_enabled: bool = True
-    debug_mode: bool = False
+    max_task_length: int = 5  # Maximum length of an atomic task
+    max_task_num: int = 1000  # Maximum number of atomic tasks
 
 
 @dataclass
@@ -276,11 +257,27 @@ class OpenRouterConfig:
     """OpenRouter configuration"""
 
     api_key: str = (
-        "Bearer sk-or-v1-YOUR_OPENROUTER_API_KEY_HERE"  # Replace with your OpenRouter API key
+        "Bearer sk-or-v1-YourAPIKeyHere"  # Replace with your OpenRouter API key
     )
     model: str = (
-        "google/gemini-2.5-flash-lite-preview-06-17"  # See https://openrouter.ai for available models
+        "google/gemini-2.5-flash-lite-preview-06-17"  # See https://openrouter.ai for available models. some are listed below:
     )
+    """
+     # 'openai/gpt-4.1'
+        # 'openai/gpt-4.1-mini'
+        # 'qwen/qwen2.5-vl-72b-instruct'
+        # 'meta-llama/llama-3.3-70b-instruct'
+        #'openai/gpt-4o-2024-11-20'
+        #'google/gemini-2.5-flash-preview'
+        #'openai/gpt-4o-2024-11-20'
+        #'google/gemini-2.5-pro-preview-03-25'
+        # "anthropic/claude-3.7-sonnet"
+        # anthropic/claude-3.5-haiku
+        # "meta-llama/llama-3.2-90b-vision-instruct" #"openai/gpt-4.1-nano"  # "openai/chatgpt-4o-latest" #"meta-llama/llama-3.2-90b-vision-instruct"
+
+    
+    
+    """
 
 
 @dataclass
@@ -315,6 +312,7 @@ class RectangleQueryConfig:
     """Rectangle Query configuration"""
 
     EPS: float = 1e-3
+    placement_coverage_threshold: float = 0.95
 
 
 @dataclass
@@ -326,38 +324,21 @@ class BenchmarkExecutorConfig:
     picture_width: int = 1366
     picture_height: int = 768
 
-    prompt_templates_path: str = "src/utils/prompts/task_interact_prompts.json"
-    reflection_prompts_path: str = "src/utils/prompts/reflection_prompts.json"
-    image_save_base_path: str = "image4interact/"
-
-    intermediate_task_max_score: int = 4
-
-    default_standing_direction: int = 0
-    rotation_step: int = 2
-    max_rotation_attempts: int = 4
+    # prompt_templates_path: str = "data/templates/benchmark_prompts.json"
+    # reflection_prompts_path: str = "data/templates/reflection_prompts.json"
+    # image_save_base_path: str = "image4interact/"
 
     default_fovy_deg_min: float = 40.0
     default_fovy_deg_max: float = 60.0
     focus_ratio: float = 0.6
 
-    reflection_txt_load_path: Optional[str] = (
-        "./load_reflection.txt"  # Path to the reflection text file
-    )
-    reflection_txt_save_path: Optional[str] = "./save_reflection.txt"  # Path to save
-
-    task_timeout_seconds: float = 300.0
+    # reflection_txt_load_path: Optional[str] = (
+    #     "./out/load_reflection.txt"  # Path to the reflection text file
+    # )
+    # reflection_txt_save_path: Optional[str] = "./out/save_reflection.txt"  # Path to save
 
     enable_detailed_logging: bool = False
     save_interaction_history: bool = True
-
-    validate_actions: bool = True
-    allow_invalid_actions: bool = False
-
-    auto_rotate_enabled: bool = True
-    visibility_check_enabled: bool = True
-
-    object_naming_for_interaction: bool = True
-    platform_naming_for_interaction: bool = True
 
 
 @dataclass
@@ -370,12 +351,37 @@ class TaskInteractionConfig:
 
 
 @dataclass
+class OutcomeBaseGenerationConfig:
+    """Configuration for outcome-based task generation"""
+
+    vlm_list = [
+        "openai/gpt-4.1",
+        "anthropic/claude-3.5-haiku",
+        "google/gemini-2.5-flash-lite-preview-06-17",
+    ]
+    # manitaskot_pattern_file: str = "data/templates/manitask_ot200.txt"
+    # output_dir: str = "./out/outcome_based_task.txt"
+
+
+# @dataclass
+# class InteractPromptHelperConfig:
+#     prompt_template_path: str = "data/templates/benchmark_prompts.json"
+
+
+@dataclass
+class RenameEngineConfig:
+    model: str = "openai/gpt-4.1-mini"
+
+
+@dataclass
 class AppConfig:
     """Main application configuration"""
 
     ground_coverage: GroundCoverageConfig = field(default_factory=GroundCoverageConfig)
     task_primitive: TaskPrimitiveConfig = field(default_factory=TaskPrimitiveConfig)
-    atomic_task: AtomicTaskConfig = field(default_factory=AtomicTaskConfig)
+    process_based_task: ProcessbasedTaskConfig = field(
+        default_factory=ProcessbasedTaskConfig
+    )
     scene: SceneConfig = field(default_factory=SceneConfig)
     scene_type: SceneType = field(default_factory=SceneType)
     basic_geometry: BasicGeometryConfig = field(default_factory=BasicGeometryConfig)
@@ -396,60 +402,112 @@ class AppConfig:
     task_interaction: TaskInteractionConfig = field(
         default_factory=TaskInteractionConfig
     )
+    outcome_based_task_generation: OutcomeBaseGenerationConfig = field(
+        default_factory=OutcomeBaseGenerationConfig
+    )
+    rename_engine: RenameEngineConfig = field(default_factory=RenameEngineConfig)
 
     # Global configuration
 
     adjust_with_gravity: bool = (
         True  # Whether to adjust gravity (may affect object pose)
     )
-    use_renaming_engine: bool = False  # Whether to use renaming engine
+    use_renaming_engine: bool = True  # Whether to use renaming engine
     bbox_only: bool = False  # Whether to use bounding box only
     input_json_path: Optional[str] = (
-        "path/to/replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
+        "./data/datasets/replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
     )
     output_json_path: Optional[str] = "./replica_apt_0_parsed.json"  # Output file path
     entity_json_path: Optional[str] = (
         "./replica_apt_0_entities.json"  # Entity file path
     )
     output_dir: str = "./output/"  # Output directory for results
-    mode: str = "manual"  # Mode: "online" or "offline"
-    model_name: str = "human"  # Model name
+    mode: str = "online"  # Mode: "online" or "manual"
+    model_name: str = "openai/gpt-4.1"  # Model name
     log_level: str = "INFO"
 
     cache_enabled: bool = True
     random_seed: Optional[int] = None
 
     task_num: int = 5  # Number of tasks to generate
+
+    dataset_root_path: str = (
+        "data/datasets/replica_dataset"  # Path to the SAPIEN dataset root directory
+    )
+    stage_path_prefix: str = (
+        "data/datasets/replica_dataset"  # Path prefix for stage files
+    )
+    visual_path_prefix: str = (
+        "data/datasets/replica_dataset/objects"  # Path prefix for visual objects
+    )
+    collision_path_prefix: str = (
+        "data/datasets/replica_dataset/objects/convex"  # Path prefix for collision objects, don't need if the dataset has no collision objects
+    )
+    urdf_path_prefix: str = (
+        "data/datasets/replica_dataset/urdf"  # Path prefix for URDF files, don't need if the dataset has no URDF files
+    )
+    object_config_path: str = (
+        "data/datasets/replica_dataset/configs/objects"  # Path to the object configuration
+        # "/mnt/windows_e/workplace/task_generation/replica_dataset/configs/objects"  # Path to the object configuration
+    )
+
+    benchmark_prompt_template_path: str = "data/templates/benchmark_prompts.json"
+    reflection_prompt_template_path: str = "data/templates/reflection_prompts.json"
+    rename_engine_prompt_template_path: str = "data/templates/renaming_engine.json"
+    interact_prompt_template_path: str = "data/templates/interact_prompts.json"
+
     scene_graph_pkl_load_path: Optional[str] = (
-        "./scene_graph.pkl"  # Path to the scene graph pickle file
+        "${run_dir}/cache/scene_graph.pkl"  # Path to the input JSON scene file
     )
     scene_graph_pkl_save_path: Optional[str] = (
-        "./scene_graph.pkl"  # Path to the scene graph pickle file
+        "${run_dir}/cache/scene_graph.pkl"  # Path to the scene graph pickle file
     )
-    atomic_task_pkl_load_path: Optional[str] = (
-        "./atomic_task.pkl"  # Path to the atomic task pickle file
+    process_based_task_pkl_load_path: Optional[str] = (
+        "${run_dir}/cache/process_based_task.pkl"
     )
-    atomic_task_pkl_save_path: Optional[str] = (
-        "./atomic_task.pkl"  # Path to the atomic task pickle file
+    process_based_task_pkl_save_path: Optional[str] = (
+        "${run_dir}/cache/process_based_task.pkl"
+    )
+    process_based_task_txt_save_path: Optional[str] = (
+        "${run_dir}/output/process_based_task.txt"
+    )
+    outcome_based_task_txt_save_path: Optional[str] = (
+        "${run_dir}/output/outcome_based_task.txt"
     )
     image4rename_path: Optional[str] = (
-        "./image4rename/"  # Path to the image for renaming
+        "${run_dir}/images/image4rename"  # Path to the image for renaming
     )
     image4interaction_path: Optional[str] = (
-        "./image4interaction/"  # Path to the image for interaction
+        "${run_dir}/images/image4interact"  # Path to the image for interaction
     )
-    rename_dict_path: Optional[str] = (
-        "./rename_dict.json"  # Path to the renaming dictionary
+    image4vote_path: Optional[str] = (
+        "${run_dir}/images/image4vote"  # Path to the image for voting
     )
     reflection_txt_load_path: Optional[str] = (
-        "./load_reflection.txt"  # Path to the reflection text file
+        "${run_dir}/reflection/load_reflection.txt"  # Path to the reflection text file
     )
-    reflection_txt_save_path: Optional[str] = "./save_reflection.txt"  # Path to save
+    reflection_txt_save_path: Optional[str] = (
+        "${run_dir}/reflection/save_reflection.txt"  # Path to save
+    )
 
-    generate_mistake_note: bool = False  # Whether to generate mistake notes
-    use_mistake_note: int = 0  # Whether to use mistake notes (
-    use_lv3_task: bool = False  # Whether to use level 3 tasks
-    result_file_path: Optional[str] = "./result.txt"  # Path to save the result file
+    benchmark_results_save_path: Optional[str] = (
+        "./benchmark_results.json"  # Path to save benchmark results
+    )
+
+    rename_dict_path: Optional[str] = (
+        "${run_dir}/cache/rename_dict.json"  # Path to the renaming dictionary
+    )
+
+    image_path: Optional[str] = "${run_dir}/data/images"  # Path to save images
+
+    benchmark_model_name: str = "openai/gpt-4.1-mini"
+    generate_mistake_note: bool = True  # Whether to generate mistake notes
+    use_mistake_note: int = 1  # Whether to use mistake notes (
+
+    result_file_path: Optional[str] = (
+        "${run_dir}/output/result.txt"  # Path to save the result file
+    )
+    manitaskot_pattern_file: str = "data/templates/manitask_ot200.txt"
 
 
 """
@@ -472,7 +530,9 @@ class ConfigManager:
 
     _instance = None
 
-    def __new__(cls, config_file_path: Optional[str] = None):
+    def __new__(
+        cls, config_file_path: Optional[str] = None, run_dir: Optional[str] = None
+    ):
         if cls._instance is None:
             cls._instance = super(ConfigManager, cls).__new__(cls)
             cls._instance._initialized = False
@@ -485,16 +545,53 @@ class ConfigManager:
             cls._instance = cls()
         return cls._instance
 
-    def __init__(self, config_file_path: Optional[str] = None):
-        if self._initialized:
+    def __init__(
+        self, config_file_path: Optional[str] = None, run_dir: Optional[str] = None
+    ):
+        if (
+            self._initialized
+            and self.config_file_path == config_file_path
+            and self.run_dir == run_dir
+        ):
             return
+        # import ipdb; ipdb.set_trace()
+        if run_dir:
+            self.run_dir = run_dir
+        else:
+            self.run_dir = os.path.abspath(os.getcwd())
+
+        self.path_resolver = PathResolver(self.run_dir)
 
         self.config = AppConfig()
         self.config_file_path = config_file_path
-        self._initialized = True
 
+        self.config_file_export_dir = "run/configs_used/"
+        self._initialized = True
+        # import ipdb; ipdb.set_trace()
+        #  glog.info("config_file_path", config_file_path)
         if config_file_path:
+
             self.load_config(config_file_path)
+
+        self.save_used_config()
+
+        self._resolve_all_paths()
+
+    def _resolve_all_paths(self):
+
+        import dataclasses
+
+        for field in dataclasses.fields(self.config):
+            value = getattr(self.config, field.name)
+
+            if isinstance(value, str) and value.startswith("${run_dir}"):
+                resolved_path = value.replace("${run_dir}", self.run_dir)
+                setattr(self.config, field.name, resolved_path)
+
+    def save_used_config(self):
+        config_path = f"{self.run_dir}/latest_config/used_config.yaml"
+        self.save_to_yaml(config_path)
+        glog.info(f"Saved used configuration to {config_path}")
 
     def load_config(self, config_file_path: str) -> None:
         """Load configuration from file (supports both YAML and JSON)"""
@@ -513,7 +610,7 @@ class ConfigManager:
                 f"Configuration file {config_path} does not exist, using default configuration"
             )
             return
-
+        glog.info(f"Loading configuration from {config_path}")
         try:
             with open(config_path, "r", encoding="utf-8") as f:
                 config_dict = yaml.safe_load(f)
@@ -545,6 +642,7 @@ class ConfigManager:
 
     def _update_config_from_dict(self, config_dict: Dict[str, Any]) -> None:
         """Update configuration from dictionary"""
+
         # Update ground coverage configuration
         if "ground_coverage" in config_dict:
             gc_config = config_dict["ground_coverage"]
@@ -559,12 +657,12 @@ class ConfigManager:
                 if hasattr(self.config.task_primitive, key):
                     setattr(self.config.task_primitive, key, value)
 
-        # Update atomic task configuration
-        if "atomic_task" in config_dict:
-            at_config = config_dict["atomic_task"]
+        # Update process-based task configuration
+        if "process_based_task" in config_dict:
+            at_config = config_dict["process_based_task"]
             for key, value in at_config.items():
-                if hasattr(self.config.atomic_task, key):
-                    setattr(self.config.atomic_task, key, value)
+                if hasattr(self.config.process_based_task, key):
+                    setattr(self.config.process_based_task, key, value)
 
         # Update scene configuration
         if "scene" in config_dict:
@@ -664,21 +762,64 @@ class ConfigManager:
                 if hasattr(self.config.task_interaction, key):
                     setattr(self.config.task_interaction, key, value)
 
+        # Update outcome-based task generation configuration
+        if "outcome_based_task_generation" in config_dict:
+            obtg_config = config_dict["outcome_based_task_generation"]
+            for key, value in obtg_config.items():
+                if hasattr(self.config.outcome_based_task_generation, key):
+                    setattr(self.config.outcome_based_task_generation, key, value)
+
+        # Update rename engine configuration
+        if "rename_engine" in config_dict:
+            re_config = config_dict["rename_engine"]
+            for key, value in re_config.items():
+                if hasattr(self.config.rename_engine, key):
+                    setattr(self.config.rename_engine, key, value)
+
         # Update global configuration
         for key in [
+            "input_json_path",
+            "output_json_path",
+            "entity_json_path",
             "adjust_with_gravity",
             "use_renaming_engine",
             "bbox_only",
-            "input_file",
             "mode",
             "model_name",
             "log_level",
             "output_dir",
             "cache_enabled",
             "random_seed",
+            "generate_mistake_note",
+            "use_mistake_note",
+            "result_file_path",
+            "reflection_txt_load_path",
+            "reflection_txt_save_path",
+            "task_num",
+            "scene_graph_pkl_load_path",
+            "scene_graph_pkl_save_path",
+            "process_based_task_pkl_load_path",
+            "process_based_task_pkl_save_path",
+            "image4rename_path",
+            "image4interaction_path",
+            "image4vote_path",
+            "benchmark_prompt_template_path",
+            "reflection_prompt_template_path",
+            "rename_engine_prompt_template_path",
+            "interact_prompt_template_path",
+            "dataset_root_path",
+            "stage_path_prefix",
+            "visual_path_prefix",
+            "collision_path_prefix",
+            "urdf_path_prefix",
+            "object_config_path",
+            "rename_dict_path",
+            "benchmark_model_name",
         ]:
             if key in config_dict:
                 setattr(self.config, key, config_dict[key])
+
+        self._resolve_all_paths()
 
     def update_from_args(self, args: argparse.Namespace) -> None:
         """Update configuration from command line arguments"""
@@ -694,7 +835,7 @@ class ConfigManager:
         if hasattr(args, "output_dir") and args.output_dir is not None:
             self.config.output_dir = args.output_dir
         if hasattr(args, "debug") and args.debug is not None:
-            self.config.atomic_task.debug_mode = args.debug
+            self.config.process_based_task.debug_mode = args.debug
         if hasattr(args, "random_seed") and args.random_seed is not None:
             self.config.random_seed = args.random_seed
 
@@ -718,13 +859,31 @@ class ConfigManager:
         if hasattr(args, "model_name") and args.model_name is not None:
             self.config.model_name = args.model_name
 
+    # def save_to_yaml(self, config_path: str) -> None:
+    #     """Save current configuration to YAML file"""
+    #     config_path = Path(config_path)
+    #     try:
+    #         with open(config_path, "w", encoding="utf-8") as f:
+    #             yaml.dump(
+    #                 self.config.__dict__,
+    #                 f,
+    #                 default_flow_style=False,
+    #                 allow_unicode=True,
+    #             )
+    #         print(f"Configuration saved to: {config_path}")
+    #     except Exception as e:
+    #         print(f"Failed to save configuration: {e}")
     def save_to_yaml(self, config_path: str) -> None:
         """Save current configuration to YAML file"""
         config_path = Path(config_path)
         try:
+            # Convert the dataclass to a dictionary
+            config_dict = self._config_to_dict(self.config)
+            # Ensure the directory exists
+            config_path.parent.mkdir(parents=True, exist_ok=True)
             with open(config_path, "w", encoding="utf-8") as f:
                 yaml.dump(
-                    self.config.__dict__,
+                    config_dict,
                     f,
                     default_flow_style=False,
                     allow_unicode=True,
@@ -732,6 +891,41 @@ class ConfigManager:
             print(f"Configuration saved to: {config_path}")
         except Exception as e:
             print(f"Failed to save configuration: {e}")
+
+    def _convert_value_to_serializable(self, value: Any) -> Any:
+        """Recursively converts values to be YAML-serializable, handling numpy types."""
+        # Check if the value is a Numpy integer type
+        if isinstance(value, np.integer):
+            return int(value)
+        # Check if the value is a Numpy floating type
+        if isinstance(value, np.floating):
+            return float(value)
+        # Check if the value is a Numpy array
+        if isinstance(value, np.ndarray):
+            return value.tolist()
+
+        if isinstance(value, list):
+            return [self._convert_value_to_serializable(item) for item in value]
+        if isinstance(value, tuple):
+            return tuple(self._convert_value_to_serializable(item) for item in value)
+        if isinstance(value, dict):
+            return {k: self._convert_value_to_serializable(v) for k, v in value.items()}
+
+        # Check if the value is another dataclass instance, recursively convert
+        if hasattr(value, "__dict__") and not isinstance(value, type):
+            return self._config_to_dict(value)
+
+        return value
+
+    def _config_to_dict(self, config_obj: Any) -> Dict[str, Any]:
+        """Convert configuration object to dictionary recursively."""
+        if not hasattr(config_obj, "__dict__"):
+            return config_obj
+
+        result = {}
+        for key, value in config_obj.__dict__.items():
+            result[key] = self._convert_value_to_serializable(value)
+        return result
 
     def print_config(self) -> None:
         """Print current configuration"""
@@ -748,9 +942,9 @@ class ConfigManager:
         )
         print(f"Atomic Task:")
         print(
-            f"  Max intermediate states: {self.config.atomic_task.max_intermediate_states}"
+            f"  Max intermediate states: {self.config.process_based_task.max_intermediate_states}"
         )
-        print(f"  Debug mode: {self.config.atomic_task.debug_mode}")
+        print(f"  Debug mode: {self.config.process_based_task.debug_mode}")
         print(f"Scene Type:")
         print(
             f"  Need collision adjustment: {self.config.scene_type.NEED_COLLISION_ADJUSTMENT}"
@@ -793,6 +987,12 @@ class ConfigManager:
         except Exception as e:
             print(f"Failed to save configuration: {e}")
 
+    def temp_set_model(self, model_name: str):
+
+        model_config_dict = {"openrouter": {"model": model_name}}
+        self._update_config_from_dict(model_config_dict)
+        glog.info(f"Temporarily set model to {model_name}")
+
 
 # Global configuration manager instance
 config_manager = ConfigManager()
@@ -823,9 +1023,9 @@ def get_concave_processor_config() -> ConcaveProcessorConfig:
     return config_manager.config.concave_processor
 
 
-def get_atomic_task_config() -> AtomicTaskConfig:
+def get_process_based_task_config() -> ProcessbasedTaskConfig:
     """Get atomic task configuration"""
-    return config_manager.config.atomic_task
+    return config_manager.config.process_based_task
 
 
 def get_scene_config() -> SceneConfig:
@@ -886,6 +1086,16 @@ def get_benchmark_executor_config() -> BenchmarkExecutorConfig:
 def get_task_interaction_config() -> TaskInteractionConfig:
     """Get Task Interaction configuration"""
     return config_manager.config.task_interaction
+
+
+def get_outcome_based_task_generation_config() -> OutcomeBaseGenerationConfig:
+    """Get Outcome Base Generation configuration"""
+    return OutcomeBaseGenerationConfig()
+
+
+def get_rename_engine_config() -> RenameEngineConfig:
+    """Get Rename Engine configuration"""
+    return config_manager.config.rename_engine
 
 
 def init_config(config_file_path: Optional[str] = None) -> None:
