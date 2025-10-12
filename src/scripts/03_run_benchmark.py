@@ -223,6 +223,10 @@ def main(args):
     total_score = 0
     total_sr = 0
     sapien_scene_manager = visualize_scene_sapien.SapienSceneManager()
+
+    # import ipdb;
+    # ipdb.set_trace()
+
     for i in task_list:
 
         task = task_sample[i]
@@ -254,12 +258,6 @@ def main(args):
 
         # return TaskStatusCode.SUCCESS or TaskStatusCode.FAILURE
         intermediate_task, intermediate_task_id = None, None
-
-        # if main_config.use_lv3_task:
-        #     intermediate_task_id = random.randint(0, len(task_sample) - 1)
-        #     intermediate_task = task_sample[intermediate_task_id]
-
-        #     glog.info(f"Using intermediate task: {intermediate_task.__repr_rough__()}")
 
         task = benchmark_executor.BenchmarkExecutor(
             task=task,

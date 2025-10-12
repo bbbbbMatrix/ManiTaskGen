@@ -1,9 +1,5 @@
 # %%
-"""
-
-
-
-"""
+""" """
 
 # %%
 import json
@@ -1145,7 +1141,6 @@ class TreeNode:
     def get_bel_ground_platform(self):
         #       if self.bel_ground_platform is not None or self.depth <= 1:
         #         return self.bel_ground_platform
-
         tmp_node = self.parent
         tmp_platform = self.on_platform
         while tmp_node.depth > 1:
@@ -1808,6 +1803,7 @@ class TreeNode:
             if (platform.bbox[1][0] - platform.bbox[0][0])
             * (platform.bbox[1][1] - platform.bbox[0][1])
             > max_size * 0.25
+            and platform.convex_hull_2d.vertices.shape[0] >= 4
         ]
 
     def at_which_part(self):

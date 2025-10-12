@@ -6,7 +6,7 @@ source "$(dirname "$0")/config.sh"
 
 print_config
 
-log_step "Starting 03_run_benchmark.py"
+log_step "Starting 99_item_modification_only.py"
 
 
 check_input_optional "$OUTPUT_JSON"
@@ -32,7 +32,7 @@ fi
 
 
 
-run_python_script "03_run_benchmark.py" \
+run_python_script "99_item_modification_only.py" \
     --config "$CONFIG_FILE" \
     --output_dir "$RUN_DIR" \
     --task_num "$TASK_NUM" \
