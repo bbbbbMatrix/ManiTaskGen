@@ -44,12 +44,12 @@ cd ..
 cd ai2thor_maniskill
 python -m mani_skill.utils.download_asset AI2THOR
 https://huggingface.co/datasets/haosulab/AI2THOR/tree/main
-cp -r /path/to/.maniskill/data/scene_datasets/ai2thor .
+cp -r /path/to/.maniskill/data/datasets/ai2thor .
 
 cd ..
 cd replica_maniskill
 python -m mani_skill.utils.download_asset ReplicaCAD
-cp -r /path/to/.maniskill/data/scene_datasets/replica_cad_dataset/rearrange .
+cp -r /path/to/.maniskill/data/datasets/replica_cad_dataset .
 ```
 
 Note that the dataset will be downloaded to the subfolder of maniskill module, and the absolute path will be shown after the dataset downloading command is finished. 
@@ -68,7 +68,7 @@ If you have issues when downloading with maniskill, The datasets can also be dow
 
 Download from the official website: ``https://rgbd.cs.princeton.edu/``
 
-
+Unzip and place the dataset under the `data/dataset/sunrgbd` directory.
 
 ## Setting Up VLM APIs
 

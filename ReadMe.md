@@ -65,7 +65,7 @@ This is the official repository for the ManiTaskGen project. It Includes instruc
 
 ## Installation
 
-For installation, refer to  [INSTALLATION.md](../docs/INSTALLATION.md) 
+For installation, refer to  [INSTALLATION.md](./docs/INSTALLATION.md) 
 
 We also provide the configuration file exported by the conda environment in ``config/env.yml``.
 
@@ -86,7 +86,7 @@ First, set the configuration file in 'scripts/config.sh'.
 
 Move or link the dataset under the "data/dataset" directory. there are two empty folders named "replica_dataset" and "ai2thor" for ReplicaCAD and AI2THOR datasets respectively, please substitute your own dataset. 
 
-Then, modify the config file from the example global config file. The two config you probably have to modify is ``input_json_path`` and ``oepnrouter/api_key``.  After that, run the following codes:
+Then, modify the config file from the example global config file. The two config you probably have to modify is ``input_json_path`` and ``openrouter/api_key``.  After that, run the following codes:
 
 
 

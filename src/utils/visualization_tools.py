@@ -105,7 +105,7 @@ class SceneGraphVisualizer:
                             node_dict["heading"] = {EIGHT_DIRECTIONS[dir]: node.heading}
 
             return node_dict
-
+        import ipdb; ipdb.set_trace()
         tree_dict = add_node_recursive(tree_root)
 
         with open(f"{output_path}.json", "w", encoding="utf-8") as f:
