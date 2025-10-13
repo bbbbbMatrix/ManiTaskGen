@@ -46,12 +46,12 @@ mkdir datasets
 cd datasets
 
 python -m mani_skill.utils.download_asset AI2THOR
-cp -r /path/to/.maniskill/data/datasets/ai2thor .
+cp -r /path/to/.maniskill/data/scene_datasets/ai2thor .
 
 
 
 python -m mani_skill.utils.download_asset ReplicaCAD
-cp -r /path/to/.maniskill/data/datasets/replica_cad_dataset .
+cp -r /path/to/.maniskill/data/scene_datasets/replica_cad_dataset .
 cd ../..
 ```
 
@@ -77,6 +77,7 @@ We use OpenRouter API to access both open-source and closed-source VLMs. To benc
 Modify  ``OpenRouterConfig `` class in `src/utils/config_manager.py` (or your yml config file) with your API key.
 
 For more details on using the OpenRouter API, refer to the OpenRouter  [official documentation](https://openrouter.ai/docs/quickstart).
+
 
 
 
