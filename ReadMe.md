@@ -109,12 +109,7 @@ The following table shows the features and IOs for each script:
 
 | Scripts                                       | Feature                                                      | Input                                                        | Output(default path)                                         |
 | --------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ``scripts/run_01_preprocessing.sh``                         | (a) Parse original dataset, generate scene graph and dump them<br>(b) Rename objects interaction                        | data/datasets/ai2thor                                                           | runs/cache/entity_scene.json
-runs/cache/scene_graph.pkl
-runs/visualizations/scene_graph.dot,
-runs/visualizations/scene_graph.txt
-data/cache/rename_dict.json
-data/images/image4rename/xxx.png                                                     |
+| ``scripts/run_01_preprocessing.sh``                         | (a) Parse original dataset, generate scene graph and dump them<br>(b) Rename objects interaction                        | data/datasets/ai2thor                                                           | runs/cache/entity_scene.json runs/cache/scene_graph.pkl runs/visualizations/scene_graph.dot, runs/visualizations/scene_graph.txt data/cache/rename_dict.json data/images/image4rename/xxx.png                                                     |
 | ``scripts/run_99_item_modification_only.sh``                         | run item_modification interaction                        | /                                                            | visualizations/final_scene_graph.json                                                           |
 
 
