@@ -171,7 +171,7 @@ def main(args):
     # random.seed(123)
     chained_task = process_based_task_generation.TaskGeneration(scene_graph)
 
-    chained_task.generate_task(max_task_num=2, task_length=3)
+    chained_task.generate_task()
 
     if main_config.process_based_task_pkl_save_path is not None:
 

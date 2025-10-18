@@ -4,6 +4,11 @@ from enum import Enum
 from src.geometry.convex_hull_processor import ConvexHullProcessor_2d
 from src.geometry.basic_geometries import Basic2DGeometry
 from src.utils.string_convertor import StringConvertor
+from src.utils.config_manager import (
+    get_config_manager,
+    get_config,
+    get_outcome_based_task_generation_config,
+)
 import copy
 
 import itertools
@@ -969,6 +974,7 @@ class TaskGeneration:
     def __init__(self, scene_graph=None, items=[], places=[]):
         self.scene_graph = scene_graph
         self.tasks = []
+        self.use_level1_tasks = False
 
         # self.place_for_index = {}
         scene_graph.update_platform_children()
@@ -1034,6 +1040,9 @@ class TaskGeneration:
         for item_node, platform in item_platform_pairs:
             if item_node.name in fixed_object_list:
                 continue
+            if self.use_level1_tasks:
+                if item_node.is_ambiguous():
+                    continue
             available_directions = [
                 dir
                 for dir in range(0, 8, 2)
@@ -1093,6 +1102,21 @@ class TaskGeneration:
                     for task_type, feature_list, feature_dict in task_options:
                         if len(feature_list) > 0:
                             random_feature = random.choice(feature_list)
+                            if self.use_level1_tasks:
+                                if isinstance(random_feature, list):
+                                    skip_flag = False
+                                    for rf in random_feature:
+                                        if cur_scene_graph.nodes.get(rf, None) is not None and cur_scene_graph.nodes[rf].is_ambiguous():
+                                            skip_flag = True
+                                    if skip_flag:
+                                        continue
+                                else:
+                                    if cur_scene_graph.nodes.get(random_feature, None) is not None and cur_scene_graph.nodes.get(
+                                        random_feature, None) is not None and cur_scene_graph.nodes[
+                                        random_feature
+                                    ].is_ambiguous():
+                                        continue
+                            
                             goal_translation_2d = feature_dict[random_feature]
                             goal_translation_3d = [
                                 goal_translation_2d[0],
@@ -1221,6 +1245,13 @@ class TaskGeneration:
             if max_task_num is not None
             else self.get_config().get("max_task_num", 10)
         )
+        
+        self.use_level1_tasks = self.get_config().get('use_level1_tasks')
+        
+        if self.use_level1_tasks:
+            self.CHAIN_NUM = 1
+            pass
+        
 
         self.CHAIN_NUM = task_length
         self.MAX_TASK_NUM = max_task_num

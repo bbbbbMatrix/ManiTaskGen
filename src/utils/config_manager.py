@@ -7,12 +7,14 @@ from pathlib import Path
 import os
 import numpy as np
 import json
-
+import sys
 # from core import outcome_based_task_generation
 import glog
+
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(current_dir, "../..")))
 from src.utils.run_context import PathResolver
-
-
 @dataclass
 class RawSceneConfig:
 
@@ -123,9 +125,9 @@ class ImageRendererConfig:
     """Image Renderer configuration"""
 
     EPS = 1e-6
-    default_fovy: float = np.deg2rad(60.0)  # Default field of view in radians
+    default_fovy: float = float(np.deg2rad(60.0))  # Default field of view in radians
     default_fovy_range: List[float] = field(
-        default_factory=lambda: [np.deg2rad(10.0), np.deg2rad(100.0)]
+        default_factory=lambda: [float(np.deg2rad(10.0)), float(np.deg2rad(100.0))]
     )
     default_focus_ratio: float = 0.5
     default_near: float = 0.1
@@ -212,27 +214,27 @@ class GroundCoverageConfig:
     z_range: List[float] = field(default_factory=lambda: [0.1, 1])  # Z-axis range
 
 
-@dataclass
-class TaskPrimitiveConfig:
-    """Task primitive configuration"""
+# @dataclass
+# class TaskPrimitiveConfig:
+#     """Task primitive configuration"""
 
-    default_action: str = "move"
-    support_directions: List[str] = field(
-        default_factory=lambda: [
-            "front",
-            "rear",
-            "left",
-            "right",
-            "center",
-            "front-left",
-            "front-right",
-            "rear-left",
-            "rear-right",
-        ]
-    )
-    support_relations: List[str] = field(
-        default_factory=lambda: ["at", "on", "in", "around", "between", "freespace"]
-    )
+#     default_action: str = "move"
+#     support_directions: List[str] = field(
+#         default_factory=lambda: [
+#             "front",
+#             "rear",
+#             "left",
+#             "right",
+#             "center",
+#             "front-left",
+#             "front-right",
+#             "rear-left",
+#             "rear-right",
+#         ]
+#     )
+#     support_relations: List[str] = field(
+#         default_factory=lambda: ["at", "on", "in", "around", "between", "freespace"]
+#     )
 
 
 @dataclass
@@ -241,6 +243,7 @@ class ProcessbasedTaskConfig:
 
     max_task_length: int = 5  # Maximum length of an atomic task
     max_task_num: int = 1000  # Maximum number of atomic tasks
+    use_level1_tasks: bool = True  # Whether to use level 1 tasks
 
 
 @dataclass
@@ -359,6 +362,7 @@ class OutcomeBaseGenerationConfig:
         "anthropic/claude-3.5-haiku",
         "google/gemini-2.5-flash-lite-preview-06-17",
     ]
+    task_num_per_pattern: int = 5
     # manitaskot_pattern_file: str = "data/templates/manitask_ot200.txt"
     # output_dir: str = "./out/outcome_based_task.txt"
 
@@ -373,12 +377,244 @@ class RenameEngineConfig:
     model: str = "openai/gpt-4.1-mini"
 
 
+@dataclass 
+class CommonConfig:
+    """Common configuration parameters"""
+    
+    #openrouter api
+    open_router: OpenRouterConfig = field(default_factory=OpenRouterConfig)
+    
+    scene_graph_pkl_load_path : Optional[str] = (
+        "${run_dir}/cache/scene_graph.pkl"  # Path to the input JSON scene file
+    )
+    
+
+@dataclass 
+class PreProcessingConfig: 
+    
+    """Stage 1 specific configuration parameters"""
+    
+    raw_scene: RawSceneConfig = field(default_factory=RawSceneConfig)
+    
+    rename_engine: RenameEngineConfig = field(default_factory=RenameEngineConfig)
+    
+    use_renaming_engine: bool = True  # Whether to use renaming engine
+    input_json_path: Optional[str] = (
+        "./data/datasets/replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
+    )
+    output_json_path: Optional[str] = "./replica_apt_0_parsed.json"  # Output file path
+    entity_json_path: Optional[str] = ( 
+        "./replica_apt_0_entities.json"  # Entity file path
+    )
+    output_dir: str = "./output/"  # Output directory for results
+    mode: str = "online"  # Mode: "online" or "manual"
+    dataset_root_path: str = (  
+        "data/datasets/replica_dataset"  # Path to the SAPIEN dataset root directory
+    )
+    stage_path_prefix: str = (
+        "data/datasets/replica_dataset"  # Path prefix for stage files
+    )
+    visual_path_prefix: str = (
+        "data/datasets/replica_dataset/objects"  # Path prefix for visual objects
+    )
+    collision_path_prefix: str = (
+        "data/datasets/replica_dataset/objects/convex"  # Path prefix for collision objects, don't need if the dataset has no collision objects
+    )
+    urdf_path_prefix: str = (
+        "data/datasets/replica_dataset/urdf"  # Path prefix for URDF files, don't need if the dataset has no URDF files
+    )
+    object_config_path: str = (
+        "data/datasets/replica_dataset/configs/objects"  # Path to the object configuration 
+    )
+    
+    scene_graph_pkl_save_path: Optional[str] = (
+        "${run_dir}/cache/scene_graph.pkl"  # Path to the scene graph pickle file
+    )
+    
+    image4rename_path: Optional[str] = (
+        "${run_dir}/images/image4rename"  # Path to the image for renaming
+    )
+    
+    rename_dict_path: Optional[str] = (
+        "${run_dir}/cache/rename_dict.json"  # Path to the renaming dictionary
+    )
+    
+@dataclass 
+class ProcessTaskGenConfig:
+    """Stage 2a specific configuration parameters"""
+    
+    process_based_task: ProcessbasedTaskConfig = field(
+        default_factory=ProcessbasedTaskConfig
+    )
+    
+    process_based_task_pkl_save_path: Optional[str] = (
+        "${run_dir}/cache/process_based_task.pkl"
+    )
+    
+    process_based_task_txt_save_path: Optional[str] = (
+        "${run_dir}/output/process_based_task.txt"
+    )
+
+@dataclass 
+class OutcomeTaskGenConfig: 
+    """Stage 2b specific configuration parameters"""
+    
+    outcome_based_task: OutcomeBaseGenerationConfig = field(
+        default_factory=OutcomeBaseGenerationConfig
+    )
+    
+    outcome_based_task_txt_save_path: Optional[str] = (
+        "${run_dir}/output/outcome_based_task.txt"
+    )
+    
+    image4vote_path: Optional[str] = (
+        "${run_dir}/images/image4vote"  # Path to the image for voting
+    )
+    
+    manitaskot_pattern_file: str = "data/templates/manitask_ot200.txt"
+
+
+@dataclass 
+class BenchmarkConfig: 
+    """Stage 3 specific configuration parameters"""
+    
+    vlm_interactor: VlmInteractorConfig = field(default_factory=VlmInteractorConfig)
+    
+    image4interaction_path: Optional[str] = (
+        "${run_dir}/images/image4interact"  # Path to the image for interaction
+    )
+    
+    reflection_txt_load_path: Optional[str] = (
+        "${run_dir}/reflection/load_reflection.txt"  # Path to the reflection text file
+    )
+    
+    reflection_txt_save_path: Optional[str] = (
+        "${run_dir}/reflection/save_reflection.txt"  # Path to save
+    )
+    
+    benchmark_model_name: str = "openai/gpt-4.1-mini"
+    generate_mistake_note: bool = True  # Whether to generate mistake notes
+    use_mistake_note: int = 1  # Whether to use mistake notes (
+    result_file_path: Optional[str] = (
+        "${run_dir}/output/result.txt"  # Path to save the result file
+    )
+    
+@dataclass
+class MiscConfig:
+    """Miscellaneous configuration parameters"""
+    
+    image_path: Optional[str] = "${run_dir}/data/images"  # Path to save images
+    sapien_config: SapienConfig = field(default_factory=SapienConfig)
+    scene_type: SceneType = field(default_factory=SceneType)
+    basic_geometry_config: BasicGeometryConfig = field(default_factory=BasicGeometryConfig)
+    image_renderer_config: ImageRendererConfig = field(default_factory=ImageRendererConfig)
+    concave_processor_config: ConcaveProcessorConfig = field(default_factory=ConcaveProcessorConfig)
+    scene_config: SceneConfig = field(default_factory=SceneConfig)
+    mesh_processor_config: MeshProcessorConfig = field(default_factory=MeshProcessorConfig)
+    scene_element_config: SceneElementConfig = field(default_factory=SceneElementConfig)
+    rectangle_query_config: RectangleQueryConfig = field(default_factory=RectangleQueryConfig)
+    task_interaction_config: TaskInteractionConfig = field(default_factory=TaskInteractionConfig)  
+    
+    benchmark_prompt_template_path: str = "data/templates/benchmark_prompts.json"
+    reflection_prompt_template_path: str = "data/templates/reflection_prompts.json"
+    rename_engine_prompt_template_path: str = "data/templates/renaming_engine.json"
+    interact_prompt_template_path: str = "data/templates/interact_prompts.json"  
+    
+    
+@dataclass 
+class StageBasedConfig: 
+    """Stage-based configuration parameters"""
+    
+    common: CommonConfig = field(default_factory=CommonConfig)
+    stage1_pre_processing: PreProcessingConfig = field(
+        default_factory=PreProcessingConfig
+    )
+    stage2a_process_task_generation: ProcessTaskGenConfig = field(default_factory=ProcessTaskGenConfig)
+    stage2b_outcome_task_generation: OutcomeTaskGenConfig = field(default_factory=OutcomeTaskGenConfig)
+    stage3_benchmark: BenchmarkConfig = field(default_factory=BenchmarkConfig)
+    utilities: MiscConfig = field(default_factory=MiscConfig)
+    
+@dataclass 
+class StageBasedConfigLoader: 
+    
+    """Loader for stage-based configuration from a YAML file"""
+    
+ 
+    def __init__(self):
+        self.stage_config = StageBasedConfig()
+    
+    def load_from_dict(self, config_dict: Dict[str, Any]) -> None:
+        """load configuration from a dictionary"""
+        
+        if "common" in config_dict:
+            self._update_nested_config(self.stage_config.common, config_dict["common"])
+        
+        if "stage1" in config_dict:
+            self._update_nested_config(self.stage_config.stage1, config_dict["stage1"])
+        
+        if "stage2" in config_dict:
+            self._update_nested_config(self.stage_config.stage2, config_dict["stage2"])
+        
+        if "stage3" in config_dict:
+            self._update_nested_config(self.stage_config.stage3, config_dict["stage3"])
+        
+        if "stage4" in config_dict:
+            self._update_nested_config(self.stage_config.stage4, config_dict["stage4"])
+        
+        if "utility" in config_dict:
+            self._update_nested_config(self.stage_config.utility, config_dict["utility"])
+    
+    def _update_nested_config(self, config_obj: Any, config_dict: Dict[str, Any]) -> None:
+        """Recursively update nested configuration objects from a dictionary"""
+        for key, value in config_dict.items():
+            if hasattr(config_obj, key):
+                attr = getattr(config_obj, key)
+                if isinstance(attr, (int, float, str, bool, type(None))):
+                    setattr(config_obj, key, value)
+                elif isinstance(attr, list) and isinstance(value, list):
+                    setattr(config_obj, key, value)
+                elif hasattr(attr, "__dataclass_fields__") and isinstance(value, dict):
+                    self._update_nested_config(attr, value)
+                else:
+                    try:
+                        setattr(config_obj, key, value)
+                    except Exception as e:
+                        glog.error(f"Failed to set attribute {key} with value {value}: {e}")
+
+    
+
+    def populate_app_config(self, app_config: 'AppConfig') -> None:
+        """Populate the main application configuration from stage-based configuration"""
+        
+        app_config_attrs = set(app_config.__dict__.keys())
+        
+        stage_configs = [
+            self.stage_config.common,
+            self.stage_config.stage1_pre_processing,
+            self.stage_config.stage2a_process_task_generation,
+            self.stage_config.stage2b_outcome_task_generation,
+            self.stage_config.stage3_benchmark,
+            self.stage_config.utilities,
+        ]
+        
+  
 @dataclass
 class AppConfig:
     """Main application configuration"""
 
+    # common: CommonConfig = field(default_factory=CommonConfig)
+    # pre_processing: PreProcessingConfig = field(
+    #     default_factory=PreProcessingConfig
+    # )
+    # process_task_generation: ProcessTaskGenConfig = field(default_factory=ProcessTaskGenConfig)
+    # outcome_task_generation: OutcomeTaskGenConfig = field(default_factory=OutcomeTaskGenConfig)
+    # benchmark: BenchmarkConfig = field(default_factory=BenchmarkConfig)
+    # misc: MiscConfig = field(default_factory=MiscConfig)
+
+    pass
+
     ground_coverage: GroundCoverageConfig = field(default_factory=GroundCoverageConfig)
-    task_primitive: TaskPrimitiveConfig = field(default_factory=TaskPrimitiveConfig)
+    # task_primitive: TaskPrimitiveConfig = field(default_factory=TaskPrimitiveConfig)
     process_based_task: ProcessbasedTaskConfig = field(
         default_factory=ProcessbasedTaskConfig
     )
@@ -423,13 +659,12 @@ class AppConfig:
     )
     output_dir: str = "./output/"  # Output directory for results
     mode: str = "online"  # Mode: "online" or "manual"
-    model_name: str = "openai/gpt-4.1"  # Model name
-    log_level: str = "INFO"
+    # log_level: str = "INFO"
 
-    cache_enabled: bool = True
-    random_seed: Optional[int] = None
+    # cache_enabled: bool = True
+    # random_seed: Optional[int] = None
 
-    task_num: int = 5  # Number of tasks to generate
+    # task_num: int = 5  # Number of tasks to generate
 
     dataset_root_path: str = (
         "data/datasets/replica_dataset"  # Path to the SAPIEN dataset root directory
@@ -545,6 +780,49 @@ class ConfigManager:
             cls._instance = cls()
         return cls._instance
 
+
+    def save_to_yaml_staged(self, config_path: str) -> None:
+        
+        config_path = Path(config_path)
+        try: 
+            staged_config_dict = self._convert_app_config_to_staged_format()
+            
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(config_path, "w", encoding="utf-8") as f:
+                yaml.dump(staged_config_dict, f, default_flow_style=False, allow_unicode=True)
+                
+            glog.info(f"Configuration saved to {config_path} in staged format")
+        except Exception as e:
+            glog.error(f"Failed to save configuration to {config_path}: {e}")
+            
+    def _convert_app_config_to_staged_format(self) -> StageBasedConfig:
+        """Convert AppConfig to StageBasedConfig format"""
+        
+        staged_config = StageBasedConfig()
+        
+        loader = StageBasedConfigLoader()
+        loader.populate_app_config(self.config)
+        staged_config = loader.stage_config
+        
+        import dataclasses
+        
+        def dataclass_to_dict(obj):
+            if dataclasses.is_dataclass(obj):
+                result = {}
+                for field in dataclasses.fields(obj):
+                    value = getattr(obj, field.name)
+                    result[field.name] = dataclass_to_dict(value)
+                return result
+            elif isinstance(obj, list):
+                return [dataclass_to_dict(item) for item in obj]
+            else:
+                return obj
+        import ipdb; ipdb.set_trace()
+        return dataclass_to_dict(staged_config)
+        
+        
+        
+
     def __init__(
         self, config_file_path: Optional[str] = None, run_dir: Optional[str] = None
     ):
@@ -615,7 +893,11 @@ class ConfigManager:
             with open(config_path, "r", encoding="utf-8") as f:
                 config_dict = yaml.safe_load(f)
 
-            self._update_config_from_dict(config_dict)
+            try:
+                self._update_config_from_dict(config_dict)
+            except Exception as e:
+                glog.warning(f"Failed to update config using new method, falling back to legacy method: {e}")
+                self._update_config_from_dict_legacy(config_dict)
             self.config_file_path = config_path
             print(f"Loaded configuration file: {config_path}")
         except Exception as e:
@@ -640,7 +922,56 @@ class ConfigManager:
         except Exception as e:
             print(f"Failed to load configuration file: {e}")
 
+    def _update_nested_config(self, config_obj: Any, config_dict: Dict[str, Any]) -> None:
+        """Recursively update nested configuration objects from a dictionary"""
+        for key, value in config_dict.items():
+            if hasattr(config_obj, key):
+                attr = getattr(config_obj, key)
+                if isinstance(attr, (int, float, str, bool, type(None))):
+                    setattr(config_obj, key, value)
+                elif isinstance(attr, list) and isinstance(value, list):
+                    setattr(config_obj, key, value)
+                elif hasattr(attr, "__dataclass_fields__") and isinstance(value, dict):
+                    self._update_nested_config(attr, value)
+                else:
+                    try: 
+                        setattr(config_obj, key, value)
+                    except Exception as e:
+                        glog.error(f"Failed to set attribute {key} with value {value}: {e}")
+
     def _update_config_from_dict(self, config_dict: Dict[str, Any]) -> None:
+        """Update configuration from dictionary"""
+        # import ipdb; ipdb.set_trace()
+        # Check if the config_dict uses legacy keys
+        if "common" in config_dict:
+            # New format with sections
+            common_config = config_dict.get("common", {})
+            self._update_nested_config(self.config.common, common_config) 
+            
+        if "stage1_pre_processing" in config_dict:
+            pre_processing_config = config_dict.get("stage1_pre_processing", {})
+            self._update_nested_config(self.config.pre_processing, pre_processing_config)
+            
+        if "stage2a_process_task_generation" in config_dict:
+            process_task_gen_config = config_dict.get("stage2a_process_task_generation", {})
+            self._update_nested_config(self.config.process_task_generation, process_task_gen_config)
+            
+        if "stage2b_outcome_task_generation" in config_dict:
+            outcome_task_gen_config = config_dict.get("stage2b_outcome_task_generation", {})
+            self._update_nested_config(self.config.outcome_task_generation, outcome_task_gen_config)
+            
+        if "stage3_benchmark" in config_dict:
+            benchmark_config = config_dict.get("stage3_benchmark", {})
+            self._update_nested_config(self.config.benchmark, benchmark_config)
+            
+        if "utilities" in config_dict:
+            misc_config = config_dict.get("utilities", {})
+            self._update_nested_config(self.config.misc, misc_config)
+            
+            
+        self._resolve_all_paths()
+
+    def _update_config_from_dict_legacy(self, config_dict: Dict[str, Any]) -> None:
         """Update configuration from dictionary"""
 
         # Update ground coverage configuration
@@ -650,12 +981,12 @@ class ConfigManager:
                 if hasattr(self.config.ground_coverage, key):
                     setattr(self.config.ground_coverage, key, value)
 
-        # Update task primitive configuration
-        if "task_primitive" in config_dict:
-            tp_config = config_dict["task_primitive"]
-            for key, value in tp_config.items():
-                if hasattr(self.config.task_primitive, key):
-                    setattr(self.config.task_primitive, key, value)
+        # # Update task primitive configuration
+        # if "task_primitive" in config_dict:
+        #     tp_config = config_dict["task_primitive"]
+        #     for key, value in tp_config.items():
+        #         if hasattr(self.config.task_primitive, key):
+        #             setattr(self.config.task_primitive, key, value)
 
         # Update process-based task configuration
         if "process_based_task" in config_dict:
@@ -873,6 +1204,8 @@ class ConfigManager:
     #         print(f"Configuration saved to: {config_path}")
     #     except Exception as e:
     #         print(f"Failed to save configuration: {e}")
+
+    
     def save_to_yaml(self, config_path: str) -> None:
         """Save current configuration to YAML file"""
         config_path = Path(config_path)
@@ -917,15 +1250,47 @@ class ConfigManager:
 
         return value
 
-    def _config_to_dict(self, config_obj: Any) -> Dict[str, Any]:
-        """Convert configuration object to dictionary recursively."""
-        if not hasattr(config_obj, "__dict__"):
-            return config_obj
-
-        result = {}
-        for key, value in config_obj.__dict__.items():
-            result[key] = self._convert_value_to_serializable(value)
-        return result
+    def _config_to_dict(self, obj) -> Any:
+        """Convert a configuration object to a dictionary, handling numpy types"""
+        if obj is None:
+            return None
+        elif isinstance(obj, (str, int, bool)):
+            return obj
+        elif isinstance(obj, float):
+            return float(obj)  # ensure float is standard Python float
+        elif isinstance(obj, np.floating):
+            return float(obj)  # turn numpy float into Python float
+        elif isinstance(obj, np.integer):
+            return int(obj)    # convert numpy integer to Python int
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()  # convert numpy array to list
+        elif isinstance(obj, (list, tuple)):
+            return [self._config_to_dict(item) for item in obj]
+        elif isinstance(obj, dict):
+            return {key: self._config_to_dict(value) for key, value in obj.items()}
+        elif hasattr(obj, "__dataclass_fields__"):
+            # handle dataclass objects
+            result = {}
+            for field in obj.__dataclass_fields__:
+                value = getattr(obj, field)
+                result[field] = self._config_to_dict(value)
+            return result
+        elif hasattr(obj, "__dict__"):
+            # handle general objects
+            result = {}
+            for key, value in obj.__dict__.items():
+                if not key.startswith('_'):  # skip private attributes
+                    result[key] = self._config_to_dict(value)
+            return result
+        else:
+            # Fallback for other types
+            try:
+                if isinstance(obj, (np.number, np.bool_)):
+                    return obj.item()  # convert numpy scalar to native Python type
+                else:
+                    return obj
+            except:
+                return str(obj)
 
     def print_config(self) -> None:
         """Print current configuration"""
@@ -1102,3 +1467,20 @@ def init_config(config_file_path: Optional[str] = None) -> None:
     """Initialize global configuration manager with config file"""
     global config_manager
     config_manager = ConfigManager(config_file_path)
+
+
+
+def main():
+    
+    
+    config_manager = ConfigManager(config_file_path="configs/staged_config.yaml")
+    
+    config_manager._convert_app_config_to_staged_format()
+    
+    
+    
+    config_manager.save_to_yaml_staged("configs/staged_config_2.yaml")
+    
+
+if __name__ == "__main__":
+    main()

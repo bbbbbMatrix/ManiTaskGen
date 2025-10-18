@@ -21,6 +21,7 @@ from src.utils.config_manager import (
 )
 from src.vlm_interaction.vlm_interactor import VLMInteractor
 from src.core.task_feasibility_evaluator import TaskFeasibilityEvaluator
+
 import os
 import pickle
 
@@ -842,6 +843,8 @@ class OutcomeBasedTask:
         )
         self.platform_list = platform_list if platform_list is not None else []
         self.room_object_list = room_object_list if room_object_list is not None else []
+        self.config = get_outcome_based_task_generation_config()
+        self.task_num_per_pattern = self.config.task_num_per_pattern
 
     def __str__(self):
         return f"Task: {self.task_description}, Pattern: {self.task_pattern}, Multi-layer Objects: {self.multi_layer_object_list}, Platforms: {self.platform_list}, Room Objects: {self.room_object_list}"
@@ -1049,8 +1052,10 @@ class OutcomeBasedTaskGenerator:
         glog.info(f"Generated {len(all_task_list)} tasks.")
         return self.all_task_list
 
-    def generate_task_with_all_patterns(self, task_num=2, desired_pattern_list=None):
+    def generate_task_with_all_patterns(self, task_num=None, desired_pattern_list=None):
 
+        task_num = self.task_num_per_pattern if task_num is None else 1
+        
         desired_pattern_list = (
             desired_pattern_list
             if desired_pattern_list is not None
