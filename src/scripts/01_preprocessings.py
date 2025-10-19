@@ -262,7 +262,7 @@ def main(args):
             pickle.dump(scene_graph, f)
 
     rename_dict = {}
-    
+
     if main_config.use_renaming_engine:
         if main_config.rename_dict_path is not None and os.path.exists(
             main_config.rename_dict_path

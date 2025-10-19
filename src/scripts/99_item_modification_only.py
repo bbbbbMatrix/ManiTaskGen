@@ -215,7 +215,7 @@ def main(args):
 
     scene_graph.rename_all_features(rename_dict)
 
-   # import ipdb; ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
     # initial_atomic_task = copy.deepcopy(chained_task)
     initial_scene_graph = copy.deepcopy(scene_graph)
     result = []
@@ -241,7 +241,9 @@ def main(args):
         another_scene.update_render()
 
     manual_vlm_interactor = vlm_interactor.VLMInteractor(
-        mode=main_config.mode, model=main_config.benchmark_model_name, max_interaction_count=1000
+        mode=main_config.mode,
+        model=main_config.benchmark_model_name,
+        max_interaction_count=1000,
     )
 
     scene_graph.corresponding_scene = another_scene
@@ -277,7 +279,6 @@ def main(args):
         final_scene_graph.nodes["GROUND"],
         output_file="final_scene_graph",
     )
-
 
 
 # %%

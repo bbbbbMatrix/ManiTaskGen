@@ -192,74 +192,76 @@ class SapienSceneManager:
             mesh = builder.build(name=obj["name"])
 
         mesh.set_pose(sapien.Pose(p=position, q=quaternion))
-        
-    def create_body_only_urdf_in_memory(self, urdf_path: str, template_name: str) -> str:
+
+    def create_body_only_urdf_in_memory(
+        self, urdf_path: str, template_name: str
+    ) -> str:
         """Process URDF in memory, keeping only root and body links, using a temporary file with automatic cleanup."""
-        
+
         # Read the original URDF
         tree = ET.parse(urdf_path)
         root = tree.getroot()
-        
+
         # Define the names of links to keep
         allowed_links = {"root", "body"}
-        
+
         # Collect links and joints to remove
         links_to_remove = []
         joints_to_remove = []
-        
+
         # glog.info(f"Processing URDF: {template_name}")
         # glog.info("Original links found:")
-        
+
         # Find all links
-        all_links = [link.get('name') for link in root.findall('link')]
+        all_links = [link.get("name") for link in root.findall("link")]
         for link_name in all_links:
             glog.info(f"  - {link_name}")
             if link_name not in allowed_links:
                 links_to_remove.append(link_name)
-        
+
         # glog.info(f"Links to keep: {[l for l in all_links if l in allowed_links]}")
         # glog.info(f"Links to remove: {links_to_remove}")
-        
+
         # Find all related joints
-        for joint in root.findall('joint'):
-            joint_name = joint.get('name')
-            parent_elem = joint.find('parent')
-            child_elem = joint.find('child')
-            
+        for joint in root.findall("joint"):
+            joint_name = joint.get("name")
+            parent_elem = joint.find("parent")
+            child_elem = joint.find("child")
+
             if parent_elem is not None and child_elem is not None:
-                parent_link = parent_elem.get('link')
-                child_link = child_elem.get('link')
-                
+                parent_link = parent_elem.get("link")
+                child_link = child_elem.get("link")
+
                 # Remove the joint if it connects to a link to be removed
                 if parent_link in links_to_remove or child_link in links_to_remove:
                     joints_to_remove.append(joint_name)
                     # glog.info(f"Removing joint: {joint_name} (connects {parent_link} -> {child_link})")
-        
+
         # Remove these elements from the XML
         for link_name in links_to_remove:
             for link in root.findall(f"link[@name='{link_name}']"):
                 root.remove(link)
-               # glog.info(f"Removed link: {link_name}")
-        
+            # glog.info(f"Removed link: {link_name}")
+
         for joint_name in joints_to_remove:
             for joint in root.findall(f"joint[@name='{joint_name}']"):
                 root.remove(joint)
-               # glog.info(f"Removed joint: {joint_name}")
-        
+            # glog.info(f"Removed joint: {joint_name}")
+
         urdf_dir = os.path.dirname(urdf_path)
         temp_filename = f"{template_name}_body_only_temp.urdf"
         temp_path = os.path.join(urdf_dir, temp_filename)
-        
+
         try:
             # Write the processed URDF to a temporary file
-            with open(temp_path, 'w') as temp_file:
+            with open(temp_path, "w") as temp_file:
                 # Format the XML output
                 ET.indent(tree, space="  ")
-                tree.write(temp_file, encoding='unicode', xml_declaration=True)
-            
-          #  glog.info(f"Created temporary URDF: {temp_path}")
+                tree.write(temp_file, encoding="unicode", xml_declaration=True)
+
+            #  glog.info(f"Created temporary URDF: {temp_path}")
             return temp_path
-            
+
         except Exception as e:
             # Ensure cleanup of the temporary file in case of error
             if os.path.exists(temp_path):
@@ -282,8 +284,10 @@ class SapienSceneManager:
 
         # Create a URDF containing only the body (temporary file)
         original_urdf_path = articulated_meta["urdf_path"]
-        processed_urdf_path = self.create_body_only_urdf_in_memory(original_urdf_path, template_name)
-        
+        processed_urdf_path = self.create_body_only_urdf_in_memory(
+            original_urdf_path, template_name
+        )
+
         try:
             # URDF loading with the processed file
             urdf_loader = scene.create_urdf_loader()
@@ -302,22 +306,24 @@ class SapienSceneManager:
             }
 
             if base_name in urdf_adjustment:
-                pos[2] -= urdf_adjustment[base_name] - self.config.urdf_z_adjustment_offset
+                pos[2] -= (
+                    urdf_adjustment[base_name] - self.config.urdf_z_adjustment_offset
+                )
 
             # Build articulation with the processed URDF
             builder = urdf_loader.parse(processed_urdf_path)[0][0]
             pose = sapien.Pose(pos, quaternion)
             builder.initial_pose = pose
-            
+
             articulation = builder.build()
-            
+
             # Verify the loading result
             glog.info(f"Successfully loaded {template_name} with links:")
             for link in articulation.get_links():
                 glog.info(f"  - {link.get_name()}")
-            
+
             return articulation
-            
+
         finally:
             # Automatically clean up the temporary file
             try:
@@ -325,7 +331,9 @@ class SapienSceneManager:
                     os.unlink(processed_urdf_path)
                     glog.info(f"Cleaned up temporary file: {processed_urdf_path}")
             except Exception as e:
-                glog.info(f"Warning: Could not clean up temporary file {processed_urdf_path}: {e}")
+                glog.info(
+                    f"Warning: Could not clean up temporary file {processed_urdf_path}: {e}"
+                )
 
     # def add_articulation_to_scene(
     #     self, scene: sapien.Scene, articulated_meta: Dict[str, Any]
@@ -346,8 +354,7 @@ class SapienSceneManager:
     #     urdf_loader = scene.create_urdf_loader()
     #     urdf_loader.name = f"{template_name}"
     #     urdf_loader.fix_root_link = articulated_meta["fixed_base"]
-        
-        
+
     #     urdf_loader.disable_self_collisions = True
     #     import ipdb; ipdb.set_trace()
     #     # Position adjustment based on URDF
@@ -369,19 +376,18 @@ class SapienSceneManager:
     #     builder.initial_pose = pose
     #     #import pdb; pdb.set_trace()
     #     articulation = builder.build()
-        
+
     #     # Remove unnecessary bodies
     #     for entity in scene.entities[::-1]:
     #         if 'body' in entity.get_name():
 
-    #             break 
+    #             break
     #         glog.info(entity.get_name())
     #         for component in entity.get_components():
     #             if isinstance(component, sapien.pysapien.render.RenderBodyComponent):
     #                 component.visibility = 1e-2
     #         #entity.remove_from_scene()
     #     #import pdb; pdb.set_trace()
-        
 
     def load_objects_from_json(self, scene: sapien.Scene, json_file_path: str):
         """Load objects from JSON file into the scene"""

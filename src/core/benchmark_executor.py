@@ -1409,8 +1409,8 @@ class BenchmarkExecutor:
 
         # Original ambiguous handling logic...
         if task.item.is_ambiguous:
-         #   glog.info(f"Handling ambiguous object...{task.item.name}")
-#
+            #   glog.info(f"Handling ambiguous object...{task.item.name}")
+            #
             object_to_show = self.scene_graph.nodes[task.item.name]
             save_path = f"{self.image_path}/{self.model}/Task_{task_id}_{task_order}th_AmbiguousObject.png"
             img = object_to_show.auto_take_non_ground_object_picture(
@@ -1819,7 +1819,7 @@ class BenchmarkExecutor:
             moving_rect=target_rectangle,
             fixed_rect_list=rectangle_list,
         )
-      #  import ipdb; ipdb.set_trace()
+        #  import ipdb; ipdb.set_trace()
 
         if translation_status == -1:
             placement_too_small_hint = self.hint_prompt_helper.generate_hint_prompts(

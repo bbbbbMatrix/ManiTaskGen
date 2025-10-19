@@ -515,9 +515,6 @@ class OutcomeBasedTaskPattern:
             else:
                 return placeholder
 
-    
-   
-
         task_description = re.sub(r"\[.*?\]", replace_placeholder, self.task_pattern)
 
         print(f"Generated Task Description: {task_description}")
@@ -979,7 +976,7 @@ class OutcomeBasedTaskGenerator:
     def generate_task_with_all_patterns(self, task_num=None, desired_pattern_list=None):
 
         task_num = self.task_num_per_pattern if task_num is None else 1
-        
+
         desired_pattern_list = (
             desired_pattern_list
             if desired_pattern_list is not None

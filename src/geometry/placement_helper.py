@@ -355,8 +355,8 @@ class PlacementHelper:
                     )
                     for i in range(len(normalized_fixed_rect_list))
                 ]
-                
-               # import ipdb; ipdb.set_trace()
+
+                # import ipdb; ipdb.set_trace()
 
                 intersection_area = PolygonProcessor.union_numpy_polygon_list_area(
                     intersection_list
@@ -371,9 +371,16 @@ class PlacementHelper:
 
                     intersect_01_matrix[idx, idy] = 1
                 else:
-                    print(intersection_area / (
-                        (normalized_moving_rect_xmax - normalized_moving_rect_xmin)*(normalized_moving_rect_ymax - normalized_moving_rect_ymin)
-                    ))
+                    print(
+                        intersection_area
+                        / (
+                            (normalized_moving_rect_xmax - normalized_moving_rect_xmin)
+                            * (
+                                normalized_moving_rect_ymax
+                                - normalized_moving_rect_ymin
+                            )
+                        )
+                    )
                     intersect_01_matrix[idx, idy] = 0
 
                 pass

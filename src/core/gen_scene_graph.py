@@ -2373,8 +2373,7 @@ class TreeNode:
                 )
 
                 standing_direction = 0
-       # import ipdb; ipdb.set_trace()
-       
+        # import ipdb; ipdb.set_trace()
 
         self_center = self.get_center()
         border = bel_ground_platform.get_bbox_line(standing_direction)
