@@ -262,9 +262,7 @@ def main(args):
             pickle.dump(scene_graph, f)
 
     rename_dict = {}
-    main_config.rename_dict_path = (
-        "/mnt/windows_e/workplace/task_generation/runs/cache/rename_dict.json"
-    )
+    
     if main_config.use_renaming_engine:
         if main_config.rename_dict_path is not None and os.path.exists(
             main_config.rename_dict_path

@@ -1,0 +1,200 @@
+Arrange [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] by height and type.
+Reorganize the left side of the top of [PLATFORM0].
+Set up an artistic arrangement on [PLATFORM0] by positioning [SUB-PLATFORM-OBJECTS00] in a pattern that highlights their artistic qualities.
+Organize the objects on [PLATFORM0] into a "symphony" by arranging them in a pattern that resembles musical notes and instruments.
+Help me straighten [PLATFORM0] to make it tidy.
+Optimize [PLATFORM0] by categorizing and aligning all [SUB-PLATFORM-OBJECTS00] into sections, creating a clear and organized system for easy access.
+Assemble an interactive project display on [PLATFORM0] by collecting all related materials and organizing them to represent a project timeline.
+Organize the objects on [PLATFORM0] into a "geometric pattern" by arranging them in a series of interconnected shapes and lines.
+Align all [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] symmetrically.
+Create a functional workspace on [PLATFORM0] by strategically placing the [SUB-PLATFORM-OBJECTS00] to maximize efficiency and ergonomics.
+Create a symmetrical display on [PLATFORM0] by arranging the items into evenly spaced and aligned sections.
+Sort [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] by material and usage.
+Arrange [SUB-PLATFORM-CATEGORY-OBJECT00] on [PLATFORM0] by relevance.
+On [PLATFORM0], create a symmetrical arrangement of [SUB-PLATFORM-OBJECTS00] and [SUB-PLATFORM-OBJECTS01], alternating their positions in a pattern that emphasizes their distinct shapes and colors for a harmonious aesthetic.
+Organize all the items on [PLATFORM0] by separating them into categories: place all [SUB-PLATFORM-OBJECTS00] in a single stack, align any [SUB-PLATFORM-OBJECTS01] in a row, and move [SUB-PLATFORM-OBJECTS02] to the left side.
+Reorganize [PLATFORM0] by color-coding [SUB-PLATFORM-CATEGORY-OBJECTS00] in a gradient order.
+Reorganize the contents of [PLATFORM0] to enhance its functionality for a specific task, such as creating a dedicated space for [SUB-PLATFORM-OBJECTS00].
+Create a thematic display on [PLATFORM0].
+Reposition all [SUB-PLATFORM-OBJECTS00] on top of [PLATFORM0] to form a balanced layout, ensuring that no items obstruct the workspace in the center.
+Use items from [PLATFORM0] and [PLATFORM1] to create an artistic installation or arrangement on [PLATFORM2] that reflects a specific theme or concept.
+Rearrange the [SUB-PLATFORM-OBJECTS00] and [SUB-PLATFORM-OBJECTS01] scattered across the surface of [PLATFORM0] into an organized, color-coordinated display. Ensure that each category of items is neatly grouped together and aligned parallel to the edges of the [PLATFORM0].
+Design a "jigsaw puzzle" on [PLATFORM0] by arranging the objects in a way that creates a cohesive whole.
+Sort all [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] by material type.
+Arrange all [SUB-PLATFORM-OBJECTS00] on the top of [PLATFORM0] into a neatly ordered gradient, transitioning from the largest [SUB-PLATFORM-OBJECTS00] to the smallest, to create a visually appealing display.
+Create a "staircase" on [PLATFORM0] by arranging the objects to resemble steps.
+Create a pattern with the [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] by placing them in a spiral, starting from the center of the desk and expanding outward.
+Transform [PLATFORM0] into a presentation space by placing colorful [SUB-PLATFORM-CATEGORY-OBJECT00] to create an engaging backdrop.
+Design a pattern with [SUB-PLATFORM-OBJECTS00] on [PLATFORM0].
+On [PLATFORM0], set up an educational arrangement with [SUB-PLATFORM-CATEGORY-OBJECTS00], making sure that each item is placed for optimal learning and interaction.
+Create an aesthetically pleasing arrangement of [SUB-PLATFORM-OBJECTS00] on [PLATFORM0]. Place [SUB-PLATFORM-OBJECTS00] in a staggered formation and group other [SUB-PLATFORM-OBJECTS01] to create visual interest.
+Design a thematic organization system on [PLATFORM0] for all [SUB-PLATFORM-OBJECTS00], separating items by color and function.
+Align [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] symmetrically by type.
+Rearrange [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] into a visually appealing pattern, ensuring even spacing and grouping by type.
+Reorganize [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] so that they are easily reachable.
+On [PLATFORM0], organize the [SUB-PLATFORM-CATEGORY-OBJECTS00] and [SUB-PLATFORM-CATEGORY-OBJECTS01] by size and functionality. Stack the [SUB-PLATFORM-CATEGORY-OBJECTS00] neatly in a pyramid-like structure on the left side while arranging the [SUB-PLATFORM-CATEGORY-OBJECTS01] on the right based on their power source.
+Organize the entire contents of [PLATFORM0] by categorizing items into labeled sections, with frequently used items at a central location for easy access.
+Move frequently used items from [PLATFORM0] and [PLATFORM1] to the top of [PLATFORM2], arranging them in a logical order.
+Position [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] for optimal accessibility.
+Locate all [SUB-OBJECTS0] in the room, group them by size, and place them in descending order along the edge of [PLATFORM0].
+Create a color gradient arrangement of [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0].
+Group [SUB-PLATFORM-CATEGORY-OBJECT00] on [PLATFORM0] by type and size.
+Design an interactive display on [PLATFORM0] by arranging all [SUB-PLATFORM-OBJECTS00] into a functional setup, ensuring easy interaction with each device.
+Reorganize [PLATFORM0] to group similar items together, placing frequently used items at eye level.
+Organize the clutter on the top of [PLATFORM0] by grouping all [SUB-PLATFORM-OBJECTS00] into designated areas and aligning them in a precise row or grid.
+Find all [SUB-LAYER-OBJECTS0] and [SUB-LAYER-OBJECTS1] scattered across [MULTILAYER-OBJECT0] and place them in chronological order by date of publication on the second shelf. Ensure they are aligned perfectly, with their spines facing outward.
+Transform the top of [PLATFORM0] into a "cityscape" by arranging objects to resemble buildings and roads.
+Reorganize the top of [PLATFORM0].
+Arrange [PLATFORM0], [PLATFORM1], and [PLATFORM2] for collaborative work, ensuring ample space for group discussions and joint tasks.
+On [PLATFORM0], create a designated workspace by clearing the center and arranging [SUB-PLATFORM-OBJECTS00] in a semi-circle around the periphery.
+Transform [PLATFORM0] into an "art gallery" by arranging the objects to resemble paintings, sculptures, and other forms of art.
+Bundle the [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] by length, secure them, and place each bundle in opposite corners of the desk.
+Take all [SUB-PLATFORM-OBJECTS00] from [PLATFORM0] and arrange them on [PLATFORM1] in an orderly fashion.
+Rearrange the scattered [SUB-PLATFORM-CATEGORY-OBJECTS00] and [SUB-PLATFORM-CATEGORY-OBJECTS01] on the [PLATFORM0] in a structured manner, creating a visually appealing workspace that fosters creativity and productivity.
+Carefully arrange all the [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] in ascending order of size, leaving a clear space in the center for the [SUB-PLATFORM-OBJECTS00] from [PLATFORM0] to be placed as a decorative piece.
+Create a neat and functional layout on top of [PLATFORM0]. Begin by removing unnecessary items and sorting the remaining objects. Place any [SUB-PLATFORM-OBJECTS00] near the back left corner. Arrange the [SUB-PLATFORM-OBJECTS01] in the back right corner and stack any loose [SUB-PLATFORM-OBJECTS02] at the front left of the desk, ensuring the center remains clean.
+Align [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] symmetrically by size.
+Clear all items from the top of [PLATFORM0] and perform a deep cleaning.
+Reorganize the [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] to create a cohesive color scheme.
+Arrange [SUB-PLATFORM-OBJECTS00] in a grid pattern on [PLATFORM0].
+Arrange the [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] by height.
+Transform the top of [PLATFORM0] into a "kaleidoscope" by arranging objects to create a colorful, symmetrical pattern.
+Design an aesthetic display of [SUB-PLATFORM-OBJECTS00] on [PLATFORM0].
+Create a balanced layout of [SUB-PLATFORM-OBJECTS00] on [PLATFORM0].
+Transform the top of [PLATFORM0] into an interactive display area, arranging [SUB-PLATFORM-OBJECTS00] in a way that highlights their features.
+Organize a color-coordinated shelf on [MULTILAYER-OBJECT0] by grouping items by their colors and arranging them in a gradient pattern.
+Transform the cluttered space on [PLATFORM0] into a functional work area by systematically removing unnecessary items and arranging the remaining objects in a neat and organized manner.
+Design an efficient storage system on [PLATFORM0] by categorizing and arranging small objects into separate sections to maximize space.
+Create a "city" on [PLATFORM0] by arranging the objects to resemble buildings, roads, and parks.
+Reorganize the items on [PLATFORM0] and [PLATFORM1] to create a thematic display that tells a story or represents a concept, ensuring that the display is both visually engaging and informative.
+Arrange [SUB-PLATFORM-CATEGORY-OBJECT00] on [PLATFORM0] by color gradient.
+Clear [PLATFORM0] by folding [SUB-PLATFORM-OBJECTS00] and placing them on [PLATFORM1].
+Transform the top of [PLATFORM0] into a "mini-garden" by arranging the objects to resemble a miniature landscape with flowers, trees, and paths.
+On [PLATFORM0], create a streamlined workstation by pushing all [SUB-PLATFORM-OBJECTS00] to the far side and arranging the [SUB-PLATFORM-OBJECTS01] ergonomically.
+Reorganize the top surface of [PLATFORM0] by categorizing all visible objects. Group [SUB-PLATFORM-OBJECTS00] by color and size, place all [SUB-PLATFORM-OBJECTS01] neatly in one corner, and arrange any other objects in a row along the back edge.
+Transform the area surrounding [PLATFORM0] into a neatly organized workshop space by grouping all [SUB-PLATFORM-CATEGORY-OBJECT00] according to their type.
+Arrange [SUB-PLATFORM-CATEGORY-OBJECT00] on [PLATFORM0] by importance.
+Reconfigure the items on [PLATFORM0] to set up a mini art studio.
+On [PLATFORM0], group [SUB-PLATFORM-OBJECTS00] based on their functions, and arrange tools into an organized toolkit display according to frequency of use.
+Establish a functional workspace on [PLATFORM0].
+Clear the entire top surface of [PLATFORM0], and then create a structured workspace by placing the [SUB-PLATFORM-OBJECTS00], [SUB-PLATFORM-OBJECTS01] in a symmetrical arrangement. Leave room in the corner of the [PLATFORM0] for the [SUB-PLATFORM-OBJECTS10] from [PLATFORM1].
+Design a "mirrored room" on top of [PLATFORM0] by arranging the objects to create a sense of symmetry and reflection.
+Group [SUB-PLATFORM-CATEGORY-OBJECT00] on [PLATFORM0] by usage frequency.
+Align all [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] into a grid pattern based on their shape, with the largest objects positioned near the back.
+Create a cohesive and visually appealing display on [PLATFORM0] by organizing the various [SUB-PLATFORM-CATEGORY-OBJECT00] into thematic groups.
+Selectively curate the items on [PLATFORM0] to only include those that promote productivity, then arrange the remaining objects in a minimalistic style.
+Transform [PLATFORM0] into a visually appealing display by organizing all [SUB-PLATFORM-CATEGORY-OBJECTS00], [SUB-PLATFORM-CATEGORY-OBJECTS01], and [SUB-PLATFORM-CATEGORY-OBJECTS02] in a balanced manner, ensuring that the [SUB-PLATFORM-CATEGORY-OBJECTS00] are sorted by size or color and that the [SUB-PLATFORM-CATEGORY-OBJECTS01] are placed in a way that enhances the overall look.
+Design a functional and aesthetically pleasing arrangement for the top surface of [PLATFORM0], incorporating a mix of [SUB-PLATFORM-OBJECTS00], [SUB-PLATFORM-OBJECTS01], and [SUB-PLATFORM-OBJECTS02] in a visually balanced manner, with careful attention to height and placement for optimal display.
+Reorganize the items on [PLATFORM0] to optimize it for collaborative work.
+On [PLATFORM0], group all [SUB-PLATFORM-OBJECTS00] by color and arrange them in a circular pattern around the [SUB-PLATFORM-OBJECTS01], with a gap of 1 centimeter between each item, making it visually appealing and functional.
+Transform the space on [PLATFORM0] by categorizing all [SUB-PLATFORM-CATEGORY-OBJECTS00] and [SUB-PLATFORM-CATEGORY-OBJECTS01] according to their colors and sizes. Arrange them in a visually appealing gradient from left to right.
+Organize all the objects on top of [PLATFORM0] into a series of concentric circles, with the largest objects at the center.
+Create a "mini-city" on the top of [PLATFORM0] by arranging surface items to form a small landscape with hills and valleys.
+Organize [SUB-PLATFORM-CATEGORY-OBJECT00] on [PLATFORM0] by height.
+Gather [SUB-OBJECT-CATEGORY0] from the [ROOM], clean them, and place them in a balanced pattern on [PLATFORM0], ensuring no adjacent matching colors.
+Create a product display on [PLATFORM0] by arranging the items in a visually appealing and functional manner that highlights their features.
+Gather all the [SUB-PLATFORM-OBJECTS00] from [PLATFORM0], then organize them by category on the top shelf of [MULTILAYER-OBJECT0], arranging them in a gradient from smallest to largest.
+Align the [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] into a circle.
+Redesign the surface of [PLATFORM0] to create an efficient workspace by arranging the [SUB-PLATFORM-CATEGORY-OBJECTS00], [SUB-PLATFORM-CATEGORY-OBJECTS01], and [SUB-PLATFORM-CATEGORY-OBJECTS02] in a systematic manner, with each category neatly separated and easily accessible.
+Declutter the right side of [PLATFORM0] by moving all loose objects to the left side and aligning them by size.
+Transform [PLATFORM0] into a functional workspace by systematically arranging [SUB-PLATFORM-OBJECTS00], keeping frequently used items within easy reach.
+Design a "futuristic cityscape" on top of [PLATFORM0] using the small objects, with towering skyscrapers, roads, and buildings.
+Arrange [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] in a cascading fashion.
+Transform the [TOP-LAYER] of [MULTILAYER-OBJECT0] by aligning all [SUB-LAYER-CATEGORY-OBJECTS00] into neatly organized rows.
+From [PLATFORM0], collect all the [SUB-PLATFORM-OBJECTS00] and [SUB-PLATFORM-OBJECTS01], then create a visually appealing display on the middle shelf of [MULTILAYER-OBJECT0], ensuring the tallest items are in the back and shorter ones in front.
+On the top surface of [PLATFORM0], create a visually appealing layout by arranging all [SUB-PLATFORM-OBJECTS00] into a grid pattern with even spacing.
+Build a geometric sculpture using [SUB-PLATFORM-OBJECTS00] on top of [PLATFORM0].
+Rearrange all [SUB-LAYER-OBJECTS0] across layers of [MULTILAYER-OBJECT0] so that they are organized by size, placing the largest ones at the bottom and the smallest ones at the top, ensuring that the top shelf has only [SUB-LAYER-OBJECTS0] neatly aligned side by side.
+For the collection of small electronic devices on [PLATFORM0], use principles of proportion and balance to group them.
+Position [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] for a streamlined setup.
+On [PLATFORM0], gather all [SUB-PLATFORM-OBJECTS00] and line them up by size, ensuring they are equidistant.
+Prepare [PLATFORM0] for an upcoming meeting by organizing [SUB-PLATFORM-OBJECTS00] into a neat, functional workspace.
+Create a whimsical "forest" on top of [PLATFORM0] using objects on top of it.
+Transform [PLATFORM0] into a futuristic art installation using [SUB-PLATFORM-CATEGORY-OBJECTS00].
+Tidy up the [PLATFORM0].
+Transform the cluttered top of [PLATFORM0] by systematically categorizing the [SUB-PLATFORM-OBJECTS00], [SUB-PLATFORM-OBJECTS01], and [SUB-PLATFORM-OBJECTS02] into designated sections, providing a clear overview of components for future tasks and projects.
+Redesign the layout of [PLATFORM0] and its surrounding area, repositioning the [SUB-PLATFORM-OBJECTS00] for better ergonomics.
+Design a maze using [SUB-PLATFORM-OBJECTS00] on the [PLATFORM0], creating a complex and challenging path that requires careful navigation to complete.
+Transform the top of [PLATFORM0] into a "maze" by arranging objects to create a challenging path for a robot to navigate.
+Conduct a thorough inspection and organization of [PLATFORM0], categorizing the contents and placing vivid [SUB-PLATFORM-SINGLE-OBJECTS00] at eye level.
+Elevate the functionality of [PLATFORM0] by restructuring its surface layout.
+Construct a mini obstacle course using objects on the [PLATFORM0].
+Create a "dramatic scene" on [PLATFORM0] by arranging the objects to resemble characters, props, and scenery from a play or movie.
+Transform the contents of [PLATFORM0] into a visually striking arrangement, placing all [SUB-PLATFORM-OBJECTS00] in a gradient of colors from left to right.
+Revamp [PLATFORM0] to achieve a Zen-like atmosphere by meticulously sorting and aligning all [SUB-PLATFORM-CATEGORY-OBJECTS00] on the surface.
+Reconfigure the layout of [PLATFORM0] by sorting all [SUB-PLATFORM-OBJECTS00] into thematic sections, using dividers for better organization.
+Clear the top of [PLATFORM0], then reposition the [SUB-PLATFORM-OBJECTS00] and [SUB-PLATFORM-OBJECTS01] to create a miniature diorama.
+Rearrange the [SUB-PLATFORM-OBJECTS00] on the right side of [PLATFORM0] to create a visually appealing spiral pattern with the [SUB-PLATFORM-OBJECTS01].
+Rearrange the [SUB-PLATFORM-OBJECTS00] scattered across [PLATFORM0], placing them neatly and leaving a clear space in the center for working.
+Design a thematic layout with [SUB-PLATFORM-OBJECTS00] on [PLATFORM0].
+Create a visual flow with [SUB-PLATFORM-OBJECTS00] on [PLATFORM0].
+Organize the top surface of [PLATFORM0] by grouping similar items together and ensuring a visually balanced layout.
+Align [SUB-PLATFORM-CATEGORY-OBJECT00] on [PLATFORM0] by color and type.
+Transform the top of [PLATFORM0] into a functional artistic display by arranging [SUB-PLATFORM-OBJECTS00] to highlight creativity.
+Arrange the [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] in a systematic manner that reduces the time spent searching for items and supports a smooth workflow.
+Rearrange and optimize the [SPECIFIC-LAYER] of [MULTILAYER-OBJECT0].
+Design a "mandala" on top of [PLATFORM0] by arranging objects in a pattern resembling intricate geometric shapes and symmetries.
+Create an interactive display on [PLATFORM0] by arranging all [SUB-PLATFORM-OBJECTS00] in a circuit-like pattern.
+Redesign the layout of [PLATFORM0] to create a curated gallery by organizing all [SUB-PLATFORM-OBJECTS00] into thematic sections.
+Gather all [SUB-PLATFORM-OBJECTS00] , [SUB-PLATFORM-OBJECTS10], [SUB-PLATFORM-OBJECTS20]scattered across [PLATFORM0], [PLATFORM1], and [PLATFORM2], and arrange them by size and color on [PLATFORM3].
+Remove all objects from [PLATFORM0] and organize them into distinct categories, placing related items together on [PLATFORM1].
+Disorganize the top of [PLATFORM0] to make it messy.
+Sort items from [PLATFORM0] and [PLATFORM1] into categories and place them on [PLATFORM2] and [PLATFORM3].
+On [PLATFORM0], organize [SUB-PLATFORM-OBJECTS00] by size into two piles: larger on the left, smaller on the right, placing [SUB-PLATFORM-OBJECTS00] next to them.
+Assemble a dynamic work area on [PLATFORM0] by grouping [SUB-PLATFORM-OBJECTS00] into functional clusters with cables neatly routed and connected.
+Inside [PLATFORM0], locate the [SUB-PLATFORM-OBJECTS00] and rearrange them to create a visual story, ensuring even spacing and alignment.
+Curate the top and middle layers of [MULTILAYER-OBJECT0] to resemble a library exhibit, organizing the [SUB-LAYER-CATEGORY-OBJECTS00].
+Design a "labyrinth" on [PLATFORM0] by arranging the [SUB-PLATFORM-OBJECTS00] in a way that creates a challenging and intricate maze.
+Create a "mazelike" sculpture on [PLATFORM0] using [SUB-PLATFORM-OBJECTS00] with multiple paths and dead ends
+Organize the objects on [PLATFORM0] into a "geometric pattern" by arranging them in interconnected shapes and lines.
+Craft a miniature sculpture from the assortment of [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] and place it on [PLATFORM1] for creative inspiration, ensuring it's positioned to catch the eye while minimizing distraction.
+Transform [PLATFORM0] into a curated display, arranging [SUB-PLATFORM-OBJECTS00] to highlight their unique features.
+Organize the objects on top of [PLATFORM0] into a "waterfall" by arranging them to create a cascading pattern.
+Arrange the [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] in a manner that minimizes clutter and provides easy access. Consider ergonomic factors and the flow of movement when positioning these items.
+Arrange the items on the top layer of [PLATFORM0] into an orderly sequence, aligning them in neat rows or columns for balance and proportion.
+On [PLATFORM0], clear all objects except for the [SUB-PLATFORM-OBJECTS00], and create a minimalist aesthetic with three carefully selected items.
+Take all [SUB-PLATFORM-CATEGORY-OBJECT00] from [PLATFORM0], sort them by subject or project, and store them on [PLATFORM0].
+Create a "stage" on [PLATFORM0] by arranging the objects to resemble a theater set.
+Design a "mini-museum" on [PLATFORM0] by arranging objects to tell a story with one item as the centerpiece.
+Transform the top of [PLATFORM0] into a mini gallery by creatively displaying [SUB-PLATFORM-CATEGORY-OBJECTS00] and [SUB-PLATFORM-CATEGORY-OBJECTS01].
+Optimize the utility of [PLATFORM0] by categorizing and positioning all [SUB-PLATFORM-OBJECTS00] in a structured manner, ensuring easy retrieval and organization.
+Design a sustainable storage system on [PLATFORM0] by categorizing and arranging small objects to promote eco-friendliness.
+Align all [SUB-PLATFORM-CATEGORY-OBJECTS00] on [PLATFORM0] in a visually pleasing gradient from light to dark colors, ensuring proper spacing for easy access.
+Place [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] in a mirrored arrangement.
+Create an artistic arrangement on [PLATFORM0].
+Clean up the [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] into other places.
+Clear all the items from [PLATFORM0] and redistribute them across the room: place any [SUB-PLATFORM-OBJECTS00] onto [PLATFORM1], any [SUB-PLATFORM-OBJECTS01] onto [PLATFORM2], and any [SUB-PLATFORM-OBJECTS02] onto [PLATFORM3], creating a purposeful flow throughout the room.
+Gather all the [SUB-OBJECTS0] scattered across [PLATFORM0] and [PLATFORM1]. Place them in a straight line in front of [PLATFORM0], facing toward the center of the room as if they are positioned for display.
+Transform the surface of [PLATFORM0] into an art installation by arranging the scattered [SUB-PLATFORM-OBJECTS00] into an intricate geometric pattern.
+On the top layer of [PLATFORM0], gather all loose [SUB-PLATFORM-OBJECTS00] and store them in a designated [SUB-PLATFORM-OBJECTS01] to ensure neatness.
+Optimize shelving layout of [ALL_LAYERS] on [MULTILAYER-OBJECT0].
+Sort [SUB-PLATFORM-CATEGORY-OBJECT00] on [PLATFORM0] into color-coded sections.
+Create a symmetrical pattern using [SUB-PLATFORM-OBJECTS00] on top of [PLATFORM0].
+Optimize the arrangement of [SUB-PLATFORM-OBJECTS00] on [PLATFORM0], aligning them in a symmetrical pattern for a clean and organized appearance.
+Set up an instructional display on [PLATFORM0] by arranging [SUB-PLATFORM-OBJECTS00] for an engaging demonstration.
+Rearrange the items on [PLATFORM0] to create a harmonious display, grouping similar items together and ensuring a visually balanced arrangement.
+Align all [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] into a clean, linear formation with the labels facing outward to create a neat and uniform appearance.
+Organize the objects on top of [PLATFORM0] into a "jigsaw puzzle" pattern, with each object fitting together perfectly.
+Reconfigure the setup of [PLATFORM0], [PLATFORM1], and [PLATFORM2] to optimize for a multi-step workflow. Arrange the objects on [PLATFORM0] to facilitate easy handover to [PLATFORM1], and then to [PLATFORM2].
+Group similar items on [PLATFORM0] and create an organized system where each category of objects has a designated area.
+Reconfigure the items on [PLATFORM0] to establish a central focal point for [SUB-PLATFORM-SINGLE-OBJECT00].
+Design a geometric pattern using [SUB-PLATFORM-OBJECTS00] on the top of [PLATFORM0], with the pattern extending to cover the entire surface.
+Enhance the overall visual aesthetics of [PLATFORM0] by removing all clutter and arranging the [SUB-PLATFORM-OBJECTS00] into a geometric pattern.
+Adjust the positioning of objects on [MULTILAYER-OBJECT0] so that each shelf has an equal distribution of weight and aesthetics, focusing on creating symmetry with [SUB-LAYER-OBJECTS00].
+Design a "garden" on [PLATFORM0] by arranging objects to resemble flowers and trees.
+Remove all [SUB-PLATFORM-OBJECTS00] from [PLATFORM0] and arrange them neatly on [PLATFORM1].
+Move the [SUB-PLATFORM-OBJECTS00] from the right side of [PLATFORM0] and place it on the left.
+Group objects on the [SPECIFIC-LAYER] of [MULTILAYER-OBJECT0] by color and arrange them from darkest to lightest, ensuring equal spacing.
+Reconfigure the objects on [PLATFORM0] to create a functional mini-laboratory setup.
+Reorganize the contents of [MULTILAYER-OBJECT0] such that all items related to [SUB-LAYER-OBJECTS00] are grouped together on the top shelf, while [SUB-LAYER-OBJECTS01] and [SUB-LAYER-OBJECTS02] are arranged on the lower shelves, ensuring a balanced and orderly presentation.
+Design a "bridge" on [PLATFORM0] by arranging objects to create a sturdy structure.
+Organize the objects on top of [PLATFORM0] into a symmetrical pattern, with identical pairs on either side of a central axis.
+Organize [SUB-PLATFORM-OBJECTS00] on [MULTILAYER-OBJECT0] alphabetically by title on the top shelf, ensuring a visually balanced distribution.
+Curate a gallery of inspiration by arranging [SUB-PLATFORM-OBJECTS00] found on [PLATFORM0] into an organized display.
+Clear the top of [PLATFORM0] of any objects and then arrange the [SUB-PLATFORM-SINGLE-OBJECTS00], [SUB-PLATFORM-SINGLE-OBJECTS01], and [SUB-PLATFORM-SINGLE-OBJECTS02] in a harmonious triangle formation.
+Reorganize the [SUB-PLATFORM-OBJECTS00] on [PLATFORM0] into a custom, modular storage system that maximizes space and facilitates quick retrieval.
+On [PLATFORM0], arrange a collection of seasonal decorations, ensuring that the items complement each other and create a festive atmosphere.
+Sort all [SUB-PLATFORM-CATEGORY-OBJECT00] on [PLATFORM0] by size and color, placing the largest and most colorful items in a prominent spot.
+Create a neat arrangement of [SUB-PLATFORM-OBJECTS00] on [PLATFORM0].
+Optimize the top of [PLATFORM0] by clearing it of all unnecessary items and arranging the remaining [SUB-PLATFORM-CATEGORY-OBJECTS00], [SUB-PLATFORM-CATEGORY-OBJECTS01], and [SUB-PLATFORM-CATEGORY-OBJECTS02] into neatly defined zones for improved functionality and aesthetics.
+Set up [PLATFORM0] with a mini workspace on one side and a relaxation corner on the other, using [SUB-PLATFORM-OBJECTS00] and [SUB-PLATFORM-OBJECTS01].
