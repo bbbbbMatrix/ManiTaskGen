@@ -283,10 +283,7 @@ def main(args):
     json.dump(
         rename_dict,
         open(
-            os.path.join(
-                config_manager.config_file_export_dir,
-                f"rename_dict.json",
-            ),
+            main_config.rename_dict_path,
             "w",
         ),
         indent=4,
