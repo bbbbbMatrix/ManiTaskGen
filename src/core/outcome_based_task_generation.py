@@ -515,86 +515,8 @@ class OutcomeBasedTaskPattern:
             else:
                 return placeholder
 
-        # def replace_placeholder(match):
-        #     placeholder = match.group(0)
-        #     if placeholder.startswith("[PLATFORM"):
-        #         index = int(placeholder[9:-1])
-        #         if index < len(platform_name_list):
-        #             return platform_name_list[index]
-        #         else:
-        #             return f"PLATFORM_NAME_{index}_NOT_FOUND"
-        #     elif placeholder.startswith("[MULTILAYER-OBJECT"):
-        #         index = 0
-        #         if index < len(multilayer_object_name_list):
-        #             return multilayer_object_name_list[index]
-        #         else:
-        #             return "MULTILAYER_OBJECT_NOT_FOUND"
-        #     elif placeholder.startswith("[SUB-OBJECT-CATEGORY"):
-        #         index = int(placeholder[20:-1])
-        #         if index < len(room_major_category_list):
-        #             return room_major_category_list[index]
-        #         else:
-        #             return f"ROOM_MAJOR_CATEGORY_{index}_NOT_FOUND"
-        #     elif placeholder.startswith("[SUB-OBJECT"):
-        #         index = int(placeholder[11:-1])
-        #         if index < len(room_minor_category_list):
-        #             return room_minor_category_list[index]
-        #         else:
-        #             return f"ROOM_MINOR_CATEGORY_{index}_NOT_FOUND"
-        #     elif placeholder.startswith("[SUB-PLATFORM-CATEGORY-OBJECT"):
-        #         print(placeholder)
-        #         platform_index = int(placeholder[29:30])
-        #         object_index = int(placeholder[30:31])
-        #         if platform_index < len(platform_list) and object_index < len(
-        #             platform_list[platform_index].major_category_list
-        #         ):
-        #             return platform_list[platform_index].major_category_list[
-        #                 object_index
-        #             ]
-        #         else:
-        #             return (
-        #                 f"PLATFORM_{platform_index}_CATEGORY_{object_index}_NOT_FOUND"
-        #             )
-        #     elif placeholder.startswith("[SUB-PLATFORM-OBJECT"):
-        #         platform_index = int(placeholder[20:21])
-        #         object_index = int(placeholder[21:-1])
-        #         if platform_index < len(platform_list) and object_index < len(
-        #             platform_list[platform_index].minor_category_list
-        #         ):
-        #             return platform_list[platform_index].minor_category_list[
-        #                 object_index
-        #             ]
-        #         else:
-        #             return f"PLATFORM_{platform_index}_OBJECT_{object_index}_NOT_FOUND"
-        #     elif placeholder.startswith("[SUB-PLATFORM-SINGLE-OBJECT"):
-        #         platform_index = int(placeholder[27:28])
-        #         object_index = int(placeholder[28:29])
-        #         if platform_index < len(platform_list) and object_index < len(
-        #             platform_list[platform_index].single_object_list
-        #         ):
-        #             return platform_list[platform_index].single_object_list[
-        #                 object_index
-        #             ]
-        #         else:
-        #             return f"PLATFORM_{platform_index}_SINGLE_OBJECT_{object_index}_NOT_FOUND"
-        #     elif placeholder.startswith("[MULTILAYER-OBJECT"):
-        #         index = int(placeholder[18:-1])
-        #         if index < len(multilayer_object_name_list):
-        #             return multilayer_object_name_list[index]
-        #         else:
-        #             return f"MULTILAYER_OBJECT_{index}_NOT_FOUND"
-        #     elif placeholder.startswith("[TOP-LAYER]"):
-        #         return multilayer_feature["top_layer_name"]
-        #     elif placeholder.startswith("[SPECIFIC-LAYER]"):
-        #         return multilayer_feature["specific_layer_name"]
-        #     elif placeholder.startswith("[SUB-LAYER-CATEGORY-OBJECT"):
-        #         object_index = int(placeholder[26:-1])
-        #         return multilayer_feature["category_name_list"][object_index]
-        #     elif placeholder.startswith("[SUB-LAYER-OBJECT"):
-        #         object_index = int(placeholder[17:-1])
-        #         return multilayer_feature["small_category_name_list"][object_index]
-        #     else:
-        #         return placeholder  # In case there's a new placeholder
+    
+   
 
         task_description = re.sub(r"\[.*?\]", replace_placeholder, self.task_pattern)
 
@@ -859,12 +781,14 @@ class OutcomeBasedTaskGenerator:
             task_pattern_file (str): The file containing task patterns.
         """
         self.global_config = get_config()
+        self.config = get_outcome_based_task_generation_config()
         self.task_pattern_file = (
             self.global_config.manitaskot_pattern_file
             if task_pattern_file is None
             else task_pattern_file
         )
         self.task_pattern_list = []
+        self.task_num_per_pattern = self.config.task_num_per_pattern
         if task_pattern_file and os.path.exists(task_pattern_file):
             with open(task_pattern_file, "r", encoding="utf-8") as file:
                 for line in file:

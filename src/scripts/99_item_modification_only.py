@@ -215,7 +215,7 @@ def main(args):
 
     scene_graph.rename_all_features(rename_dict)
 
-    # 5 test tasks
+   # import ipdb; ipdb.set_trace()
     # initial_atomic_task = copy.deepcopy(chained_task)
     initial_scene_graph = copy.deepcopy(scene_graph)
     result = []
@@ -241,7 +241,7 @@ def main(args):
         another_scene.update_render()
 
     manual_vlm_interactor = vlm_interactor.VLMInteractor(
-        mode=main_config.mode, model=main_config.model_name, max_interaction_count=1000
+        mode=main_config.mode, model=main_config.benchmark_model_name, max_interaction_count=1000
     )
 
     scene_graph.corresponding_scene = another_scene
@@ -255,7 +255,7 @@ def main(args):
         scene_graph=scene_graph,
         scene=another_scene,
         vlm_interactor=manual_vlm_interactor,
-        model_name=main_config.model_name,
+        model_name=main_config.benchmark_model_name,
         generate_mistake_note=main_config.generate_mistake_note,
         use_mistake_note=main_config.use_mistake_note,
         no_task=True,

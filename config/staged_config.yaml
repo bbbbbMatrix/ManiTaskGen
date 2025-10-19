@@ -4,13 +4,12 @@ common:
     model: google/gemini-2.5-flash-lite-preview-06-17
   scene_graph_pkl_load_path: ${run_dir}/cache/scene_graph.pkl
 stage1_pre_processing:
-  collision_path_prefix: data/datasets/replica_dataset/objects/convex
-  dataset_root_path: data/datasets/replica_dataset
+  collision_path_prefix: data/datasets/replica_cad_dataset/objects/convex
+  dataset_root_path: data/datasets/replica_cad_dataset
   entity_json_path: ./replica_apt_0_entities.json
   image4rename_path: ${run_dir}/images/image4rename
-  input_json_path: ./data/datasets/replica_dataset/configs/scenes/apt_0.scene_instance.json
-  mode: online
-  object_config_path: data/datasets/replica_dataset/configs/objects
+  input_json_path: ./data/datasets/replica_cad_dataset/configs/scenes/apt_0.scene_instance.json
+  object_config_path: data/datasets/replica_cad_dataset/configs/objects
   output_dir: ./output/
   output_json_path: ./replica_apt_0_parsed.json
   raw_scene:
@@ -45,15 +44,15 @@ stage1_pre_processing:
   rename_engine:
     model: openai/gpt-4.1-mini
   scene_graph_pkl_save_path: ${run_dir}/cache/scene_graph.pkl
-  stage_path_prefix: data/datasets/replica_dataset
-  urdf_path_prefix: data/datasets/replica_dataset/urdf
-  use_renaming_engine: true
-  visual_path_prefix: data/datasets/replica_dataset/objects
+  stage_path_prefix: data/datasets/replica_cad_dataset
+  urdf_path_prefix: data/datasets/replica_cad_dataset/urdf
+  use_renaming_engine: false
+  visual_path_prefix: data/datasets/replica_cad_dataset/objects
 stage2a_process_task_generation:
   process_based_task:
     max_task_length: 5
-    max_task_num: 1000
-    use_level1_tasks: true
+    max_task_num: 10
+    use_level1_tasks: false
   process_based_task_pkl_save_path: ${run_dir}/cache/process_based_task.pkl
   process_based_task_txt_save_path: ${run_dir}/output/process_based_task.txt
 stage2b_outcome_task_generation:
@@ -65,6 +64,7 @@ stage2b_outcome_task_generation:
 stage3_benchmark:
   benchmark_model_name: openai/gpt-4.1-mini
   generate_mistake_note: true
+  mode: manual
   image4interaction_path: ${run_dir}/images/image4interact
   reflection_txt_load_path: ${run_dir}/reflection/load_reflection.txt
   reflection_txt_save_path: ${run_dir}/reflection/save_reflection.txt

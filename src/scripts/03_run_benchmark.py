@@ -211,6 +211,7 @@ def main(args):
             rename_dict = {}
 
     scene_graph.rename_all_features(rename_dict)
+    scene_graph.calculate_free_space()
 
     # 5 test tasks
     initial_atomic_task = copy.deepcopy(chained_task)
@@ -218,7 +219,7 @@ def main(args):
     result = []
     histories = []
     task_list = random.sample(
-        range(len(task_sample_ids)), min(main_config.task_num, len(task_sample_ids))
+        range(len(task_sample_ids)), min(main_config.benchmark_task_num, len(task_sample_ids))
     )
     total_score = 0
     total_sr = 0
@@ -230,6 +231,8 @@ def main(args):
     for i in task_list:
 
         task = task_sample[i]
+        for j,subtask in enumerate(task.subtask_list):
+            task.subtask_list[j].item = scene_graph.nodes[subtask.item.name]
 
         another_scene = sapien.Scene()
         another_scene.set_timestep(1 / 100)
@@ -247,8 +250,11 @@ def main(args):
 
         # description of task has moved into apply function.
         manual_vlm_interactor = vlm_interactor.VLMInteractor(
-            mode=main_config.mode, model=main_config.model_name
+            mode=main_config.mode, model=main_config.benchmark_model_name
         )
+        
+        manual_vlm_interactor.MAX_INTERACTION_COUNT *= len(task.subtask_list)
+        
         scene_graph.corresponding_scene = another_scene
         scene_graph.rename_all_features(rename_dict)
         scene_graph.corresponding_scene = scene
@@ -267,10 +273,12 @@ def main(args):
             scene_graph=scene_graph,
             scene=another_scene,
             vlm_interactor=manual_vlm_interactor,
-            model_name=main_config.model_name,
+            model_name=main_config.benchmark_model_name,
             generate_mistake_note=main_config.generate_mistake_note,
             use_mistake_note=main_config.use_mistake_note,
         )
+        
+        
 
         task.apply_action(state=benchmark_executor.InteractStates.NAVIGATION)
         result.append([task.status, task.partial_score])

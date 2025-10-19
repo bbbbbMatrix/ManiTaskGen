@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import os.path as osp
 import argparse
+import tempfile
 import xml.etree.ElementTree as ET
 from typing import Dict, Any, List, Set, Optional
 import sys
@@ -191,11 +192,84 @@ class SapienSceneManager:
             mesh = builder.build(name=obj["name"])
 
         mesh.set_pose(sapien.Pose(p=position, q=quaternion))
+        
+    def create_body_only_urdf_in_memory(self, urdf_path: str, template_name: str) -> str:
+        """Process URDF in memory, keeping only root and body links, using a temporary file with automatic cleanup."""
+        
+        # Read the original URDF
+        tree = ET.parse(urdf_path)
+        root = tree.getroot()
+        
+        # Define the names of links to keep
+        allowed_links = {"root", "body"}
+        
+        # Collect links and joints to remove
+        links_to_remove = []
+        joints_to_remove = []
+        
+        # glog.info(f"Processing URDF: {template_name}")
+        # glog.info("Original links found:")
+        
+        # Find all links
+        all_links = [link.get('name') for link in root.findall('link')]
+        for link_name in all_links:
+            glog.info(f"  - {link_name}")
+            if link_name not in allowed_links:
+                links_to_remove.append(link_name)
+        
+        # glog.info(f"Links to keep: {[l for l in all_links if l in allowed_links]}")
+        # glog.info(f"Links to remove: {links_to_remove}")
+        
+        # Find all related joints
+        for joint in root.findall('joint'):
+            joint_name = joint.get('name')
+            parent_elem = joint.find('parent')
+            child_elem = joint.find('child')
+            
+            if parent_elem is not None and child_elem is not None:
+                parent_link = parent_elem.get('link')
+                child_link = child_elem.get('link')
+                
+                # Remove the joint if it connects to a link to be removed
+                if parent_link in links_to_remove or child_link in links_to_remove:
+                    joints_to_remove.append(joint_name)
+                    # glog.info(f"Removing joint: {joint_name} (connects {parent_link} -> {child_link})")
+        
+        # Remove these elements from the XML
+        for link_name in links_to_remove:
+            for link in root.findall(f"link[@name='{link_name}']"):
+                root.remove(link)
+               # glog.info(f"Removed link: {link_name}")
+        
+        for joint_name in joints_to_remove:
+            for joint in root.findall(f"joint[@name='{joint_name}']"):
+                root.remove(joint)
+               # glog.info(f"Removed joint: {joint_name}")
+        
+        urdf_dir = os.path.dirname(urdf_path)
+        temp_filename = f"{template_name}_body_only_temp.urdf"
+        temp_path = os.path.join(urdf_dir, temp_filename)
+        
+        try:
+            # Write the processed URDF to a temporary file
+            with open(temp_path, 'w') as temp_file:
+                # Format the XML output
+                ET.indent(tree, space="  ")
+                tree.write(temp_file, encoding='unicode', xml_declaration=True)
+            
+          #  glog.info(f"Created temporary URDF: {temp_path}")
+            return temp_path
+            
+        except Exception as e:
+            # Ensure cleanup of the temporary file in case of error
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+            raise e
 
     def add_articulation_to_scene(
         self, scene: sapien.Scene, articulated_meta: Dict[str, Any]
     ):
-        """Add an articulated object to the scene"""
+        """Add an articulated object to the scene."""
         template_name = articulated_meta["name"]
         pos = articulated_meta["translation"]
         pos = [pos["x"], pos["y"], pos["z"]]
@@ -203,34 +277,111 @@ class SapienSceneManager:
         rot = articulated_meta["rotation"]
         rot = [rot["w"], rot["x"], rot["y"], rot["z"]]
 
-        # Rotation correction
+        # Apply rotation correction
         quaternion = self._apply_rotation_correction(rot)
 
-        # URDF loading
-        urdf_path = articulated_meta["urdf_path"]
-        urdf_loader = scene.create_urdf_loader()
-        urdf_loader.name = f"{template_name}"
-        urdf_loader.fix_root_link = articulated_meta["fixed_base"]
-        urdf_loader.disable_self_collisions = True
+        # Create a URDF containing only the body (temporary file)
+        original_urdf_path = articulated_meta["urdf_path"]
+        processed_urdf_path = self.create_body_only_urdf_in_memory(original_urdf_path, template_name)
+        
+        try:
+            # URDF loading with the processed file
+            urdf_loader = scene.create_urdf_loader()
+            urdf_loader.name = f"{template_name}"
+            urdf_loader.fix_root_link = articulated_meta["fixed_base"]
+            urdf_loader.disable_self_collisions = True
 
-        # Position adjustment based on URDF
-        base_name = template_name[: template_name.rfind("_")]
-        urdf_adjustment = {
-            "fridge": 0.022461603782394812,
-            "kitchen_counter": 0.02441653738006261,
-            "kitchenCupboard_01": 0,
-            "chestOfDrawers_01": -0.003584124570854732,
-            "cabinet": 0.019934424604485024,
-        }
+            # Position adjustment based on URDF
+            base_name = template_name[: template_name.rfind("_")]
+            urdf_adjustment = {
+                "fridge": 0.022461603782394812,
+                "kitchen_counter": 0.02441653738006261,
+                "kitchenCupboard_01": 0,
+                "chestOfDrawers_01": -0.003584124570854732,
+                "cabinet": 0.019934424604485024,
+            }
 
-        if base_name in urdf_adjustment:
-            pos[2] -= urdf_adjustment[base_name] - self.config.urdf_z_adjustment_offset
+            if base_name in urdf_adjustment:
+                pos[2] -= urdf_adjustment[base_name] - self.config.urdf_z_adjustment_offset
 
-        # Build articulation
-        builder = urdf_loader.parse(urdf_path)[0][0]
-        pose = sapien.Pose(pos, quaternion)
-        builder.initial_pose = pose
-        articulation = builder.build()
+            # Build articulation with the processed URDF
+            builder = urdf_loader.parse(processed_urdf_path)[0][0]
+            pose = sapien.Pose(pos, quaternion)
+            builder.initial_pose = pose
+            
+            articulation = builder.build()
+            
+            # Verify the loading result
+            glog.info(f"Successfully loaded {template_name} with links:")
+            for link in articulation.get_links():
+                glog.info(f"  - {link.get_name()}")
+            
+            return articulation
+            
+        finally:
+            # Automatically clean up the temporary file
+            try:
+                if os.path.exists(processed_urdf_path):
+                    os.unlink(processed_urdf_path)
+                    glog.info(f"Cleaned up temporary file: {processed_urdf_path}")
+            except Exception as e:
+                glog.info(f"Warning: Could not clean up temporary file {processed_urdf_path}: {e}")
+
+    # def add_articulation_to_scene(
+    #     self, scene: sapien.Scene, articulated_meta: Dict[str, Any]
+    # ):
+    #     """Add an articulated object to the scene"""
+    #     template_name = articulated_meta["name"]
+    #     pos = articulated_meta["translation"]
+    #     pos = [pos["x"], pos["y"], pos["z"]]
+
+    #     rot = articulated_meta["rotation"]
+    #     rot = [rot["w"], rot["x"], rot["y"], rot["z"]]
+
+    #     # Rotation correction
+    #     quaternion = self._apply_rotation_correction(rot)
+
+    #     # URDF loading
+    #     urdf_path = articulated_meta["urdf_path"]
+    #     urdf_loader = scene.create_urdf_loader()
+    #     urdf_loader.name = f"{template_name}"
+    #     urdf_loader.fix_root_link = articulated_meta["fixed_base"]
+        
+        
+    #     urdf_loader.disable_self_collisions = True
+    #     import ipdb; ipdb.set_trace()
+    #     # Position adjustment based on URDF
+    #     base_name = template_name[: template_name.rfind("_")]
+    #     urdf_adjustment = {
+    #         "fridge": 0.022461603782394812,
+    #         "kitchen_counter": 0.02441653738006261,
+    #         "kitchenCupboard_01": 0,
+    #         "chestOfDrawers_01": -0.003584124570854732,
+    #         "cabinet": 0.019934424604485024,
+    #     }
+
+    #     if base_name in urdf_adjustment:
+    #         pos[2] -= urdf_adjustment[base_name] - self.config.urdf_z_adjustment_offset
+
+    #     # Build articulation
+    #     builder = urdf_loader.parse(urdf_path)[0][0]
+    #     pose = sapien.Pose(pos, quaternion)
+    #     builder.initial_pose = pose
+    #     #import pdb; pdb.set_trace()
+    #     articulation = builder.build()
+        
+    #     # Remove unnecessary bodies
+    #     for entity in scene.entities[::-1]:
+    #         if 'body' in entity.get_name():
+
+    #             break 
+    #         glog.info(entity.get_name())
+    #         for component in entity.get_components():
+    #             if isinstance(component, sapien.pysapien.render.RenderBodyComponent):
+    #                 component.visibility = 1e-2
+    #         #entity.remove_from_scene()
+    #     #import pdb; pdb.set_trace()
+        
 
     def load_objects_from_json(self, scene: sapien.Scene, json_file_path: str):
         """Load objects from JSON file into the scene"""
@@ -412,7 +563,7 @@ class EntityExporter:
                 urdf_dict = self.urdf_processor.urdf_to_dict(urdf_path)
 
                 if f"link_{entity.get_name()}" not in urdf_dict["robot"]:
-                    print(f"Warning: {entity.get_name()} not found in URDF")
+                    glog.info(f"Warning: {entity.get_name()} not found in URDF")
                     continue
 
                 filename = urdf_dict["robot"][f"link_{entity.get_name()}"]["visual"][
@@ -424,7 +575,7 @@ class EntityExporter:
                     f"{self.global_config.urdf_path_prefix}/{name}/{filename}"
                 )
             else:
-                print("Error: articulation index out of range")
+                glog.info("Error: articulation index out of range")
                 continue
 
             # Extract pose information
@@ -522,9 +673,9 @@ def main():
         scene.step()
         scene.update_render()
 
-    print(scene.entities, dir(scene), dir(scene.entities[0]))
+    glog.info(scene.entities, dir(scene), dir(scene.entities[0]))
     for entity in scene.entities:
-        print(entity.get_name(), entity.get_pose(), entity.get_components())
+        glog.info(entity.get_name(), entity.get_pose(), entity.get_components())
 
     # # start simulation
     while not viewer.closed:

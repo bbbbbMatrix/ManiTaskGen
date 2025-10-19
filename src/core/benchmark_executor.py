@@ -481,7 +481,8 @@ class MistakeLogGenerator:
         )
         self.picture_width = 683
         self.picture_height = 384
-        self.image_path = image_path
+        self.global_config = get_config()
+        self.image_path = self.global_config.image4reflection_path
 
     @staticmethod
     def _rotated(self, action_list):
@@ -1028,7 +1029,7 @@ class BenchmarkExecutor:
         self.vlm_interactor = vlm_interactor
         self.picture_width = self.config.picture_width
         self.picture_height = self.config.picture_height
-        self.image_path = self.global_config.image_path
+        self.image_path = self.global_config.image4interaction_path
         self.at_place = -1
         self.standing_direction = 0
         self.object_in_hand = None
@@ -1408,10 +1409,10 @@ class BenchmarkExecutor:
 
         # Original ambiguous handling logic...
         if task.item.is_ambiguous:
-            glog.info(f"Handling ambiguous object...{task.item.name}")
-
+         #   glog.info(f"Handling ambiguous object...{task.item.name}")
+#
             object_to_show = self.scene_graph.nodes[task.item.name]
-            save_path = f"{self.image_path}/image4interact/{self.model}/Task_{task_id}_{task_order}th_AmbiguousObject.png"
+            save_path = f"{self.image_path}/{self.model}/Task_{task_id}_{task_order}th_AmbiguousObject.png"
             img = object_to_show.auto_take_non_ground_object_picture(
                 scene=self.scene_graph.corresponding_scene,
                 view="human_focus",
@@ -1460,7 +1461,7 @@ class BenchmarkExecutor:
             destination_object_name = task.feature[0]
             destination_object = self.scene_graph.nodes[destination_object_name]
             if destination_object.is_ambiguous:
-                save_path = f"{self.image_path}/image4interact/{self.model}/Task_{self.task_id}_{task_order}th_AmbiguousDestinationObject.png"
+                save_path = f"{self.image_path}/{self.model}/Task_{self.task_id}_{task_order}th_AmbiguousDestinationObject.png"
                 object_to_show = destination_object
                 img = object_to_show.auto_take_non_ground_object_picture(
                     scene=self.scene_graph.corresponding_scene,
@@ -1511,7 +1512,7 @@ class BenchmarkExecutor:
                 self.scene_graph.nodes[destination_object_b_name],
             )
             if destination_object_a.is_ambiguous:
-                save_path = f"{self.image_path}/image4interact/{self.model}/Task_{self.task_id}_{task_order}th_AmbiguousDestinationObjectA.png"
+                save_path = f"{self.image_path}/{self.model}/Task_{self.task_id}_{task_order}th_AmbiguousDestinationObjectA.png"
                 object_to_show = destination_object_a
                 img = object_to_show.auto_take_non_ground_object_picture(
                     scene=self.scene_graph.corresponding_scene,
@@ -1553,7 +1554,7 @@ class BenchmarkExecutor:
                     role="user",
                 )
             if destination_object_b.is_ambiguous:
-                save_path = f"{self.image_path}/image4interact/{self.model}/Task_{self.task_id}_{task_order}th_AmbiguousDestinationObjectB.png"
+                save_path = f"{self.image_path}/{self.model}/Task_{self.task_id}_{task_order}th_AmbiguousDestinationObjectB.png"
                 object_to_show = destination_object_b
                 img = object_to_show.auto_take_non_ground_object_picture(
                     scene=self.scene_graph.corresponding_scene,
@@ -1601,7 +1602,7 @@ class BenchmarkExecutor:
         if self.platform_bel_object is None:
             return
         prev_standing_direction = self.standing_direction
-        for i in range(4):
+        for i in range(5):
             if len(
                 self.platform.standing_point_list[self.standing_direction // 2]
             ) and self.platform.freespace_is_visible(self.standing_direction):
@@ -1818,6 +1819,7 @@ class BenchmarkExecutor:
             moving_rect=target_rectangle,
             fixed_rect_list=rectangle_list,
         )
+      #  import ipdb; ipdb.set_trace()
 
         if translation_status == -1:
             placement_too_small_hint = self.hint_prompt_helper.generate_hint_prompts(
@@ -2208,13 +2210,13 @@ class BenchmarkExecutor:
                         width=width,
                         height=height,
                         focus_ratio=0.6,
-                        save_path=f"{current_path}/image4interact/{self.model}/Task{id}_Idle_{self.vlm_interactor.interaction_count}.png",
+                        save_path=f"{current_path}/{self.model}/Task{id}_Idle_{self.vlm_interactor.interaction_count}.png",
                     )
                 )
                 n_platform_img_list = len(platform_img_list)
                 image_info_list = [
                     {
-                        "image_name": f"{current_path}/image4interact/{self.model}/Task{id}_Idle_{self.vlm_interactor.interaction_count}_{(i+1)}_out_of_{ n_platform_img_list}.png",
+                        "image_name": f"{current_path}/{self.model}/Task{id}_Idle_{self.vlm_interactor.interaction_count}_{(i+1)}_out_of_{ n_platform_img_list}.png",
                         "image_type": "show_platform",
                         "platform_name": platform.get_name_for_interaction(),
                     }
@@ -2292,13 +2294,13 @@ class BenchmarkExecutor:
                         width=width,
                         height=height,
                         focus_ratio=0.6,
-                        save_path=f"{current_path}/image4interact/{self.model}/Task{id}_HoldingAtEmptyPlatform_{self.vlm_interactor.interaction_count}.png",
+                        save_path=f"{current_path}/{self.model}/Task{id}_HoldingAtEmptyPlatform_{self.vlm_interactor.interaction_count}.png",
                     )
                 )
                 n_platform_img_list = len(platform_img_list)
                 image_info_list = [
                     {
-                        "image_name": f"{current_path}/image4interact/{self.model}/Task{id}_HoldingAtEmptyPlatform_{self.vlm_interactor.interaction_count}_{(i+1)}_out_of_{ n_platform_img_list}.png",
+                        "image_name": f"{current_path}/{self.model}/Task{id}_HoldingAtEmptyPlatform_{self.vlm_interactor.interaction_count}_{(i+1)}_out_of_{ n_platform_img_list}.png",
                         "image_type": "show_platform",
                         "platform_name": platform.get_name_for_interaction(),
                     }
@@ -2370,7 +2372,7 @@ class BenchmarkExecutor:
                         width=width,
                         height=height,
                         focus_ratio=0.6,
-                        save_path=f"{current_path}/image4interact/{self.model}/Task{id}_HoldingOccupiedPlatformState_{self.vlm_interactor.interaction_count}.png",
+                        save_path=f"{current_path}/{self.model}/Task{id}_HoldingOccupiedPlatformState_{self.vlm_interactor.interaction_count}.png",
                     )
                 )
 
@@ -2378,7 +2380,7 @@ class BenchmarkExecutor:
 
                 image_info_list = [
                     {
-                        "image_name": f"{current_path}/image4interact/{self.model}/Task{id}_HoldingOccupiedPlatformState_{self.vlm_interactor.interaction_count}_{(i+1)}_out_of_{ n_platform_img_list}.png",
+                        "image_name": f"{current_path}/{self.model}/Task{id}_HoldingOccupiedPlatformState_{self.vlm_interactor.interaction_count}_{(i+1)}_out_of_{ n_platform_img_list}.png",
                         "image_type": "show_platform",
                         "platform_name": platform.get_name_for_interaction(),
                     }
@@ -2495,7 +2497,7 @@ class BenchmarkExecutor:
             elif action_type == ActionType.SHOW_OBJECT:
                 self.__show_object(
                     action_param,
-                    save_path=f"{self.global_config.image_path}/{self.model}/Task{id}_ShowObject_object_{self.vlm_interactor.interaction_count}.png",
+                    save_path=f"{current_path}/{self.model}/Task{id}_ShowObject_object_{self.vlm_interactor.interaction_count}.png",
                     # f"{current_path}/image4interact/{self.model}/Task{id}_ShowObject_object_{self.vlm_interactor.interaction_count}.png",
                 )
 

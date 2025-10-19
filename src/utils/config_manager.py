@@ -13,8 +13,11 @@ import glog
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir)
+sys.path.append(os.path.abspath(os.path.join(current_dir, "..")))
 sys.path.append(os.path.abspath(os.path.join(current_dir, "../..")))
 from src.utils.run_context import PathResolver
+
 @dataclass
 class RawSceneConfig:
 
@@ -402,12 +405,12 @@ class PreProcessingConfig:
     input_json_path: Optional[str] = (
         "./data/datasets/replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
     )
-    output_json_path: Optional[str] = "./replica_apt_0_parsed.json"  # Output file path
+    output_json_path: Optional[str] = ".${run_dir}/cache/replica_apt_0_parsed.json"  # Output file path
     entity_json_path: Optional[str] = ( 
-        "./replica_apt_0_entities.json"  # Entity file path
+        ".${run_dir}/cache/replica_apt_0_entities.json"  # Entity file path
     )
     output_dir: str = "./output/"  # Output directory for results
-    mode: str = "online"  # Mode: "online" or "manual"
+    
     dataset_root_path: str = (  
         "data/datasets/replica_dataset"  # Path to the SAPIEN dataset root directory
     )
@@ -483,7 +486,9 @@ class BenchmarkConfig:
     image4interaction_path: Optional[str] = (
         "${run_dir}/images/image4interact"  # Path to the image for interaction
     )
-    
+    image4reflection_path: Optional[str] = (
+        "${run_dir}/images/image4reflection"  # Path to the image for reflection
+    )
     reflection_txt_load_path: Optional[str] = (
         "${run_dir}/reflection/load_reflection.txt"  # Path to the reflection text file
     )
@@ -491,7 +496,8 @@ class BenchmarkConfig:
     reflection_txt_save_path: Optional[str] = (
         "${run_dir}/reflection/save_reflection.txt"  # Path to save
     )
-    
+    mode: str = "manual"  # Mode: "online" or "manual"
+    benchmark_task_num: int = 5  # Number of tasks to generate
     benchmark_model_name: str = "openai/gpt-4.1-mini"
     generate_mistake_note: bool = True  # Whether to generate mistake notes
     use_mistake_note: int = 1  # Whether to use mistake notes (
@@ -540,29 +546,31 @@ class StageBasedConfigLoader:
     """Loader for stage-based configuration from a YAML file"""
     
  
-    def __init__(self):
+    def __init__(self, app_config=None):
         self.stage_config = StageBasedConfig()
+        if app_config is not None:
+            self.import_from_app_config(app_config)
     
     def load_from_dict(self, config_dict: Dict[str, Any]) -> None:
         """load configuration from a dictionary"""
         
         if "common" in config_dict:
             self._update_nested_config(self.stage_config.common, config_dict["common"])
+      #  import ipdb; ipdb.set_trace()
+        if "stage1_pre_processing" in config_dict:
+            self._update_nested_config(self.stage_config.stage1_pre_processing, config_dict["stage1_pre_processing"])
+      #  import ipdb; ipdb.set_trace()
+        if "stage2a_process_task_generation" in config_dict:
+            self._update_nested_config(self.stage_config.stage2a_process_task_generation, config_dict["stage2a_process_task_generation"])
         
-        if "stage1" in config_dict:
-            self._update_nested_config(self.stage_config.stage1, config_dict["stage1"])
+        if "stage2b_outcome_task_generation" in config_dict:
+            self._update_nested_config(self.stage_config.stage2b_outcome_task_generation, config_dict["stage2b_outcome_task_generation"])
         
-        if "stage2" in config_dict:
-            self._update_nested_config(self.stage_config.stage2, config_dict["stage2"])
+        if "stage3_benchmark" in config_dict:
+            self._update_nested_config(self.stage_config.stage3_benchmark, config_dict["stage3_benchmark"])
         
-        if "stage3" in config_dict:
-            self._update_nested_config(self.stage_config.stage3, config_dict["stage3"])
-        
-        if "stage4" in config_dict:
-            self._update_nested_config(self.stage_config.stage4, config_dict["stage4"])
-        
-        if "utility" in config_dict:
-            self._update_nested_config(self.stage_config.utility, config_dict["utility"])
+        if "utilities" in config_dict:
+            self._update_nested_config(self.stage_config.utilities, config_dict["utilities"])
     
     def _update_nested_config(self, config_obj: Any, config_dict: Dict[str, Any]) -> None:
         """Recursively update nested configuration objects from a dictionary"""
@@ -571,8 +579,10 @@ class StageBasedConfigLoader:
                 attr = getattr(config_obj, key)
                 if isinstance(attr, (int, float, str, bool, type(None))):
                     setattr(config_obj, key, value)
+                    glog.info(f"Set attribute {key} to value {value}")
                 elif isinstance(attr, list) and isinstance(value, list):
                     setattr(config_obj, key, value)
+                    glog.info(f"Set list attribute {key} to value {value}")
                 elif hasattr(attr, "__dataclass_fields__") and isinstance(value, dict):
                     self._update_nested_config(attr, value)
                 else:
@@ -582,12 +592,10 @@ class StageBasedConfigLoader:
                         glog.error(f"Failed to set attribute {key} with value {value}: {e}")
 
     
-
-    def populate_app_config(self, app_config: 'AppConfig') -> None:
-        """Populate the main application configuration from stage-based configuration"""
+    def import_from_app_config(self, app_config: 'AppConfig') -> None:
+        """Populate stage-based configuration from the main application configuration"""
         
         app_config_attrs = set(app_config.__dict__.keys())
-        
         stage_configs = [
             self.stage_config.common,
             self.stage_config.stage1_pre_processing,
@@ -596,6 +604,34 @@ class StageBasedConfigLoader:
             self.stage_config.stage3_benchmark,
             self.stage_config.utilities,
         ]
+        
+        for stage_config in stage_configs:
+            for attr_name in app_config_attrs:
+                if hasattr(stage_config, attr_name):
+                    attr_value = getattr(app_config, attr_name)
+                    setattr(stage_config, attr_name, attr_value)
+
+    def export_to_app_config(self, app_config: 'AppConfig') -> Any:
+        """Populate the main application configuration from stage-based configuration"""
+        
+        app_config_attrs = set(app_config.__dict__.keys())
+        # import ipdb; 
+        # ipdb.set_trace()
+        stage_configs = [
+            self.stage_config.common,
+            self.stage_config.stage1_pre_processing,
+            self.stage_config.stage2a_process_task_generation,
+            self.stage_config.stage2b_outcome_task_generation,
+            self.stage_config.stage3_benchmark,
+            self.stage_config.utilities,
+        ]
+        
+        for stage_config in stage_configs:
+            for attr_name, attr_value in stage_config.__dict__.items():
+                if attr_name in app_config_attrs:
+                    setattr(app_config, attr_name, attr_value)
+        
+        return app_config
         
   
 @dataclass
@@ -664,7 +700,7 @@ class AppConfig:
     # cache_enabled: bool = True
     # random_seed: Optional[int] = None
 
-    # task_num: int = 5  # Number of tasks to generate
+    benchmark_task_num: int = 5  # Number of tasks to generate
 
     dataset_root_path: str = (
         "data/datasets/replica_dataset"  # Path to the SAPIEN dataset root directory
@@ -717,6 +753,9 @@ class AppConfig:
     )
     image4vote_path: Optional[str] = (
         "${run_dir}/images/image4vote"  # Path to the image for voting
+    )
+    image4reflection_path: Optional[str] = (
+        "${run_dir}/images/image4reflection"  # Path to the image for reflection
     )
     reflection_txt_load_path: Optional[str] = (
         "${run_dir}/reflection/load_reflection.txt"  # Path to the reflection text file
@@ -784,6 +823,7 @@ class ConfigManager:
     def save_to_yaml_staged(self, config_path: str) -> None:
         
         config_path = Path(config_path)
+       # import ipdb; ipdb.set_trace()
         try: 
             staged_config_dict = self._convert_app_config_to_staged_format()
             
@@ -801,7 +841,8 @@ class ConfigManager:
         staged_config = StageBasedConfig()
         
         loader = StageBasedConfigLoader()
-        loader.populate_app_config(self.config)
+        #import ipdb; ipdb.set_trace()
+        loader.import_from_app_config(self.config)
         staged_config = loader.stage_config
         
         import dataclasses
@@ -817,7 +858,7 @@ class ConfigManager:
                 return [dataclass_to_dict(item) for item in obj]
             else:
                 return obj
-        import ipdb; ipdb.set_trace()
+       # import ipdb; ipdb.set_trace()
         return dataclass_to_dict(staged_config)
         
         
@@ -850,10 +891,11 @@ class ConfigManager:
         if config_file_path:
 
             self.load_config(config_file_path)
-
+     #   import ipdb; ipdb.set_trace()
         self.save_used_config()
 
         self._resolve_all_paths()
+       # import ipdb; ipdb.set_trace()
 
     def _resolve_all_paths(self):
 
@@ -868,7 +910,7 @@ class ConfigManager:
 
     def save_used_config(self):
         config_path = f"{self.run_dir}/latest_config/used_config.yaml"
-        self.save_to_yaml(config_path)
+        self.save_to_yaml_staged(config_path)
         glog.info(f"Saved used configuration to {config_path}")
 
     def load_config(self, config_file_path: str) -> None:
@@ -878,36 +920,39 @@ class ConfigManager:
         elif config_file_path.endswith(".json"):
             self.load_from_json(config_file_path)
         else:
-            print(f"Unsupported configuration file format: {config_file_path}")
+            glog.info(f"Unsupported configuration file format: {config_file_path}")
 
     def load_from_yaml(self, config_path: str) -> None:
         """Load configuration from YAML file"""
         config_path = Path(config_path)
         if not config_path.exists():
-            print(
+            glog.info(
                 f"Configuration file {config_path} does not exist, using default configuration"
             )
             return
         glog.info(f"Loading configuration from {config_path}")
+        
         try:
             with open(config_path, "r", encoding="utf-8") as f:
                 config_dict = yaml.safe_load(f)
 
             try:
                 self._update_config_from_dict(config_dict)
+               
             except Exception as e:
                 glog.warning(f"Failed to update config using new method, falling back to legacy method: {e}")
                 self._update_config_from_dict_legacy(config_dict)
             self.config_file_path = config_path
-            print(f"Loaded configuration file: {config_path}")
+            glog.info(f"Loaded configuration file: {config_path}")
         except Exception as e:
-            print(f"Failed to load configuration file: {e}")
+            glog.info(f"Failed to load configuration file: {e}")
+        #import ipdb; ipdb.set_trace()
 
     def load_from_json(self, config_path: str) -> None:
         """Load configuration from JSON file"""
         config_path = Path(config_path)
         if not config_path.exists():
-            print(
+            glog.info(
                 f"Configuration file {config_path} does not exist, using default configuration"
             )
             return
@@ -918,9 +963,9 @@ class ConfigManager:
 
             self._update_config_from_dict(config_dict)
             self.config_file_path = config_path
-            print(f"Loaded configuration file: {config_path}")
+            glog.info(f"Loaded configuration file: {config_path}")
         except Exception as e:
-            print(f"Failed to load configuration file: {e}")
+            glog.info(f"Failed to load configuration file: {e}")
 
     def _update_nested_config(self, config_obj: Any, config_dict: Dict[str, Any]) -> None:
         """Recursively update nested configuration objects from a dictionary"""
@@ -941,32 +986,13 @@ class ConfigManager:
 
     def _update_config_from_dict(self, config_dict: Dict[str, Any]) -> None:
         """Update configuration from dictionary"""
-        # import ipdb; ipdb.set_trace()
+        
         # Check if the config_dict uses legacy keys
-        if "common" in config_dict:
-            # New format with sections
-            common_config = config_dict.get("common", {})
-            self._update_nested_config(self.config.common, common_config) 
-            
-        if "stage1_pre_processing" in config_dict:
-            pre_processing_config = config_dict.get("stage1_pre_processing", {})
-            self._update_nested_config(self.config.pre_processing, pre_processing_config)
-            
-        if "stage2a_process_task_generation" in config_dict:
-            process_task_gen_config = config_dict.get("stage2a_process_task_generation", {})
-            self._update_nested_config(self.config.process_task_generation, process_task_gen_config)
-            
-        if "stage2b_outcome_task_generation" in config_dict:
-            outcome_task_gen_config = config_dict.get("stage2b_outcome_task_generation", {})
-            self._update_nested_config(self.config.outcome_task_generation, outcome_task_gen_config)
-            
-        if "stage3_benchmark" in config_dict:
-            benchmark_config = config_dict.get("stage3_benchmark", {})
-            self._update_nested_config(self.config.benchmark, benchmark_config)
-            
-        if "utilities" in config_dict:
-            misc_config = config_dict.get("utilities", {})
-            self._update_nested_config(self.config.misc, misc_config)
+        stage_base_config_loader = StageBasedConfigLoader(self.config)
+        stage_base_config_loader.load_from_dict(config_dict)
+        stage_based_config = stage_base_config_loader.stage_config
+        stage_base_config_loader.export_to_app_config(self.config)
+     #   import ipdb; ipdb.set_trace()
             
             
         self._resolve_all_paths()
@@ -1201,9 +1227,9 @@ class ConfigManager:
     #                 default_flow_style=False,
     #                 allow_unicode=True,
     #             )
-    #         print(f"Configuration saved to: {config_path}")
+    #         glog.info(f"Configuration saved to: {config_path}")
     #     except Exception as e:
-    #         print(f"Failed to save configuration: {e}")
+    #         glog.info(f"Failed to save configuration: {e}")
 
     
     def save_to_yaml(self, config_path: str) -> None:
@@ -1221,9 +1247,9 @@ class ConfigManager:
                     default_flow_style=False,
                     allow_unicode=True,
                 )
-            print(f"Configuration saved to: {config_path}")
+            glog.info(f"Configuration saved to: {config_path}")
         except Exception as e:
-            print(f"Failed to save configuration: {e}")
+            glog.info(f"Failed to save configuration: {e}")
 
     def _convert_value_to_serializable(self, value: Any) -> Any:
         """Recursively converts values to be YAML-serializable, handling numpy types."""
@@ -1294,53 +1320,53 @@ class ConfigManager:
 
     def print_config(self) -> None:
         """Print current configuration"""
-        print("=" * 50)
-        print("Current Configuration:")
-        print(f"Ground Coverage Analyzer:")
-        print(f"  Resolution: {self.config.ground_coverage.resolution}")
-        print(f"  Min rectangle size: {self.config.ground_coverage.min_rect_size}")
-        print(f"  Z range: {self.config.ground_coverage.z_range}")
-        print(f"Task Primitive:")
-        print(f"  Default action: {self.config.task_primitive.default_action}")
-        print(
+        glog.info("=" * 50)
+        glog.info("Current Configuration:")
+        glog.info(f"Ground Coverage Analyzer:")
+        glog.info(f"  Resolution: {self.config.ground_coverage.resolution}")
+        glog.info(f"  Min rectangle size: {self.config.ground_coverage.min_rect_size}")
+        glog.info(f"  Z range: {self.config.ground_coverage.z_range}")
+        glog.info(f"Task Primitive:")
+        glog.info(f"  Default action: {self.config.task_primitive.default_action}")
+        glog.info(
             f"  Support directions: {len(self.config.task_primitive.support_directions)} directions"
         )
-        print(f"Atomic Task:")
-        print(
+        glog.info(f"Atomic Task:")
+        glog.info(
             f"  Max intermediate states: {self.config.process_based_task.max_intermediate_states}"
         )
-        print(f"  Debug mode: {self.config.process_based_task.debug_mode}")
-        print(f"Scene Type:")
-        print(
+        glog.info(f"  Debug mode: {self.config.process_based_task.debug_mode}")
+        glog.info(f"Scene Type:")
+        glog.info(
             f"  Need collision adjustment: {self.config.scene_type.NEED_COLLISION_ADJUSTMENT}"
         )
-        print(f"  RGBD scene: {self.config.scene_type.RGBD_SCENE}")
-        print(f"Basic Geometry:")
-        print(f"  EPS: {self.config.basic_geometry.EPS}")
-        print(f"Image Renderer:")
-        print(f"  Default FOV: {self.config.image_renderer.default_fovy}")
-        print(
+        glog.info(f"  RGBD scene: {self.config.scene_type.RGBD_SCENE}")
+        glog.info(f"Basic Geometry:")
+        glog.info(f"  EPS: {self.config.basic_geometry.EPS}")
+        glog.info(f"Image Renderer:")
+        glog.info(f"  Default FOV: {self.config.image_renderer.default_fovy}")
+        glog.info(
             f"  Resolution: {self.config.image_renderer.width}x{self.config.image_renderer.height}"
         )
-        print(f"  Z range: {self.config.image_renderer.z_range}")
-        print(f"Concave Processor:")
-        print(f"  Min polygon area: {self.config.concave_processor.min_polygon_area}")
-        print(
+        glog.info(f"  Z range: {self.config.image_renderer.z_range}")
+        glog.info(f"Concave Processor:")
+        glog.info(f"  Min polygon area: {self.config.concave_processor.min_polygon_area}")
+        glog.info(
             f"  Target aspect ratio: {self.config.concave_processor.target_aspect_ratio}"
         )
-        print(f"  Max target strips: {self.config.concave_processor.max_target_strips}")
-        print(f"OpenRouter:")
-        print(f"  Model: {self.config.openrouter.model}")
-        print(f"Global:")
-        print(f"  Adjust with gravity: {self.config.adjust_with_gravity}")
-        print(f"  Use renaming engine: {self.config.use_renaming_engine}")
-        print(f"  BBox only: {self.config.bbox_only}")
-        print(f"  Mode: {self.config.mode}")
-        print(f"  Model name: {self.config.model_name}")
-        print(f"  Log level: {self.config.log_level}")
-        print(f"  Output directory: {self.config.output_dir}")
-        print(f"  Random seed: {self.config.random_seed}")
-        print("=" * 50)
+        glog.info(f"  Max target strips: {self.config.concave_processor.max_target_strips}")
+        glog.info(f"OpenRouter:")
+        glog.info(f"  Model: {self.config.openrouter.model}")
+        glog.info(f"Global:")
+        glog.info(f"  Adjust with gravity: {self.config.adjust_with_gravity}")
+        glog.info(f"  Use renaming engine: {self.config.use_renaming_engine}")
+        glog.info(f"  BBox only: {self.config.bbox_only}")
+        glog.info(f"  Mode: {self.config.mode}")
+        glog.info(f"  Model name: {self.config.model_name}")
+        glog.info(f"  Log level: {self.config.log_level}")
+        glog.info(f"  Output directory: {self.config.output_dir}")
+        glog.info(f"  Random seed: {self.config.random_seed}")
+        glog.info("=" * 50)
 
     def save_to_json(self, config_path: str) -> None:
         """Save current configuration to JSON file"""
@@ -1348,9 +1374,9 @@ class ConfigManager:
         try:
             with open(config_path, "w", encoding="utf-8") as f:
                 json.dump(self.config.__dict__, f, indent=4, ensure_ascii=False)
-            print(f"Configuration saved to: {config_path}")
+            glog.info(f"Configuration saved to: {config_path}")
         except Exception as e:
-            print(f"Failed to save configuration: {e}")
+            glog.info(f"Failed to save configuration: {e}")
 
     def temp_set_model(self, model_name: str):
 

@@ -984,9 +984,9 @@ class TaskGeneration:
 
     @classmethod
     def get_config(cls):
-        from ..utils.config_manager import get_atomic_task_config
+        from ..utils.config_manager import get_process_based_task_config
 
-        return get_atomic_task_config()
+        return get_process_based_task_config()
 
     def parse_from_file(self, tree_file=None, node_details_file=None):
         if tree_file:
@@ -1006,6 +1006,10 @@ class TaskGeneration:
         """
 
         item_node_list = cur_scene_graph.get_non_ground_object_list()
+        if self.use_level1_tasks:
+            item_node_list = [
+                item_node for item_node in item_node_list if not item_node.is_ambiguous
+            ]
         place_node_list = cur_scene_graph.get_ground_object_list()
 
         platform_list = []
@@ -1037,11 +1041,14 @@ class TaskGeneration:
 
         random.shuffle(item_platform_pairs)
 
+        
+        
         for item_node, platform in item_platform_pairs:
             if item_node.name in fixed_object_list:
                 continue
+           # import ipdb; ipdb.set_trace()
             if self.use_level1_tasks:
-                if item_node.is_ambiguous():
+                if item_node.is_ambiguous:
                     continue
             available_directions = [
                 dir
@@ -1106,7 +1113,7 @@ class TaskGeneration:
                                 if isinstance(random_feature, list):
                                     skip_flag = False
                                     for rf in random_feature:
-                                        if cur_scene_graph.nodes.get(rf, None) is not None and cur_scene_graph.nodes[rf].is_ambiguous():
+                                        if cur_scene_graph.nodes.get(rf, None) is not None and cur_scene_graph.nodes[rf].is_ambiguous:
                                             skip_flag = True
                                     if skip_flag:
                                         continue
@@ -1114,7 +1121,7 @@ class TaskGeneration:
                                     if cur_scene_graph.nodes.get(random_feature, None) is not None and cur_scene_graph.nodes.get(
                                         random_feature, None) is not None and cur_scene_graph.nodes[
                                         random_feature
-                                    ].is_ambiguous():
+                                    ].is_ambiguous:
                                         continue
                             
                             goal_translation_2d = feature_dict[random_feature]
@@ -1234,27 +1241,29 @@ class TaskGeneration:
         return task_chain
 
     def generate_task(self, task_length=None, max_task_num=None):
-
+        #import ipdb; ipdb.set_trace()
+        config = self.get_config()
         task_length = (
             task_length
             if task_length is not None
-            else self.get_config().get("task_length", 1)
+            else getattr(config, "max_task_length", 2)
         )
         max_task_num = (
             max_task_num
             if max_task_num is not None
-            else self.get_config().get("max_task_num", 10)
+            else getattr(config, "max_task_num", 10)
         )
         
-        self.use_level1_tasks = self.get_config().get('use_level1_tasks')
+        self.use_level1_tasks = getattr(config, "use_level1_tasks", False)
         
-        if self.use_level1_tasks:
-            self.CHAIN_NUM = 1
-            pass
         
 
         self.CHAIN_NUM = task_length
         self.MAX_TASK_NUM = max_task_num
+        if self.use_level1_tasks:
+            self.CHAIN_NUM = 1
+            pass
+        
 
         for _ in range(self.MAX_TASK_NUM):
             self.tasks.append(self.generate_task_chain(self.scene_graph))

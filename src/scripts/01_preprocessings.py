@@ -134,7 +134,7 @@ def parse_arguments():
     parser.add_argument(
         "--use_renaming_engine",
         action="store_true",
-        default=None,
+        default=False,
         help="Whether to use renaming engine",
     )
     parser.add_argument(
@@ -177,7 +177,6 @@ def main(args):
 
     glog.info(args.output_dir)
     glog.info(args.config)
-
     config_manager = ConfigManager(config_file_path=config_path, run_dir=run_dir)
 
     update_config_from_args(config_manager, args)
@@ -185,7 +184,8 @@ def main(args):
 
     if not os.path.exists(config_manager.config_file_export_dir):
         os.makedirs(config_manager.config_file_export_dir)
-    config_manager.save_to_yaml(
+
+    config_manager.save_to_yaml_staged(
         os.path.join(
             config_manager.config_file_export_dir,
             f"used_config_{int(time.time())}.yaml",
@@ -262,7 +262,6 @@ def main(args):
             pickle.dump(scene_graph, f)
 
     rename_dict = {}
-    main_config.use_renaming_engine = True
     main_config.rename_dict_path = (
         "/mnt/windows_e/workplace/task_generation/runs/cache/rename_dict.json"
     )
