@@ -86,7 +86,6 @@ Building embodied agents capable of accomplishing arbitrary tasks is a core obje
 
 For installation, refer to [INSTALLATION.md](./docs/INSTALLATION.md)
 
-We also provide the configuration file exported by the conda environment in `config/env.yml`.
 
 
 
@@ -313,7 +312,7 @@ To facilitate development, research, and contribution to the **ManiTaskGen** fra
 - **API Reference:** Find comprehensive documentation on reusable code components, utility libraries (e.g., `basic_geometries`), and the internal data structures. Read **[API_REFERENCE.md](API_REFERENCE.md)**
 
 
-    
+
 ## Contributing
 
 We warmly welcome and appreciate contributions of all forms—from bug reports and feature suggestions to documentation improvements and code development. ManiTaskGen aims to be a universal framework, and community input is essential for its growth.
