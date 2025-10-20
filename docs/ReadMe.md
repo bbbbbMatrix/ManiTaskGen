@@ -53,6 +53,7 @@ Building embodied agents capable of accomplishing arbitrary tasks is a core obje
 │   └── env.yml                       # Environment variables and sensitive API keys.
 ├── data/                             # VLM INTERACTION ASSETS
 │   └── templates/                    # Core VLM prompts used for various stages.
+│       ├── manitask_ot200.txt        # Outcome-based task templates (MANITASKOT-200).
 │       ├── renaming_engine.json      # Prompts for object renaming and standardization.
 │       ├── benchmark_prompts.json    # Prompts for the VLM Agent during benchmark execution.
 │       └── ...                       # Other specialized prompts (e.g., reflection, voting).
@@ -93,7 +94,6 @@ For installation, refer to [INSTALLATION.md](./docs/INSTALLATION.md)
 
 
 
-## Environment Setup
 
 
 
@@ -102,8 +102,6 @@ Please follow the instructions in [INSTALLATION.md](https://github.com/bbbbbMatr
 ### Usage Examples
 
 
-
-### Maniskill-style Scenes (AI2THOR & ReplicaCAD)
 
 
 
@@ -160,7 +158,6 @@ The ManiTaskGen pipeline is structured into a sequential, four-step execution pr
 ### Overview
 
 
-  outputs
 
 
 
