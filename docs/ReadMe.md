@@ -171,7 +171,7 @@ The ManiTaskGen pipeline is structured into a sequential, four-step execution pr
 
 | Scripts                           | Feature                                                      | Input                                                        | Output(default path)                                         |
 | --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| run_01_preprocessing.sh           | Scene preprocessing                                          | `data/datasets/{dataset}`                                    | `runs/cache/scene_entities.json`<br />`runs/cache/scene_parsed.json`<br />`runs/cache/rename_dict.json`<br />`runs/images/image4rename/xxx.png`<br />`runs/cache/scene_graph.pkl`<br />`runs/visualizations/scene_graph.dot`<br />`runs/visualizations/scene_graph.txt` |
+| run_01_preprocessing.sh           | Scene preprocessing                                          | `data/datasets/{dataset}`                                    | `runs/cache/scene_entities.json`<br />`runs/cache/scene_parsed.json`<br />`runs/cache/rename_dict.json`<br />`runs/images/image4rename/xxx.png`<br />`runs/cache/scene_graph.pkl` |
 | run_02a_gen_process_based_task.sh | Generate process-based tasks                                | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/cache/process_based_task.pkl`<br />`runs/output/process_based_task.txt` |
 | run_02b_gen_outcome_based_task.sh | Generate outcome-based tasks                                 | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/output/outcome_based_task.txt`<br />`runs/images/image4vote/xxx.png` |
 | run_03_run_benchmark.sh           | Run benchmark execution                                      | `runs/cache/process_based_task.pkl`                         | `runs/output/result.txt`<br />`runs/images/image4interact/xxx.png`|
@@ -191,18 +191,18 @@ Below are the detailed instructions for running each script in sequence.
 This initial step is crucial for transforming raw scene data into a structured format suitable for robust task generation, primarily focusing on resolving object ambiguity.
 
 - **Goal:** Convert raw scene information (e.g., object poses, bounding boxes) into a standardized format and resolve object naming ambiguities using a VLM. The parsed scene data will be stored in ``runs/cache/scene_entities.json`` and ``runs/cache/scene_parsed.json`` for subsequent task generation.
-- Functionality Overview:  
+- **Functionality Overview**:  
   * **Generating Scene Graph**: Output a structured file containing the **Receptacle-Aware 3D Scene Graph**, which includes crucial information about object-receptacle relationships. The graph will be stored in serialized (`runs/cache/scene_graph.pkl`) formats.
   * **VLM-Enhanced Renaming (Optional but Recommended):**  To address ambiguities arising from casual object naming in some datasets (e.g., identical names distinguished only by numerical suffixes ), a user-configured Vision-Language Model (VLM) can be leveraged. **This step is highly recommended** for process-based tasks as it ensures the renaming of objects into a more descriptive `(category_name)_(specific_name)` format, which is essential for accurate task difficulty classification (Level 1 vs. Level 2). The renaming results will be saved in ``runs/cache/rename_dict.json`` (if renaming is disabled, this file will be an empty dict), and images used for VLM querying will be stored in ``runs/images/image4rename/``.
   * **Gravity Adjustment (Optional but Recommended):** To address object dislocation in the dataset, we'll load and save the object information once in Sapien before start processing. This requires setting correct ``collision_path``. ``runs/cache/scene_parsed.json`` will contain the original object poses, and ``runs/cache/scene_parsed_gravity_adjusted.json`` will contain the adjusted object poses.
 
-* Dependencies: 
+* **Dependencies:** 
 
   * dataset
   * access to a configured VLM (e.g. via API key) for the object renaming, enabled when ``use_renaming_engine=True``
   * object collision paths for the Gravity adjustment step, enabled when ``adjust_with_gravity=True``
 
-* Key Arguments:
+* **Key Arguments:**
 
   * For full argument examples, please refer to ``stage1_pre_processing`` column under ``configs/staged_config.yaml``. 
 
