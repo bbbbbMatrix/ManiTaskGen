@@ -66,7 +66,9 @@ If you have issues when downloading with maniskill, The datasets can also be dow
 ``https://huggingface.co/datasets/haosulab/ReplicaCAD``
 
 
+### SUNRGBD
 
+Download from the official website: https://rgbd.cs.princeton.edu/
 
 ## Setting Up VLM APIs
 

@@ -17,8 +17,6 @@ This is the official repository for the **ManiTaskGen** project. It Includes ins
 
 
 
-Building embodied agents capable of accomplishing arbitrary tasks is a core objective towards achieving Embodied Artificial General Intelligence (E-AGI). Existing benchmarks are often limited to tasks within specific scenes, relying on manual annotation of restricted scenarios.
-
 **ManiTaskGen** is introduced as a novel system that addresses this limitation by automatically generating a **comprehensive, diverse, and logically near-exhaustive** set of mobile manipulation tasks for any given scene. This system provides a crucial resource for both the rigorous evaluation and iterative improvement of Vision-Language Agents (VLAs) on embodied decision-making.
 
 
@@ -85,7 +83,7 @@ Building embodied agents capable of accomplishing arbitrary tasks is a core obje
 
 ## Installation
 
-For installation, refer to [INSTALLATION.md](./docs/INSTALLATION.md)
+For installation, refer to [INSTALLATION.md](./INSTALLATION.md)
 
 
 
@@ -97,9 +95,18 @@ For installation, refer to [INSTALLATION.md](./docs/INSTALLATION.md)
 
 
 
-Please follow the instructions in [INSTALLATION.md](https://github.com/bbbbbMatrix/ManiTaskGen/blob/item_modification/docs/INSTALLATION.md) to set up the environment.
+Please follow the instructions in [INSTALLATION.md](./INSTALLATION.md) to set up the environment.
 
-### Usage Examples
+### Real-world Scenes (SUNRGBD)
+
+Though the real-world scene benchmark is not yet supported in the current version, you can still run the preprocessing and task generation steps on SUNRGBD dataset with the following command:
+
+```
+python src/preprocessing/sunrgbd_parser.py --scene_path=path/to/SUNRGBD/dataset --output_path=/path/to/output/folder
+```
+
+
+### Maniskill-style Scenes (AI2THOR & ReplicaCAD)
 
 
 
@@ -130,7 +137,7 @@ CONFIG_FILE=config/default_config.yml bash scripts/run_03_run_benchmark.sh
 Under default configs, once run:
 
 * `latest_config/used_config.yaml` records your latest config. 
-* ``run/`` folder records all your config, named by ``used_config_{ts}.yaml``. 
+* ``run/configs_used`` folder records all your config, named by ``used_config_{ts}.yaml``. 
 * The `runs/` folder stores all intermediate artifacts and final outputs generated during runtime. Re-running the same step (`.sh` script) of the pipeline may **overwrite** the existing contents within this folder.
 
 
@@ -295,7 +302,7 @@ This module acts as the benchmark executor, connecting a target VLM Agent to the
 
 
 
-Configs that not listed above should not require frequent changes. for their usage, see [FULL_CONFIG_REFERENCE.md](./docs/FULL_CONFIG_REFERENCE.md)
+Configs that not listed above should not require frequent changes. for their usage, see [FULL_CONFIG_REFERENCE.md](./FULL_CONFIG_REFERENCE.md)
 
 
 
