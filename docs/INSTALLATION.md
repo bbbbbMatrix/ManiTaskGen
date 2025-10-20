@@ -76,7 +76,7 @@ We use [OpenRouter](https://openrouter.ai/) API to access both open-source and c
 
 ### Encode your OpenRouter API_key
 
-Modify  ``OpenRouterConfig `` class in `src/utils/config_manager.py` (or your yml config file) with your API key.
+Modify  ``OpenRouterConfig `` class in the ``common:openrouter:api_key`` column with your API key.
 
 For more details on using the OpenRouter API, refer to the OpenRouter  [official documentation](https://openrouter.ai/docs/quickstart).
 
