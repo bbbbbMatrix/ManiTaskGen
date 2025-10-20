@@ -4,7 +4,7 @@
 
 
 
-[![arXiv](https://img.shields.io/badge/arXiv-2505.20726-df2a2a.svg?style=for-the-badge)](https://arxiv.org/abs/2406.09246)
+[![arXiv](https://img.shields.io/badge/arXiv-2505.20726-df2a2a.svg?style=for-the-badge)](https://arxiv.org/abs/2505.20726)  
 [![Website](https://img.shields.io/badge/Project%20Page-Visit-brightgreen?style=for-the-badge&logo=globe)](https://manitaskgen.github.io/)
 
 
@@ -48,8 +48,10 @@ This is the official repository for the **ManiTaskGen** project. It Includes ins
 │   └── 03_run_benchmark.sh           # STAGE 3: Run the VLM Agent benchmark executor. (NOTE: Only supports Process-based Tasks.)
 ├── config/                           # SYSTEM & RUNTIME CONFIGURATION
 │   ├── default_config.yml            # Default system configuration (paths, VLM models, parameters).
-│   └── env.yml                       # Environment variables and sensitive API keys.
-├── data/                             # VLM INTERACTION ASSETS
+│   └── requirements_minimal.txt      # Minimal Python dependencies for running the pipeline, will be installed via install.sh.
+├── data/                             # DATASETS & TEMPLATES
+│   ├── dataset/   
+│   │   ├── ...                       # Place datasets here (e.g., AI2THOR, ReplicaCAD, SUNRGBD). 
 │   └── templates/                    # Core VLM prompts used for various stages.
 │       ├── manitask_ot200.txt        # Outcome-based task templates (MANITASKOT-200).
 │       ├── renaming_engine.json      # Prompts for object renaming and standardization.
@@ -64,20 +66,30 @@ This is the official repository for the **ManiTaskGen** project. It Includes ins
 │   │   ├── task_feasibility_evaluator.py # validate the feasibility of generated tasks using VLM voting.
 │   │   └── benchmark_executor.py     # Manages task execution and interaction (The final testing module).
 │   ├── geometry/                     # PHYSICAL CONSTRAINTS & FEASIBILITY CHECKS
-│   │   ├── placement_helper.py       # Object placement validation and assistance (crucial for generating realistic tasks).
-│   │   ├── ground_coverage_analyzer.py # Examines ground coverages for agent interaction analysis.
-│   │   └── ...                       # Other files for geometric processing (hulls, meshes, queries).
+│   │   ├── basic_geometries.py      # Core geometric primitives and operations (AABB, OBB, Spheres, etc.).
+│   │   ├── convex_hull_processor.py  # Convex hull computations for object spatial reasoning.
+│   │   ├── concave_processor.py      # Concave computations for detailed object shape analysis.
+│   │   ├── polygon_processor.py    # 2D polygon operations for planar reasoning.
+│   │   ├── object_mesh_processor.py   # 3D mesh processing utilities for parsing and analysis the object meshes.
+│   │   └── ...                       # Other files for geometric processing.
 │   ├── preprocessing/                # SCENE STANDARDIZATION PIPELINE
 │   │   ├── renaming_engine.py        # Object renaming and standardization using VLM consensus.
+│   │   ├── base_parser.py           # Base class for scene parsers.
+│   │   ├── maniskill_parser.py      # Specialized parser for Maniskill-style (Maniskill-augmented AI2THOR & ReplicaCAD) scenes.
 │   │   ├── sunrgbd_parser.py         # Specialized parser for SUNRGBD-style (depth/image) scenes.
-│   │   └── ...                       # Other scene parsers (base, maniskill) and visualization helpers.
+│   │   ├── visualize_scene_sapien.py # Visualization utilities for rendering scenes & Gravity Adjustments in Sapien,
+│   │   └── ...                       # Other preprocessing modules. Add other scene parsers here.
 │   ├── vlm_interaction/              # VLM API ABSTRACTION LAYER
-│   │   └── ...                       # Modules to communicate uniformly with various VLM backends.
+│   │   ├── vlm_interactor.py         # class to interact with various VLM backends via openrouter.ai.
+│   │   ├── interact_prompt_helper.py # Helper functions to format prompts and parse VLM responses.
+│   │   └── VLMEvalKit/             # Our adaptation of VLMEvalKit for VLM interaction management. 
 │   └── utils/                        # SHARED UTILITIES
 │       ├── config_manager.py         # Handles loading and managing all system configurations.
 │       ├── string_convertor.py       # Utilities for cleaning and normalizing object names.
 │       └── image_renderer/           # Tools for converting coordinates and rendering scenes for VLM input.
-└── docs/                             # DOCUMENTATION & GUIDES
+└── docs/                             # DOCUMENTATION & GUIDES 
+    └── ... 
+
 ```
 
 
