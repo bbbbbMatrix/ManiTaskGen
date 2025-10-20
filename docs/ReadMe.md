@@ -61,6 +61,7 @@ This is the official repository for the **ManiTaskGen** project. It Includes ins
 │   │   ├── task_primitive.py         # Defines the low-level goal representations (primitives) used by task generators.
 │   │   ├── process_based_task_generator.py # Generates tasks based on prescriptive action sequences.
 │   │   ├── outcome_based_task_generator.py # Generates tasks based on final outcome states.
+│   │   ├── task_feasibility_evaluator.py # validate the feasibility of generated tasks using VLM voting.
 │   │   └── benchmark_executor.py     # Manages task execution and interaction (The final testing module).
 │   ├── geometry/                     # PHYSICAL CONSTRAINTS & FEASIBILITY CHECKS
 │   │   ├── placement_helper.py       # Object placement validation and assistance (crucial for generating realistic tasks).

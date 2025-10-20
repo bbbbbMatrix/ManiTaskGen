@@ -92,7 +92,7 @@ class TaskFeasibilityEvaluator:
         platform_img, platform_img_list = scene_graph.auto_take_platform_picture(
             platform_name=platform.name,
             view="human_full",
-            save_path=f"{save_path}{platform.name}.png",
+            save_path=f"{save_path}/{platform.name}.png",
         )
 
         # Add images to conversation
@@ -100,14 +100,14 @@ class TaskFeasibilityEvaluator:
         if n_platform_img_list > 1:
             for i, platform_img in enumerate(platform_img_list):
                 image_path = (
-                    f"{save_path}{platform.name}_{i+1}_out_of_{n_platform_img_list}.png"
+                    f"{save_path}/{platform.name}_{i+1}_out_of_{n_platform_img_list}.png"
                 )
                 vlminteractor.add_content(
                     content=image_path, role="user", content_type="image"
                 )
         else:
             vlminteractor.add_content(
-                content=f"{save_path}{platform.name}.png",
+                content=f"{save_path}/{platform.name}.png",
                 role="user",
                 content_type="image",
             )
@@ -149,7 +149,7 @@ class TaskFeasibilityEvaluator:
             # Take platform picture
             platform_img, platform_img_list = scene_graph.auto_take_platform_picture(
                 platform_name=platform.name,
-                save_path=f"{save_path}{platform.name}.png",
+                save_path=f"{save_path}/{platform.name}.png",
                 view="human_full",
             )
 
@@ -157,13 +157,13 @@ class TaskFeasibilityEvaluator:
             n_platform_img_list = len(platform_img_list)
             if n_platform_img_list > 1:
                 for i, platform_img in enumerate(platform_img_list):
-                    image_path = f"{save_path}{platform.name}_{i+1}_out_of_{n_platform_img_list}.png"
+                    image_path = f"{save_path}/{platform.name}_{i+1}_out_of_{n_platform_img_list}.png"
                     vlminteractor.add_content(
                         content=image_path, role="user", content_type="image"
                     )
             else:
                 vlminteractor.add_content(
-                    content=f"{save_path}{platform.name}.png",
+                    content=f"{save_path}/{platform.name}.png",
                     role="user",
                     content_type="image",
                 )

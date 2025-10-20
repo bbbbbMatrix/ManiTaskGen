@@ -25,7 +25,6 @@ cd ../..
 ## Install dependencies and requirements
 
 ```shell
-git checkout item_modification
 bash install.sh
 ```
 
@@ -49,7 +48,6 @@ python -m mani_skill.utils.download_asset AI2THOR
 cp -r /path/to/.maniskill/data/scene_datasets/ai2thor .
 
 
-
 python -m mani_skill.utils.download_asset ReplicaCAD
 cp -r /path/to/.maniskill/data/scene_datasets/replica_cad_dataset .
 cd ../..
@@ -57,7 +55,6 @@ cd ../..
 
 Note that the dataset will be downloaded to the subfolder of maniskill module, and the absolute path will be shown after the dataset downloading command is finished. 
 
-After the loading the scene, change the dataset path in ``AppConfig``,`RawSceneConfig` and `SapienConfig` class in `src/utils/config_manager.py` accordingly.
 
 If you have issues when downloading with maniskill, The datasets can also be downloaded from their repository on hugging-face website:
 
@@ -72,11 +69,10 @@ Download from the official website: https://rgbd.cs.princeton.edu/
 
 ## Setting Up VLM APIs
 
-We use [OpenRouter](https://openrouter.ai/) API to access both open-source and closed-source VLMs. To benchmark VLM agents, you need to set up your OpenRouter API key and model address in the configuration file or command line arguments.
+We use [OpenRouter](https://openrouter.ai/) API to access both open-source and closed-source VLMs. To benchmark VLM agents, you need to set up your OpenRouter API key and model address in the configuration file or command line arguments. 
 
-### Encode your OpenRouter API_key
+Modify config in the ``common:openrouter:api_key`` column with your API key, and in the ``common:openrouter:model`` column with your desired model address.
 
-Modify  ``OpenRouterConfig `` class in the ``common:openrouter:api_key`` column with your API key.
 
 For more details on using the OpenRouter API, refer to the OpenRouter  [official documentation](https://openrouter.ai/docs/quickstart).
 
