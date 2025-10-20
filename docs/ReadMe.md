@@ -171,11 +171,11 @@ The ManiTaskGen pipeline is structured into a sequential, four-step execution pr
 
 | Scripts                           | Feature                                                      | Input                                                        | Output(default path)                                         |
 | --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| run_01_preprocessing.sh           | Scene preprocessing                                          | `data/datasets/{dataset}`                                    | `runs/cache/scene_entities.json`<br />`runs/cache/scene_parsed.json`<br />`runs/cache/rename_dict.json`<br />`runs/images/image4rename/xxx.png`<br />`runs/cache/scene_graph.pkl` |
-| run_02a_gen_process_based_task.sh | Generate process-based tasks                                | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/cache/process_based_task.pkl`<br />`runs/output/process_based_task.txt` |
-| run_02b_gen_outcome_based_task.sh | Generate outcome-based tasks                                 | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/output/outcome_based_task.txt`<br />`runs/images/image4vote/xxx.png` |
-| run_03_run_benchmark.sh           | Run benchmark execution                                      | `runs/cache/process_based_task.pkl`                         | `runs/output/result.txt`<br />`runs/images/image4interact/xxx.png`|
-| config.sh                         | An auxiliary script for setting paths                         | /                                                            | /                                                            |
+| ``run_01_preprocessings.sh``          | Scene preprocessing                                          | `data/datasets/{dataset}`                                    | `runs/cache/scene_entities.json`<br />`runs/cache/scene_parsed.json`<br />`runs/cache/rename_dict.json`<br />`runs/images/image4rename/xxx.png`<br />`runs/cache/scene_graph.pkl` |
+| ``run_02a_gen_process_based_task.sh`` | Generate process-based tasks                                | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/cache/process_based_task.pkl`<br />`runs/output/process_based_task.txt` |
+| ``run_02b_gen_outcome_based_task.sh`` | Generate outcome-based tasks                                 | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/output/outcome_based_task.txt`<br />`runs/images/image4vote/xxx.png` |
+| ``run_03_run_benchmark.sh ``          | Run benchmark execution                                      | `runs/cache/process_based_task.pkl`                         | `runs/output/result.txt`<br />`runs/images/image4interact/xxx.png`|
+| ``config.sh ``                        | An auxiliary script for setting paths                         | /                                                            | /                                                            |
 
 
 
@@ -186,7 +186,7 @@ Below are the detailed instructions for running each script in sequence.
 
 
 
-### Step 1: Scene Preprocessing (``01_preprocessing.sh``)
+### Step 1: Scene Preprocessing (``01_preprocessings.sh``)
 
 This initial step is crucial for transforming raw scene data into a structured format suitable for robust task generation, primarily focusing on resolving object ambiguity.
 
@@ -194,7 +194,7 @@ This initial step is crucial for transforming raw scene data into a structured f
 - **Functionality Overview**:  
   * **Generating Scene Graph**: Output a structured file containing the **Receptacle-Aware 3D Scene Graph**, which includes crucial information about object-receptacle relationships. The graph will be stored in serialized (`runs/cache/scene_graph.pkl`) formats.
   * **VLM-Enhanced Renaming (Optional but Recommended):**  To address ambiguities arising from casual object naming in some datasets (e.g., identical names distinguished only by numerical suffixes ), a user-configured Vision-Language Model (VLM) can be leveraged. **This step is highly recommended** for process-based tasks as it ensures the renaming of objects into a more descriptive `(category_name)_(specific_name)` format, which is essential for accurate task difficulty classification (Level 1 vs. Level 2). The renaming results will be saved in ``runs/cache/rename_dict.json`` (if renaming is disabled, this file will be an empty dict), and images used for VLM querying will be stored in ``runs/images/image4rename/``.
-  * **Gravity Adjustment (Optional but Recommended):** To address object dislocation in the dataset, we'll load and save the object information once in Sapien before start processing. This requires setting correct ``collision_path``. ``runs/cache/scene_parsed.json`` will contain the original object poses, and ``runs/cache/scene_parsed_gravity_adjusted.json`` will contain the adjusted object poses.
+  * **Gravity Adjustment (Optional but Recommended):** To address object dislocation in the dataset, we'll load and save the object information once in Sapien before start processing. This requires setting correct ``collision_path``. ``runs/cache/scene_parsed.json`` will contain the original object poses, and ``runs/cache/scene_entities.json`` will contain the adjusted object poses.
 
 * **Dependencies:** 
 
@@ -264,6 +264,7 @@ This module generates abstract tasks that describe a desired final state of the 
   - | **Key Argument**                          | **Description**                                             | **YAML Path**                                                | **Default/Usage**                          |
     | ----------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------ |
     | `outcome_based_task:task_num_per_pattern` | The number of tasks generated using each distinct template/pattern. | `stage2b_outcome_task_generation:outcome_based_task:task_num_per_pattern` | `5`                                        |
+    | `outcome_based_task:vlm_list` | The vlms for VLM feasibility voting. | `stage2b_outcome_task_generation:outcome_based_task:vlm_list` | `["openai/gpt-4.1", "anthropic/claude-3.5-haiku", "google/gemini-2.5-flash-lite-preview-06-17"]` |
     | `manitaskot_pattern_file`                 | Path to the template file (`MANITASKOT-200`) used for generating outcome-based tasks. | `stage2b_outcome_task_generation:manitaskot_pattern_file`    | `data/templates/manitask_ot200.txt`        |
     | `image4vote_path`                         | Path where scene images will be stored before being sent to the VLM ensemble for feasibility voting. | `stage2b_outcome_task_generation:image4vote_path`            | `${run_dir}/images/image4vote`             |
     | `outcome_based_task_txt_save_path`        | Path to save the generated outcome-based task description file. | `stage2b_outcome_task_generation:outcome_based_task_txt_save_path` | `${run_dir}/output/outcome_based_task.txt` |
