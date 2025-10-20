@@ -1,7 +1,7 @@
 common:
   open_router:
     api_key: Bearer sk-or-v1-YourAPIKeyHere
-    model: google/gemini-2.5-flash-lite-preview-06-17
+    model:  irrelevant/placeholder-model-name-only-for-initialization
   scene_graph_pkl_load_path: ${run_dir}/cache/scene_graph.pkl
 stage1_pre_processing:
   collision_path_prefix: data/datasets/replica_cad_dataset/objects/convex
@@ -60,6 +60,10 @@ stage2b_outcome_task_generation:
   manitaskot_pattern_file: data/templates/manitask_ot200.txt
   outcome_based_task:
     task_num_per_pattern: 5
+    vlm_list:
+      - "openai/gpt-4.1"
+      - "anthropic/claude-3.5-haiku"
+      - "google/gemini-2.5-flash-lite-preview-06-17"
   outcome_based_task_txt_save_path: ${run_dir}/output/outcome_based_task.txt
 stage3_benchmark:
   benchmark_model_name: openai/gpt-4.1-mini

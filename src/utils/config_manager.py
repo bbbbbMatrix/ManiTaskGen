@@ -268,7 +268,7 @@ class OpenRouterConfig:
         "Bearer sk-or-v1-YourAPIKeyHere"  # Replace with your OpenRouter API key
     )
     model: str = (
-        "google/gemini-2.5-flash-lite-preview-06-17"  # See https://openrouter.ai for available models. some are listed below:
+        "irrelevant/placeholder-model-name"  # Placeholder for model selection - not relevant to current context
     )
     """
      # 'openai/gpt-4.1'

@@ -71,7 +71,8 @@ Download from the official website: https://rgbd.cs.princeton.edu/
 
 We use [OpenRouter](https://openrouter.ai/) API to access both open-source and closed-source VLMs. To benchmark VLM agents, you need to set up your OpenRouter API key and model address in the configuration file or command line arguments. 
 
-Modify config in the ``common:openrouter:api_key`` column with your API key, and in the ``common:openrouter:model`` column with your desired model address.
+Modify config in the ``common:openrouter:api_key`` column with your API key.  There are multiple places in the project that call VLM for different purposes, 
+requiring modifications in different parts of the config. Please refer to [ReadMe.md](./ReadMe.md) for details.
 
 
 For more details on using the OpenRouter API, refer to the OpenRouter  [official documentation](https://openrouter.ai/docs/quickstart).
