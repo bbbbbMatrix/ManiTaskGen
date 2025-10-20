@@ -82,29 +82,15 @@ This is the official repository for the **ManiTaskGen** project. It Includes ins
 
 
 
-## Installation
+## Environment Setup
 
-For installation, refer to **[INSTALLATION.md](./INSTALLATION.md)**
+For environment installation, refer to **[INSTALLATION.md](./INSTALLATION.md)**
 
 
 
 
 ## QuickStart
 
-
-
-
-
-
-Please follow the instructions in **[INSTALLATION.md](./INSTALLATION.md)** to set up the environment.
-
-### Real-world Scenes (SUNRGBD)
-
-Though the real-world scene benchmark is not yet supported in the current version, you can still run the preprocessing and task generation steps on SUNRGBD dataset with the following command:
-
-```
-python src/preprocessing/sunrgbd_parser.py --scene_path=path/to/SUNRGBD/dataset --output_path=/path/to/output/folder
-```
 
 
 ### Maniskill-style Scenes (AI2THOR & ReplicaCAD)
@@ -146,7 +132,13 @@ Under default configs, once run:
 It's recommended to set `path/to/config.yaml` to `latest_config/used_config.yaml` after you modified the config file for the first time, so that the latest config will be used by default.
 
 
+### Real-world Scenes (SUNRGBD)
 
+Though the real-world scene benchmark is not yet supported in the current version, you can still run the preprocessing and task generation steps on SUNRGBD dataset with the following command:
+
+```
+python src/preprocessing/sunrgbd_parser.py --scene_path=path/to/SUNRGBD/dataset --output_path=/path/to/output/folder
+```
 
 
 
@@ -375,5 +367,6 @@ black .
 ```
 
 * **Testing:** Ensure your changes do not break existing functionality. Run relevant tests before submitting your Pull Request.
+
 
 * **Documentation:** All new functions, classes, and complex code blocks must include comprehensive **Docstrings** and be referenced in the appropriate documentation files (`TECHNICAL_DETAILS.md` and `API_REFERENCE.md`).
