@@ -17,8 +17,6 @@ This is the official repository for the **ManiTaskGen** project. It Includes ins
 
 
 
-Building embodied agents capable of accomplishing arbitrary tasks is a core objective towards achieving Embodied Artificial General Intelligence (E-AGI). Existing benchmarks are often limited to tasks within specific scenes, relying on manual annotation of restricted scenarios.
-
 **ManiTaskGen** is introduced as a novel system that addresses this limitation by automatically generating a **comprehensive, diverse, and logically near-exhaustive** set of mobile manipulation tasks for any given scene. This system provides a crucial resource for both the rigorous evaluation and iterative improvement of Vision-Language Agents (VLAs) on embodied decision-making.
 
 
@@ -53,6 +51,7 @@ Building embodied agents capable of accomplishing arbitrary tasks is a core obje
 │   └── env.yml                       # Environment variables and sensitive API keys.
 ├── data/                             # VLM INTERACTION ASSETS
 │   └── templates/                    # Core VLM prompts used for various stages.
+│       ├── manitask_ot200.txt        # Outcome-based task templates (MANITASKOT-200).
 │       ├── renaming_engine.json      # Prompts for object renaming and standardization.
 │       ├── benchmark_prompts.json    # Prompts for the VLM Agent during benchmark execution.
 │       └── ...                       # Other specialized prompts (e.g., reflection, voting).
@@ -84,7 +83,7 @@ Building embodied agents capable of accomplishing arbitrary tasks is a core obje
 
 ## Installation
 
-For installation, refer to [INSTALLATION.md](./docs/INSTALLATION.md)
+For installation, refer to [INSTALLATION.md](./INSTALLATION.md)
 
 
 
@@ -93,17 +92,23 @@ For installation, refer to [INSTALLATION.md](./docs/INSTALLATION.md)
 
 
 
-## Environment Setup
 
 
 
-Please follow the instructions in [INSTALLATION.md](https://github.com/bbbbbMatrix/ManiTaskGen/blob/item_modification/docs/INSTALLATION.md) to set up the environment.
+Please follow the instructions in [INSTALLATION.md](./INSTALLATION.md) to set up the environment.
 
-### Usage Examples
+### Real-world Scenes (SUNRGBD)
 
+Though the real-world scene benchmark is not yet supported in the current version, you can still run the preprocessing and task generation steps on SUNRGBD dataset with the following command:
+
+```
+python src/preprocessing/sunrgbd_parser.py --scene_path=path/to/SUNRGBD/dataset --output_path=/path/to/output/folder
+```
 
 
 ### Maniskill-style Scenes (AI2THOR & ReplicaCAD)
+
+
 
 
 
@@ -132,7 +137,7 @@ CONFIG_FILE=config/default_config.yml bash scripts/run_03_run_benchmark.sh
 Under default configs, once run:
 
 * `latest_config/used_config.yaml` records your latest config. 
-* ``run/`` folder records all your config, named by ``used_config_{ts}.yaml``. 
+* ``run/configs_used`` folder records all your config, named by ``used_config_{ts}.yaml``. 
 * The `runs/` folder stores all intermediate artifacts and final outputs generated during runtime. Re-running the same step (`.sh` script) of the pipeline may **overwrite** the existing contents within this folder.
 
 
@@ -160,16 +165,15 @@ The ManiTaskGen pipeline is structured into a sequential, four-step execution pr
 ### Overview
 
 
-  outputs
 
 
 
 | Scripts                           | Feature                                                      | Input                                                        | Output(default path)                                         |
 | --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| run_01_preprocessing.sh           | (a) Parse original dataset, generate scene graph and dump them<br />(b) Rename objects | `data/datasets/{dataset}`                                    | `runs/cache/scene_entities.json`<br />`runs/cache/scene_parsed.json`<br />`runs/cache/rename_dict.json`<br />`runs/images/image4rename/xxx.png`<br />`runs/cache/scene_graph.pkl`<br />`runs/visualizations/scene_graph.dot`<br />`runs/visualizations/scene_graph.txt` |
-| run_02a_gen_process_based_task.sh | generate process_based tasks                            | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/cache/process_based_task.pkl`<br />`runs/output/process_based_task.txt` |
-| run_02b_gen_outcome_based_task.sh | generate outcome_based tasks                                 | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/output/outcome_based_task.txt`<br />`runs/images/image4vote/xxx.png` |
-| run_03_run_benchmark.sh           | run benchmark executor                                       | `runs/cache/process_based_task.pkl`                         | `runs/output/result.txt`<br />`runs/images/image4interact/xxx.png`<br />`runs/images/image4reflection/xxx.png` <br />`runs/reflection/save_reflection.txt`|
+| run_01_preprocessing.sh           | Scene preprocessing                                          | `data/datasets/{dataset}`                                    | `runs/cache/scene_entities.json`<br />`runs/cache/scene_parsed.json`<br />`runs/cache/rename_dict.json`<br />`runs/images/image4rename/xxx.png`<br />`runs/cache/scene_graph.pkl`<br />`runs/visualizations/scene_graph.dot`<br />`runs/visualizations/scene_graph.txt` |
+| run_02a_gen_process_based_task.sh | Generate process-based tasks                                | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/cache/process_based_task.pkl`<br />`runs/output/process_based_task.txt` |
+| run_02b_gen_outcome_based_task.sh | Generate outcome-based tasks                                 | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/output/outcome_based_task.txt`<br />`runs/images/image4vote/xxx.png` |
+| run_03_run_benchmark.sh           | Run benchmark execution                                      | `runs/cache/process_based_task.pkl`                         | `runs/output/result.txt`<br />`runs/images/image4interact/xxx.png`|
 | config.sh                         | An auxiliary script for setting paths                         | /                                                            | /                                                            |
 
 
@@ -187,7 +191,7 @@ This initial step is crucial for transforming raw scene data into a structured f
 
 - **Goal:** Convert raw scene information (e.g., object poses, bounding boxes) into a standardized format and resolve object naming ambiguities using a VLM. The parsed scene data will be stored in ``runs/cache/scene_entities.json`` and ``runs/cache/scene_parsed.json`` for subsequent task generation.
 - Functionality Overview:  
-  * **Generating Scene Graph**: Output a structured file containing the **Receptacle-Aware 3D Scene Graph**, which includes crucial information about object-receptacle relationships. The graph will be stored in serialized (`.pkl`) formats.
+  * **Generating Scene Graph**: Output a structured file containing the **Receptacle-Aware 3D Scene Graph**, which includes crucial information about object-receptacle relationships. The graph will be stored in serialized (`runs/cache/scene_graph.pkl`) formats.
   * **VLM-Enhanced Renaming (Optional but Recommended):**  To address ambiguities arising from casual object naming in some datasets (e.g., identical names distinguished only by numerical suffixes ), a user-configured Vision-Language Model (VLM) can be leveraged. **This step is highly recommended** for process-based tasks as it ensures the renaming of objects into a more descriptive `(category_name)_(specific_name)` format, which is essential for accurate task difficulty classification (Level 1 vs. Level 2). The renaming results will be saved in ``runs/cache/rename_dict.json`` (if renaming is disabled, this file will be an empty dict), and images used for VLM querying will be stored in ``runs/images/image4rename/``.
   * **Gravity Adjustment (Optional but Recommended):** To address object dislocation in the dataset, we'll load and save the object information once in Sapien before start processing. This requires setting correct ``collision_path``. ``runs/cache/scene_parsed.json`` will contain the original object poses, and ``runs/cache/scene_parsed_gravity_adjusted.json`` will contain the adjusted object poses.
 
@@ -233,7 +237,7 @@ These tasks are directly executable by an embodied agent.
   
   * For full argument examples, please refer to ``stage2a_process_task_generation`` column under ``configs/staged_config.yaml``. 
   
-  * | **Key Argument**                      | **Description **                                             | **YAML Path**                                                | **Default/Usage**                                            |
+  * | **Key Argument**                      | **Description**                                             | **YAML Path**                                                | **Default/Usage**                                            |
     | ------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
     | `process_based_task:max_task_length`  | Maximum length of the generated tasks.                       | `stage2a_process_task_generation:process_based_task:max_task_length` | `5` (Level 1-2 tasks require 1, Level 3 tasks require min 2) |
     | `process_based_task:max_task_num`     | Number of tasks to generate (if the scene allows).           | `stage2a_process_task_generation:process_based_task:max_task_num` | `10`                                                         |
@@ -249,14 +253,14 @@ This module generates abstract tasks that describe a desired final state of the 
 
 - **Goal:** Generate **Outcome-based Tasks** that focus on the desired goal state rather than the execution process.
 - **Functionality Overview:**
-  1. **Template Instantiation:** Tasks are generated by instantiating a set of carefully curated, human-designed abstract goal templates (e.g., "Sort all objects...", "Group items...").
-  2. **VLM Feasibility Voting (Critical):** To ensure task realism, multiple VLMs (configurable) are queried to vote on the **feasibility** of the instantiated abstract tasks within the specific scene. Only tasks with high consensus are kept. The images used for voting are stored in ``runs/images/image4vote/``, and the final tasks are saved in ``runs/output/outcome_based_task.txt``.
+  * **Template Instantiation:** Tasks are generated by instantiating a set of carefully curated, human-designed abstract goal templates (e.g., "Sort all objects...", "Group items...").
+  * **VLM Feasibility Voting (Critical):** To ensure task realism, multiple VLMs (configurable) are queried to vote on the **feasibility** of the instantiated abstract tasks within the specific scene. Only tasks with high consensus are kept. The images used for voting are stored in ``runs/images/image4vote/``, and the final tasks are saved in ``runs/output/outcome_based_task.txt``.
 - **Dependencies:** Requires the preprocessed scene file from Step 1, i.e. the ``runs/cache/scene_graph.pkl`` and ``runs/cache/scene_entities.json``. See Overview table for details.
 - **Key Arguments (Please Supplement):**
   
   - For full argument examples, please refer to ``stage2b_outcome_task_generation`` column under ``configs/staged_config.yaml``. 
   
-  - | **Key Argument**                          | **Description **                                             | **YAML Path**                                                | **Default/Usage**                          |
+  - | **Key Argument**                          | **Description**                                             | **YAML Path**                                                | **Default/Usage**                          |
     | ----------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------ |
     | `outcome_based_task:task_num_per_pattern` | The number of tasks generated using each distinct template/pattern. | `stage2b_outcome_task_generation:outcome_based_task:task_num_per_pattern` | `5`                                        |
     | `manitaskot_pattern_file`                 | Path to the template file (`MANITASKOT-200`) used for generating outcome-based tasks. | `stage2b_outcome_task_generation:manitaskot_pattern_file`    | `data/templates/manitask_ot200.txt`        |
@@ -276,14 +280,14 @@ This module acts as the benchmark executor, connecting a target VLM Agent to the
 
 - **Goal:** Execute the generated tasks on a specified VLM Agent and collect performance metrics.
 - **Functionality Overview:**
-  1. **VLM Agent Integration:** Connects the chosen VLM Agent to the sapien simulator via an abstract, discrete action space interface. The images for interaction are stored in ``runs/images/image4interact/``, and the results of the benchmarking are saved in ``runs/output/result.txt``.
-  2. **Performance Evaluation:** Runs the agent through all tasks in the input file and logs the performance. Key metrics include **Success Rate (SR)** and **Intermediate Points (IP)**.
-- **Dependencies:** Requires the `.pkl` file from Step 2A and a working environment/simulator setup.
+  * **VLM Agent Integration:** Connects the chosen VLM Agent to the sapien simulator via an abstract, discrete action space interface. The images for interaction are stored in ``runs/images/image4interact/``, and the results of the benchmarking are saved in ``runs/output/result.txt``.
+  * **Performance Evaluation:** Runs the agent through all tasks in the input file and logs the performance. Key metrics include **Success Rate (SR)** and **Intermediate Points (IP)**.
+- **Dependencies:** Requires the `.pkl` file from Step 1 and Step 2A and a working environment/simulator setup. See Overview table for details.
 - **Key Arguments :**
   
   - For full argument examples, please refer to ``stage3_benchmark`` column under ``configs/staged_config.yaml``. 
   
-  - | **Key Argument**                       | **Description **                                             | **YAML Path**                                           | **Default/Usage**                  |
+  - | **Key Argument**                       | **Description**                                             | **YAML Path**                                           | **Default/Usage**                  |
     | -------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------- | ---------------------------------- |
     | **`benchmark_model_name`**             | **Target Agent.** The name of the VLM model to be benchmarked. Refer to the  https://openrouter.ai/ for valid values. | `stage3_benchmark:benchmark_model_name`                 | `openai/gpt-4.1-mini`              |
     | `mode`                                 | Execution mode. Set to `online` to automatically test the target VLM model, or `manual` for human-simulated interaction. | `stage3_benchmark:mode`                                 | `manual`                           |
@@ -298,7 +302,7 @@ This module acts as the benchmark executor, connecting a target VLM Agent to the
 
 
 
-Configs that not listed above should not require frequent changes. for their usage, see [FULL_CONFIG_REFERENCE.md](./docs/FULL_CONFIG_REFERENCE.md)
+Configs that not listed above should not require frequent changes. for their usage, see [FULL_CONFIG_REFERENCE.md](./FULL_CONFIG_REFERENCE.md)
 
 
 
@@ -308,7 +312,7 @@ Configs that not listed above should not require frequent changes. for their usa
 
 To facilitate development, research, and contribution to the **ManiTaskGen** framework, we provide detailed documentation on the system's architecture and core algorithms.
 
-- **Technical Details:** Understand **how** **ManiTaskGen** implements the very process elaborated in the paper and guarantees task feasibility Read **[TECHNICAL_DETAILS.md](TECHNICAL_DETAILS.md)**. 
+- **Technical Details:** Understand **how** **ManiTaskGen** implements the very process elaborated in the paper and guarantees task feasibility. Read **[TECHNICAL_DETAILS.md](TECHNICAL_DETAILS.md)**. 
 - **API Reference:** Find comprehensive documentation on reusable code components, utility libraries (e.g., `basic_geometries`), and the internal data structures. Read **[API_REFERENCE.md](API_REFERENCE.md)**
 
 
@@ -354,7 +358,7 @@ If you have ideas for enhancing task generation diversity, improving the benchma
 
 We welcome code contributions, especially in the following areas:
 
-- **New Task Generation Strategies:** Implementing more complex or novel methods for generating Process-based or Outcome-based tasks.
+
 - **Executor Improvements:** Extending the benchmark executor (`03_run_benchmark.sh`) to support new agent interfaces or automated evaluation for Outcome-based Tasks (Level 4).
 - **Core Utility Enhancement:** Improving or optimizing core algorithms in libraries like `basic_geometries`.
 

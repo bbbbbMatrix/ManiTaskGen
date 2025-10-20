@@ -63,7 +63,7 @@ stage2b_outcome_task_generation:
   outcome_based_task_txt_save_path: ${run_dir}/output/outcome_based_task.txt
 stage3_benchmark:
   benchmark_model_name: openai/gpt-4.1-mini
-  generate_mistake_note: true
+  generate_mistake_note: false
   mode: manual
   image4interaction_path: ${run_dir}/images/image4interact
   reflection_txt_load_path: ${run_dir}/reflection/load_reflection.txt
