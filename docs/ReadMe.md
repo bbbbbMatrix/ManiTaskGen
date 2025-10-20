@@ -151,7 +151,7 @@ python src/preprocessing/sunrgbd_parser.py --scene_path=path/to/SUNRGBD/dataset 
 
 
 
-The ManiTaskGen pipeline is structured into a sequential, four-step execution process. You must execute these modules in order, as the output of one step serves as the essential input for the next.
+The ManiTaskGen pipeline is structured into a sequential, four-step execution process. You should execute these modules in order, as the output of one step serves as the essential input for the next.
 
 
 
@@ -370,3 +370,4 @@ black .
 
 
 * **Documentation:** All new functions, classes, and complex code blocks must include comprehensive **Docstrings** and be referenced in the appropriate documentation files (`TECHNICAL_DETAILS.md` and `API_REFERENCE.md`).
+
