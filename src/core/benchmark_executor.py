@@ -2691,7 +2691,7 @@ class BenchmarkExecutor:
         self.partial_score = sum(self.out_of_order_partial_scores)
         print(
             self.status,
-            f"{self.partial_score}/{3*(len(self.task.subtask_list[0].intermediate_state_list) + 1)}",
+            f"{self.partial_score}/{len(self.task.subtask_list)*(len(self.task.subtask_list[0].intermediate_state_list) + 1)}",
         )
         return self.status, self.partial_score
 

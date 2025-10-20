@@ -203,8 +203,8 @@ def main(args):
     output_json_path = main_config.output_json_path
     entity_json_path = main_config.entity_json_path
     
-    import ipdb
-    ipdb.set_trace()
+    # import ipdb
+    # ipdb.set_trace()
 
     # 0.5 Initialize the Scene, add shaders and lights.
     sapien_scene_manager = visualize_scene_sapien.SapienSceneManager()

@@ -84,7 +84,7 @@ This is the official repository for the **ManiTaskGen** project. It Includes ins
 
 ## Installation
 
-For installation, refer to [INSTALLATION.md](./INSTALLATION.md)
+For installation, refer to **[INSTALLATION.md](./INSTALLATION.md)**
 
 
 
@@ -96,7 +96,7 @@ For installation, refer to [INSTALLATION.md](./INSTALLATION.md)
 
 
 
-Please follow the instructions in [INSTALLATION.md](./INSTALLATION.md) to set up the environment.
+Please follow the instructions in **[INSTALLATION.md](./INSTALLATION.md)** to set up the environment.
 
 ### Real-world Scenes (SUNRGBD)
 
@@ -304,7 +304,7 @@ This module acts as the benchmark executor, connecting a target VLM Agent to the
 
 
 
-Configs that not listed above should not require frequent changes. for their usage, see [FULL_CONFIG_REFERENCE.md](./FULL_CONFIG_REFERENCE.md)
+Configs that not listed above should not require frequent changes. For their usage, see **[FULL_CONFIG_REFERENCE.md]**(./FULL_CONFIG_REFERENCE.md)
 
 
 
