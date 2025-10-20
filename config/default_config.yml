@@ -4,11 +4,12 @@ common:
     model:  irrelevant/placeholder-model-name-only-for-initialization
   scene_graph_pkl_load_path: ${run_dir}/cache/scene_graph.pkl
 stage1_pre_processing:
+  adjust_with_gravity: true
   collision_path_prefix: data/datasets/replica_cad_dataset/objects/convex
   dataset_root_path: data/datasets/replica_cad_dataset
   entity_json_path: ${run_dir}/cache/scene_entities.json
   image4rename_path: ${run_dir}/images/image4rename
-  input_json_path: ./data/datasets/replica_cad_dataset/configs/scenes/apt_0.scene_instance.json
+  input_json_path: data/datasets/replica_cad_dataset/configs/scenes/apt_0.scene_instance.json
   object_config_path: data/datasets/replica_cad_dataset/configs/objects
   output_dir: ./output/
   output_json_path: ${run_dir}/cache/scene_parsed.json
@@ -67,6 +68,7 @@ stage2b_outcome_task_generation:
   outcome_based_task_txt_save_path: ${run_dir}/output/outcome_based_task.txt
 stage3_benchmark:
   benchmark_model_name: openai/gpt-4.1-mini
+  benchmark_task_num: 5
   generate_mistake_note: false
   mode: manual
   image4interaction_path: ${run_dir}/images/image4interact
@@ -79,10 +81,40 @@ stage3_benchmark:
 utilities:
   basic_geometry_config:
     EPS: 1.0e-05
+  benchmark_executor_config:
+    default_fovy_deg_max: 60.0
+    default_fovy_deg_min: 40.0
+    enable_detailed_logging: false
+    focus_ratio: 0.6
+    max_interaction_count: 20
+    picture_height: 768
+    picture_width: 1366
+    save_interaction_history: true
   benchmark_prompt_template_path: data/templates/benchmark_prompts.json
-  concave_processor_config: {}
+  concave_processor_config:
+    eps: 0.0001
+    min_polygon_area: 0.1
+    target_aspect_ratio: 1.8
+    max_target_strips: 4
+    merge_tolerance: 0.01
+    concave_threshold: 0.2
+    concave_min_area: 0.00001
+  ground_coverage_config:
+    eps: 0.001
+    resolution: 0.01
+    min_rect_size: 0.4
+    standing_point_distance: 0.8
+    global_bounds:
+      - -5.0
+      - 5.0
+      - -5.0
+      - 5.0
+    z_range:
+      - 0.1
+      - 1
   image_path: ${run_dir}/data/images
   image_renderer_config:
+    EPS: 1.0e-06
     default_camera_xy:
     - 0.0
     - 0.0

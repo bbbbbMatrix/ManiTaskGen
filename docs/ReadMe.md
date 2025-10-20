@@ -164,9 +164,9 @@ The ManiTaskGen pipeline is structured into a sequential, four-step execution pr
 | Scripts                           | Feature                                                      | Input                                                        | Output(default path)                                         |
 | --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ``run_01_preprocessings.sh``          | Scene preprocessing                                          | `data/datasets/{dataset}`                                    | `runs/cache/scene_entities.json`<br />`runs/cache/scene_parsed.json`<br />`runs/cache/rename_dict.json`<br />`runs/images/image4rename/xxx.png`<br />`runs/cache/scene_graph.pkl` |
-| ``run_02a_gen_process_based_task.sh`` | Generate process-based tasks                                | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/cache/process_based_task.pkl`<br />`runs/output/process_based_task.txt` |
-| ``run_02b_gen_outcome_based_task.sh`` | Generate outcome-based tasks                                 | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` | `runs/output/outcome_based_task.txt`<br />`runs/images/image4vote/xxx.png` |
-| ``run_03_run_benchmark.sh ``          | Run benchmark execution                                      | `runs/cache/process_based_task.pkl`                         | `runs/output/result.txt`<br />`runs/images/image4interact/xxx.png`|
+| ``run_02a_gen_process_based_task.sh`` | Generate process-based tasks                                | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json` <br />`runs/cache/rename_dict.json`| `runs/cache/process_based_task.pkl`<br />`runs/output/process_based_task.txt` |
+| ``run_02b_gen_outcome_based_task.sh`` | Generate outcome-based tasks                                 | `runs/cache/scene_graph.pkl`<br />`runs/cache/scene_entities.json`  <br />`runs/cache/rename_dict.json`| `runs/output/outcome_based_task.txt`<br />`runs/images/image4vote/xxx.png` |
+| ``run_03_run_benchmark.sh ``          | Run benchmark execution                                      | `runs/cache/process_based_task.pkl`  <br />`runs/cache/rename_dict.json`                        | `runs/output/result.txt`<br />`runs/images/image4interact/xxx.png`|
 | ``config.sh ``                        | An auxiliary script for setting paths                         | /                                                            | /                                                            |
 
 
@@ -196,17 +196,18 @@ This initial step is crucial for transforming raw scene data into a structured f
 
 * **Key Arguments:**
 
-  * For full argument examples, please refer to ``stage1_pre_processing`` column under ``configs/staged_config.yaml``. 
+  * For full argument examples, please refer to ``stage1_pre_processing`` column under ``configs/default_config.yaml``. 
 
   * | **Key Argument**          | **Description**                                              | **YAML Path**                                 | **Default/Usage**                            |
     | ------------------------- | ------------------------------------------------------------ | --------------------------------------------- | -------------------------------------------- |
     | `use_renaming_engine`     | whether enable VLM-Enhanced Renaming.                        | `stage1_pre_processing:use_renaming_engine`   | `false`                                      |
+    | `adjust_with_gravity`     | whether enable Gravity Adjustment                     | `stage1_pre_processing:adjust_with_gravity`   | `true`                                      |
     | `rename_engine:model`     | model used for renaming.                                     | `stage1_pre_processing:rename_engine:model`   | `openai/gpt-4.1-mini`                        |
     | `input_json_path`         | path to the scene json.                                      | `stage1_pre_processing:input_json_path`       | `./data/.../apt_0.scene_instance.json`       |
-    | ``output_json_path``      | path to the parsed scene json file.                          | `stage1_pre_processing:output_json_path`      | `${run_dir}/cache/scene_parsed.json` |
-    | ``object_config_path``    | path to the object configs.                                  | `stage1_pre_processing:object_config_path`    |                                              |
-    | ``collision_path_prefix`` | path to collisions.  needed to be valid when ``adjust_with_gravity=True`` | `stage1_pre_processing:collision_path_prefix` |                                              |
-    | ``rename_dict_path``      | path to the renaming results.                                | `stage1_pre_processing:rename_dict_path`      | `${run_dir}/cache/rename_dict.json`          |
+    | `output_json_path`        | path to the parsed scene json file.                          | `stage1_pre_processing:output_json_path`      | `${run_dir}/cache/scene_parsed.json`         |
+    | `object_config_path`      | path to the object configs.                                  | `stage1_pre_processing:object_config_path`    |                                              |
+    | `collision_path_prefix`   | path to collisions. gravity adjustment will not be enabled if it's not valid. | `stage1_pre_processing:collision_path_prefix` |                                              |
+    | `rename_dict_path`        | path to the renaming results.                                | `stage1_pre_processing:rename_dict_path`      | `${run_dir}/cache/rename_dict.json`          |
 
   
 
@@ -228,7 +229,7 @@ These tasks are directly executable by an embodied agent.
 * **Dependencies:** Requires the preprocessed scene file from Step 1, i.e. the ``runs/cache/scene_graph.pkl`` and ``runs/cache/scene_entities.json``. See Overview table for details.
 * **Key Arguments:**
   
-  * For full argument examples, please refer to ``stage2a_process_task_generation`` column under ``configs/staged_config.yaml``. 
+  * For full argument examples, please refer to ``stage2a_process_task_generation`` column under ``configs/default_config.yaml``. 
   
   * | **Key Argument**                      | **Description**                                             | **YAML Path**                                                | **Default/Usage**                                            |
     | ------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -249,9 +250,9 @@ This module generates abstract tasks that describe a desired final state of the 
   * **Template Instantiation:** Tasks are generated by instantiating a set of carefully curated, human-designed abstract goal templates (e.g., "Sort all objects...", "Group items...").
   * **VLM Feasibility Voting (Critical):** To ensure task realism, multiple VLMs (configurable) are queried to vote on the **feasibility** of the instantiated abstract tasks within the specific scene. Only tasks with high consensus are kept. The images used for voting are stored in ``runs/images/image4vote/``, and the final tasks are saved in ``runs/output/outcome_based_task.txt``.
 - **Dependencies:** Requires the preprocessed scene file from Step 1, i.e. the ``runs/cache/scene_graph.pkl`` and ``runs/cache/scene_entities.json``. See Overview table for details.
-- **Key Arguments (Please Supplement):**
+- **Key Arguments:**
   
-  - For full argument examples, please refer to ``stage2b_outcome_task_generation`` column under ``configs/staged_config.yaml``. 
+  - For full argument examples, please refer to ``stage2b_outcome_task_generation`` column under ``configs/default_config.yaml``. 
   
   - | **Key Argument**                          | **Description**                                             | **YAML Path**                                                | **Default/Usage**                          |
     | ----------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------ |
@@ -279,11 +280,12 @@ This module acts as the benchmark executor, connecting a target VLM Agent to the
 - **Dependencies:** Requires the `.pkl` file from Step 1 and Step 2A and a working environment/simulator setup. See Overview table for details.
 - **Key Arguments :**
   
-  - For full argument examples, please refer to ``stage3_benchmark`` column under ``configs/staged_config.yaml``. 
+  - For full argument examples, please refer to ``stage3_benchmark`` column under ``configs/default_config.yaml``. 
   
   - | **Key Argument**                       | **Description**                                             | **YAML Path**                                           | **Default/Usage**                  |
     | -------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------- | ---------------------------------- |
     | **`benchmark_model_name`**             | **Target Agent.** The name of the VLM model to be benchmarked. Refer to the  https://openrouter.ai/ for valid values. | `stage3_benchmark:benchmark_model_name`                 | `openai/gpt-4.1-mini`              |
+    | `benchmark_task_num`              | The number of tasks to be benchmarked. If this number exceeds the total tasks in the pkl file, all tasks in the pkl will be tested. | `stage3_benchmark:benchmark_task_num`                   | `5`                               |
     | `mode`                                 | Execution mode. Set to `online` to automatically test the target VLM model, or `manual` for human-simulated interaction. | `stage3_benchmark:mode`                                 | `manual`                           |
     | `vlm_interactor:MAX_INTERACTION_COUNT` | Maximum interaction steps allowed per task. Exceeding this limit forces a `CALL_END` and task evaluation. | `stage3_benchmark:vlm_interactor:MAX_INTERACTION_COUNT` | `20`                               |
     | `generate_mistake_note`                | Whether to generate mistake notes used for self-reflection (part of the VLM improvement method). | `stage3_benchmark:generate_mistake_note`                | `true`                             |
@@ -331,7 +333,7 @@ If you encounter a bug, an error, or unexpected behavior while running the pipel
 
 - Please open an **Issue** on the project repository.
 - Use the designated bug report template if available.
-- Include the following key information: the version of ManiTaskGen you are using, the configuration file (`staged_config.yaml`) used, the specific script (`.sh`) that failed, and the full error traceback.
+- Include the following key information: the version of ManiTaskGen you are using, the configuration file (`default_config.yaml`) used, the specific script (`.sh`) that failed, and the full error traceback.
 
 
 

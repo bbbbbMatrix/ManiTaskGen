@@ -129,7 +129,7 @@ class BasicGeometryConfig:
 class ImageRendererConfig:
     """Image Renderer configuration"""
 
-    EPS = 1e-6
+    EPS: float  = 1e-6
     default_fovy: float = float(np.deg2rad(60.0))  # Default field of view in radians
     default_fovy_range: List[float] = field(
         default_factory=lambda: [float(np.deg2rad(10.0)), float(np.deg2rad(100.0))]
@@ -194,22 +194,22 @@ class ImageRendererConfig:
 
 @dataclass
 class ConcaveProcessorConfig:
-    eps = 1e-4
-    min_polygon_area = 0.1  # Minimum polygon area threshold
-    target_aspect_ratio = 1.8  # Target aspect ratio
-    max_target_strips = 4  # Maximum target strips
-    merge_tolerance = 0.01  # Tolerance for merging polygons
-    concave_threshold = (
+    eps: float = 1e-4
+    min_polygon_area: float = 0.1  # Minimum polygon area threshold
+    target_aspect_ratio: float = 1.8  # Target aspect ratio
+    max_target_strips: int = 4  # Maximum target strips
+    merge_tolerance: float = 0.01  # Tolerance for merging polygons
+    concave_threshold: float = (
         0.2  # Concavity threshold for determining if a polygon is concave
     )
-    concave_min_area = 1e-5  # Minimum concave polygon area threshold
+    concave_min_area: float = 1e-5  # Minimum concave polygon area threshold
 
 
 @dataclass
 class GroundCoverageConfig:
     """Ground coverage configuration"""
 
-    eps = 1e-3
+    eps: float = 1e-3
     resolution: float = 0.01  # Grid resolution (meters)
     min_rect_size: float = 0.4  # Minimum rectangle size
     standing_point_distance: float = 0.8  # Distance from standing point to object
@@ -362,15 +362,17 @@ class TaskInteractionConfig:
 class OutcomeBaseGenerationConfig:
     """Configuration for outcome-based task generation"""
 
-    vlm_list = [
-        "openai/gpt-4.1",
-        "anthropic/claude-3.5-haiku",
-        "google/gemini-2.5-flash-lite-preview-06-17",
-    ]
+    vlm_list: List[str] = field(
+            default_factory=lambda:[
+            "openai/gpt-4.1",
+            "anthropic/claude-3.5-haiku",
+            "google/gemini-2.5-flash-lite-preview-06-17",
+        ]
+    )
+    
     task_num_per_pattern: int = 5
     # manitaskot_pattern_file: str = "data/templates/manitask_ot200.txt"
     # output_dir: str = "./out/outcome_based_task.txt"
-
 
 # @dataclass
 # class InteractPromptHelperConfig:
@@ -402,6 +404,10 @@ class PreProcessingConfig:
 
     rename_engine: RenameEngineConfig = field(default_factory=RenameEngineConfig)
 
+    adjust_with_gravity: bool = (
+        True  # Whether to adjust gravity (may affect object pose)
+    )
+    
     use_renaming_engine: bool = True  # Whether to use renaming engine
     input_json_path: Optional[str] = (
         "./data/datasets/replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
@@ -515,6 +521,7 @@ class BenchmarkConfig:
 class MiscConfig:
     """Miscellaneous configuration parameters"""
 
+    
     image_path: Optional[str] = "${run_dir}/data/images"  # Path to save images
     sapien_config: SapienConfig = field(default_factory=SapienConfig)
     scene_type: SceneType = field(default_factory=SceneType)
@@ -538,11 +545,20 @@ class MiscConfig:
     task_interaction_config: TaskInteractionConfig = field(
         default_factory=TaskInteractionConfig
     )
+    benchmark_executor_config: BenchmarkExecutorConfig = field(
+        default_factory=BenchmarkExecutorConfig
+    )
+    ground_coverage_config: GroundCoverageConfig = field(
+        default_factory=GroundCoverageConfig
+    )
 
     benchmark_prompt_template_path: str = "data/templates/benchmark_prompts.json"
     reflection_prompt_template_path: str = "data/templates/reflection_prompts.json"
     rename_engine_prompt_template_path: str = "data/templates/renaming_engine.json"
     interact_prompt_template_path: str = "data/templates/interact_prompts.json"
+    
+    bbox_only: bool = False  # Whether to use bounding box only for collision detection
+    
 
 
 @dataclass
@@ -801,10 +817,6 @@ class AppConfig:
         "${run_dir}/reflection/save_reflection.txt"  # Path to save
     )
 
-    benchmark_results_save_path: Optional[str] = (
-        "./benchmark_results.json"  # Path to save benchmark results
-    )
-
     rename_dict_path: Optional[str] = (
         "${run_dir}/cache/rename_dict.json"  # Path to the renaming dictionary
     )
@@ -879,12 +891,12 @@ class ConfigManager:
         staged_config = StageBasedConfig()
 
         loader = StageBasedConfigLoader()
-        # import ipdb; ipdb.set_trace()
+        
         loader.import_from_app_config(self.config)
         staged_config = loader.stage_config
 
         import dataclasses
-
+       # import ipdb; ipdb.set_trace()
         def dataclass_to_dict(obj):
             if dataclasses.is_dataclass(obj):
                 result = {}
