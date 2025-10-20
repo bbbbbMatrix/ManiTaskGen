@@ -186,7 +186,7 @@ Below are the detailed instructions for running each script in sequence.
 
 
 
-### Step 1: Scene Preprocessing (``01_preprocessings.sh``)
+### Step 1: Scene Preprocessing (``run_01_preprocessings.sh``)
 
 This initial step is crucial for transforming raw scene data into a structured format suitable for robust task generation, primarily focusing on resolving object ambiguity.
 
@@ -220,7 +220,7 @@ This initial step is crucial for transforming raw scene data into a structured f
 
 
 
-### Step 2a: Generate Process-based Tasks (``02a_gen_process_based_task.sh``)
+### Step 2a: Generate Process-based Tasks (``run_02a_gen_process_based_task.sh``)
 
 This module systematically generates specific, step-by-step mobile manipulation tasks (Level 1, 2, and 3). 
 
@@ -248,7 +248,7 @@ These tasks are directly executable by an embodied agent.
 
 
 
-### Step 2b: Generate Process-based Tasks (``02a_gen_process_based_task.sh``)
+### Step 2b: Generate Process-based Tasks (``run_02b_gen_outcome_based_task.sh``)
 
 This module generates abstract tasks that describe a desired final state of the environment (Level 4). We left benchmarking these tasks into future work.
 
@@ -272,7 +272,7 @@ This module generates abstract tasks that describe a desired final state of the 
 
 
 
-### Step 3: Run Benchmark Execution (`03_run_benchmark.sh`)
+### Step 3: Run Benchmark Execution (`run_03_run_benchmark.sh`)
 
 
 
@@ -304,7 +304,7 @@ This module acts as the benchmark executor, connecting a target VLM Agent to the
 
 
 
-Configs that not listed above should not require frequent changes. For their usage, see **[FULL_CONFIG_REFERENCE.md]**(./FULL_CONFIG_REFERENCE.md)
+Configs that not listed above should not require frequent changes. For their usage, see **[FULL_CONFIG_REFERENCE.md](./FULL_CONFIG_REFERENCE.md)**
 
 
 
