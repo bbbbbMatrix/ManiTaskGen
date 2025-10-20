@@ -106,7 +106,7 @@ class SapienConfig:
     )  # Objects to exclude from shading
     default_shading_mode: int = 1  # Default shading mode
 
-    default_json_file: str = "replica_apt_0_parsed.json"  # Default JSON file name
+    default_json_file: str = "scene_parsed.json"  # Default JSON file name
     default_output_file: str = "entities_apt_0.json"  # Default output file name
 
 
@@ -407,10 +407,10 @@ class PreProcessingConfig:
         "./data/datasets/replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
     )
     output_json_path: Optional[str] = (
-        ".${run_dir}/cache/replica_apt_0_parsed.json"  # Output file path
+        ".${run_dir}/cache/scene_parsed.json"  # Output file path
     )
     entity_json_path: Optional[str] = (
-        ".${run_dir}/cache/replica_apt_0_entities.json"  # Entity file path
+        ".${run_dir}/cache/scene_entities.json"  # Entity file path
     )
     output_dir: str = "./output/"  # Output directory for results
 
@@ -726,9 +726,9 @@ class AppConfig:
     input_json_path: Optional[str] = (
         "./data/datasets/replica_dataset/configs/scenes/apt_0.scene_instance.json"  # Scene file path
     )
-    output_json_path: Optional[str] = "./replica_apt_0_parsed.json"  # Output file path
+    output_json_path: Optional[str] = "./scene_parsed.json"  # Output file path
     entity_json_path: Optional[str] = (
-        "./replica_apt_0_entities.json"  # Entity file path
+        "./scene_entities.json"  # Entity file path
     )
     output_dir: str = "./output/"  # Output directory for results
     mode: str = "online"  # Mode: "online" or "manual"

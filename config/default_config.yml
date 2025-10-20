@@ -1,229 +1,188 @@
-adjust_with_gravity: true
-basic_geometry:
-  EPS: 1.0e-05
-bbox_only: false
-benchmark_executor:
-  default_fovy_deg_max: 60.0
-  default_fovy_deg_min: 40.0
-  enable_detailed_logging: false
-  focus_ratio: 0.6
-  max_interaction_count: 20
-  picture_height: 768
-  picture_width: 1366
-  save_interaction_history: true
-benchmark_model_name: openai/gpt-4.1-mini
-benchmark_prompt_template_path: data/templates/benchmark_prompts.json
-benchmark_results_save_path: ./benchmark_results.json
-cache_enabled: true
-collision_path_prefix: data/datasets/replica_dataset/objects/convex
-concave_processor: {}
-dataset_root_path: data/datasets/replica_dataset
-entity_json_path: ./replica_apt_0_entities.json
-generate_mistake_note: true
-ground_coverage:
-  global_bounds:
-  - -5.0
-  - 5.0
-  - -5.0
-  - 5.0
-  min_rect_size: 0.4
-  resolution: 0.01
-  standing_point_distance: 0.8
-  z_range:
-  - 0.1
-  - 1
-image4interaction_path: ${run_dir}/images/image4interact
-image4rename_path: ${run_dir}/images/image4rename
-image4vote_path: ${run_dir}/images/image4vote
-image_path: ${run_dir}/data/images
-image_renderer:
-  default_camera_xy:
-  - 0.0
-  - 0.0
-  default_far: 100.0
-  default_focus_ratio: 0.5
-  default_fovy: 1.0471975511965976
-  default_fovy_range:
-  - 0.17453292519943295
-  - 1.7453292519943295
-  default_near: 0.1
-  default_scipy_minimize_ftol: 0.001
-  default_scipy_minimize_maxiter: 250
-  font_size: 48
-  height: 1080
-  number_font_size: 40
-  roll_range:
-  - -0.003490658503988659
-  - 0.003490658503988659
-  trans_visiblity: 0.2
-  width: 1920
-  z_range:
-  - 0.2
-  - 2.5
-input_json_path: data/datasets/replica_dataset/configs/scenes/apt_0.scene_instance.json
-interact_prompt_template_path: data/templates/interact_prompts.json
-log_level: INFO
-manitaskot_pattern_file: /data/templates/manitask_ot200.txt
-meshprocessor:
-  EPS: 1.0e-06
-  coverage_threshold: 0.6
-  height_threshold: 0.01
-  min_size: 0.0025
-  relative_size_ratio: 0.25
-mode: online
-model_name: openai/gpt-4.1-mini
-object_config_path: data/datasets/replica_dataset/configs/objects
-openrouter:
-  api_key: Bearer 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
-  model: google/gemini-2.5-flash-lite-preview-06-17
-outcome_based_task_generation: {}
-outcome_based_task_txt_save_path: ${run_dir}/output/outcome_based_task.txt
-output_dir: ./output/
-output_json_path: ./replica_apt_0_parsed.json
-process_based_task:
-  max_task_length: 5
-  max_task_num: 1000
-process_based_task_pkl_load_path: ${run_dir}/cache/process_based_task.pkl
-process_based_task_pkl_save_path: ${run_dir}/cache/process_based_task.pkl
-process_based_task_txt_save_path: ${run_dir}/output/process_based_task.txt
-random_seed: null
-raw_scene:
-  desired_articulations: null
-  desired_objects: null
-  not_desired_articulations: null
-  not_desired_objects:
-  - frl_apartment_handbag
-  - frl_apartment_cushion_01
-  - frl_apartment_monitor
-  - frl_apartment_cloth_01
-  - frl_apartment_cloth_02
-  - frl_apartment_cloth_03
-  - frl_apartment_cloth
-  - frl_apartment_umbrella
-  - frl_apartment_tv_screen
-  - frl_apartment_indoor_plant_01
-  - frl_apartment_monitor_stand
-  - frl_apartment_setupbox
-  - frl_apartment_beanbag
-  - frl_apartment_bike_01
-  - frl_apartment_bike_02
-  - frl_apartment_indoor_plant_02
-  - frl_apartment_picture_01
-  - frl_apartment_towel
-  - frl_apartment_rug_01
-  - frl_apartment_rug_02
-  - frl_apartment_rug_03
-  - frl_apartment_mat
-  - frl_apartment_tv_object
-rectangle_query:
-  EPS: 0.001
-  placement_coverage_threshold: 0.95
-reflection_prompt_template_path: data/templates/reflection_prompts.json
-reflection_txt_load_path: ${run_dir}/reflection/load_reflection.txt
-reflection_txt_save_path: ${run_dir}/reflection/save_reflection.txt
-rename_dict_path: ${run_dir}/cache/rename_dict.json
-rename_engine:
-  model: openai/gpt-4.1-mini
-rename_engine_prompt_template_path: data/templates/renaming_engine.json
-result_file_path: ${run_dir}/output/result.txt
-sapien:
-  ambient_light:
-  - 0.5
-  - 0.5
-  - 0.5
-  camera_shader: default
-  correction_rotation_x: -90
-  cushion_z_offset: 0.1
-  default_json_file: replica_apt_0_parsed.json
-  default_material:
-    base_color:
-    - 1
-    - 1
-    - 1
-    metallic: 0.0
-    roughness: 0.5
-    specular: 0.5
-    transmission: 9.0
-  default_output_file: entities_apt_0.json
-  default_shading_mode: 1
-  directional_light:
-  - color:
+common:
+  open_router:
+    api_key: Bearer sk-or-v1-YourAPIKeyHere
+    model: google/gemini-2.5-flash-lite-preview-06-17
+  scene_graph_pkl_load_path: ${run_dir}/cache/scene_graph.pkl
+stage1_pre_processing:
+  collision_path_prefix: data/datasets/replica_cad_dataset/objects/convex
+  dataset_root_path: data/datasets/replica_cad_dataset
+  entity_json_path: ${run_dir}/cache/scene_entities.json
+  image4rename_path: ${run_dir}/images/image4rename
+  input_json_path: ./data/datasets/replica_cad_dataset/configs/scenes/apt_0.scene_instance.json
+  object_config_path: data/datasets/replica_cad_dataset/configs/objects
+  output_dir: ./output/
+  output_json_path: ${run_dir}/cache/scene_parsed.json
+  raw_scene:
+    desired_articulations: null
+    desired_objects: null
+    not_desired_articulations: null
+    not_desired_objects:
+    - frl_apartment_handbag
+    - frl_apartment_cushion_01
+    - frl_apartment_monitor
+    - frl_apartment_cloth_01
+    - frl_apartment_cloth_02
+    - frl_apartment_cloth_03
+    - frl_apartment_cloth
+    - frl_apartment_umbrella
+    - frl_apartment_tv_screen
+    - frl_apartment_indoor_plant_01
+    - frl_apartment_monitor_stand
+    - frl_apartment_setupbox
+    - frl_apartment_beanbag
+    - frl_apartment_bike_01
+    - frl_apartment_bike_02
+    - frl_apartment_indoor_plant_02
+    - frl_apartment_picture_01
+    - frl_apartment_towel
+    - frl_apartment_rug_01
+    - frl_apartment_rug_02
+    - frl_apartment_rug_03
+    - frl_apartment_mat
+    - frl_apartment_tv_object
+  rename_dict_path: ${run_dir}/cache/rename_dict.json
+  rename_engine:
+    model: openai/gpt-4.1-mini
+  scene_graph_pkl_save_path: ${run_dir}/cache/scene_graph.pkl
+  stage_path_prefix: data/datasets/replica_cad_dataset
+  urdf_path_prefix: data/datasets/replica_cad_dataset/urdf
+  use_renaming_engine: false
+  visual_path_prefix: data/datasets/replica_cad_dataset/objects
+stage2a_process_task_generation:
+  process_based_task:
+    max_task_length: 5
+    max_task_num: 10
+    use_level1_tasks: false
+  process_based_task_pkl_save_path: ${run_dir}/cache/process_based_task.pkl
+  process_based_task_txt_save_path: ${run_dir}/output/process_based_task.txt
+stage2b_outcome_task_generation:
+  image4vote_path: ${run_dir}/images/image4vote
+  manitaskot_pattern_file: data/templates/manitask_ot200.txt
+  outcome_based_task:
+    task_num_per_pattern: 5
+  outcome_based_task_txt_save_path: ${run_dir}/output/outcome_based_task.txt
+stage3_benchmark:
+  benchmark_model_name: openai/gpt-4.1-mini
+  generate_mistake_note: true
+  mode: manual
+  image4interaction_path: ${run_dir}/images/image4interact
+  reflection_txt_load_path: ${run_dir}/reflection/load_reflection.txt
+  reflection_txt_save_path: ${run_dir}/reflection/save_reflection.txt
+  result_file_path: ${run_dir}/output/result.txt
+  use_mistake_note: 1
+  vlm_interactor:
+    MAX_INTERACTION_COUNT: 20
+utilities:
+  basic_geometry_config:
+    EPS: 1.0e-05
+  benchmark_prompt_template_path: data/templates/benchmark_prompts.json
+  concave_processor_config: {}
+  image_path: ${run_dir}/data/images
+  image_renderer_config:
+    default_camera_xy:
+    - 0.0
+    - 0.0
+    default_far: 100.0
+    default_focus_ratio: 0.5
+    default_fovy: 1.0471975511965976
+    default_fovy_range:
+    - 0.17453292519943295
+    - 1.7453292519943295
+    default_near: 0.1
+    default_scipy_minimize_ftol: 0.001
+    default_scipy_minimize_maxiter: 250
+    font_size: 48
+    height: 1080
+    number_font_size: 40
+    roll_range:
+    - -0.003490658503988659
+    - 0.003490658503988659
+    trans_visiblity: 0.2
+    width: 1920
+    z_range:
+    - 0.2
+    - 2.5
+  interact_prompt_template_path: data/templates/interact_prompts.json
+  mesh_processor_config:
+    EPS: 1.0e-06
+    coverage_threshold: 0.6
+    height_threshold: 0.01
+    min_size: 0.0025
+    relative_size_ratio: 0.25
+  rectangle_query_config:
+    EPS: 0.001
+    placement_coverage_threshold: 0.95
+  reflection_prompt_template_path: data/templates/reflection_prompts.json
+  rename_engine_prompt_template_path: data/templates/renaming_engine.json
+  sapien_config:
+    ambient_light:
     - 0.5
     - 0.5
     - 0.5
-    direction:
-    - 0
-    - 1
-    - -1
-  excluded_shading_objects:
-  - book_03
-  ground_altitude: 0.0
-  point_lights:
-  - color:
-    - 0.5
-    - 0.5
-    - 0.5
-    position:
-    - 1.989
-    - -5.822
-    - 1
-  - color:
-    - 0.4
-    - 0.4
-    - 0.4
-    position:
-    - 2.15
-    - -5.9
-    - 1.0
-  ray_tracing_denoiser: none
-  rotation_offset_x: 90
-  time_step: 0.01
-  urdf_z_adjustment_offset: 0.005
-scene:
-  collision_check_enabled: true
-  global_bounds:
-  - -5.0
-  - 5.0
-  - -5.0
-  - 5.0
-  safety_margin: 0.1
-scene_element:
-  bbox_eps: 0.4
-  contact_eps: 0.05
-  ground_level_correction: 0.0001
-scene_graph_pkl_load_path: ${run_dir}/cache/scene_graph.pkl
-scene_graph_pkl_save_path: ${run_dir}/cache/scene_graph.pkl
-scene_type:
-  NEED_COLLISION_ADJUSTMENT: true
-  RGBD_SCENE: false
-stage_path_prefix: data/datasets/replica_dataset
-task_interaction:
-  enable_ambiguous_item_handling: true
-  enable_hint_prompts: true
-  enable_reflection_prompts: true
-task_num: 5
-task_primitive:
-  default_action: move
-  support_directions:
-  - front
-  - rear
-  - left
-  - right
-  - center
-  - front-left
-  - front-right
-  - rear-left
-  - rear-right
-  support_relations:
-  - at
-  - 'on'
-  - in
-  - around
-  - between
-  - freespace
-urdf_path_prefix: data/datasets/replica_dataset/urdf
-use_mistake_note: 1
-use_renaming_engine: false
-visual_path_prefix: data/datasets/replica_dataset/objects
-vlm_interactor:
-  MAX_INTERACTION_COUNT: 20
+    camera_shader: default
+    correction_rotation_x: -90
+    cushion_z_offset: 0.1
+    default_json_file: scene_parsed.json
+    default_material:
+      base_color:
+      - 1
+      - 1
+      - 1
+      metallic: 0.0
+      roughness: 0.5
+      specular: 0.5
+      transmission: 9.0
+    default_output_file: entities_apt_0.json
+    default_shading_mode: 1
+    directional_light:
+    - color:
+      - 0.5
+      - 0.5
+      - 0.5
+      direction:
+      - 0
+      - 1
+      - -1
+    excluded_shading_objects:
+    - book_03
+    ground_altitude: 0.0
+    point_lights:
+    - color:
+      - 0.5
+      - 0.5
+      - 0.5
+      position:
+      - 1.989
+      - -5.822
+      - 1
+    - color:
+      - 0.4
+      - 0.4
+      - 0.4
+      position:
+      - 2.15
+      - -5.9
+      - 1.0
+    ray_tracing_denoiser: none
+    rotation_offset_x: 90
+    time_step: 0.01
+    urdf_z_adjustment_offset: 0.005
+  scene_config:
+    collision_check_enabled: true
+    global_bounds:
+    - -5.0
+    - 5.0
+    - -5.0
+    - 5.0
+    safety_margin: 0.1
+  scene_element_config:
+    bbox_eps: 0.4
+    contact_eps: 0.05
+    ground_level_correction: 0.0001
+  scene_type:
+    NEED_COLLISION_ADJUSTMENT: true
+    RGBD_SCENE: false
+  task_interaction_config:
+    enable_ambiguous_item_handling: true
+    enable_hint_prompts: true
+    enable_reflection_prompts: true

@@ -228,6 +228,7 @@ class VLMVoter:
     def is_task_feasible(self, task, scene_graph):
 
         feasible_cnt = 0
+       
         for vlm in self.vlm_list:
             self.vlm_interactor.change_model_name(vlm)
             self.vlm_interactor.model_name = vlm  # only change the model name

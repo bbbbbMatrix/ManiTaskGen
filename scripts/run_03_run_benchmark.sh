@@ -1,12 +1,20 @@
 #!/bin/bash
 # filepath: /mnt/windows_e/workplace/task_generation/scripts/run_03_benchmark.sh
 
-# 加载配置
+
 source "$(dirname "$0")/config.sh"
 
 print_config
 
 log_step "Starting 03_run_benchmark.py"
+
+cd "$BASE_DIR"
+
+log_info "Current working directory: $BASE_DIR"
+
+args=(
+    --output_dir "$RUN_DIR"
+)
 
 
 check_input_optional "$OUTPUT_JSON"
@@ -32,14 +40,7 @@ fi
 
 
 
-run_python_script "03_run_benchmark.py" \
-    --config "$CONFIG_FILE" \
-    --output_dir "$RUN_DIR" \
-    --task_num "$TASK_NUM" \
-    --mode "$MODE" \
-    --model_name "$MODEL_NAME" \
-    --scene_graph_pkl_save_path "$SCENE_GRAPH_PKL" \
-    --atomic_task_pkl_load_path "$ATOMIC_TASK_PKL"
+run_python_script "03_run_benchmark.py" "${args[@]}"
 
 if [ $? -eq 0 ]; then
     log_info "Benchmark execution completed successfully"

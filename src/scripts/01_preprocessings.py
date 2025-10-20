@@ -195,14 +195,16 @@ def main(args):
     glog.info(args.output_dir)
     glog.info(args.config)
 
-    # import ipdb
-    # ipdb.set_trace()
+    
 
     main_config = config_manager.config
 
     input_json_path = main_config.input_json_path
     output_json_path = main_config.output_json_path
     entity_json_path = main_config.entity_json_path
+    
+    import ipdb
+    ipdb.set_trace()
 
     # 0.5 Initialize the Scene, add shaders and lights.
     sapien_scene_manager = visualize_scene_sapien.SapienSceneManager()

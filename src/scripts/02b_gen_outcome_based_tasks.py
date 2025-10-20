@@ -60,12 +60,7 @@ def parse_arguments():
         help="Output directory for results",
     )
 
-    parser.add_argument(
-        "--entity_json_path",
-        type=str,
-        default=None,
-        help="Path to the entity JSON file, overrides config if provided.",
-    )
+    
 
     parser.add_argument(
         "--scene_graph_pkl_load_path",
@@ -127,29 +122,48 @@ def update_config_from_args(config_manager, args):
 def main(args):
 
     os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
-    current_path = os.path.dirname(os.path.abspath(__file__))
 
     # 0. Initialize the configuration manager
     # We only need to load the config once.
 
+    config_path = args.config
+    run_dir = args.output_dir
+
+    glog.info(args.output_dir)
+    glog.info(args.config)
+    config_manager = ConfigManager(config_file_path=config_path, run_dir=run_dir)
+
+    update_config_from_args(config_manager, args)
     # export the final config in this run, named by the timestamp
 
-    # 0.5 Initialize the Scene, add shaders and lights.
-    config_path = args.config
-    config_manager = ConfigManager(
-        config_file_path=config_path, run_dir=args.output_dir
+    if not os.path.exists(config_manager.config_file_export_dir):
+        os.makedirs(config_manager.config_file_export_dir)
+
+    config_manager.save_to_yaml_staged(
+        os.path.join(
+            config_manager.config_file_export_dir,
+            f"used_config_{int(time.time())}.yaml",
+        )
     )
-    update_config_from_args(config_manager, args)
+
+    glog.info(args.output_dir)
+    glog.info(args.config)
+
+
+    main_config = config_manager.config
+
+    input_json_path = main_config.input_json_path
+    output_json_path = main_config.output_json_path
+    entity_json_path = main_config.entity_json_path
+
+
+    scene_graph_pkl_load_path = main_config.scene_graph_pkl_load_path
+ 
+    rename_dict_path = main_config.rename_dict_path
+
 
     sapien_scene_manager = visualize_scene_sapien.SapienSceneManager()
     scene = sapien_scene_manager.create_scene()
-
-    main_config = config_manager.config
-    outcome_base_config = main_config.outcome_based_task_generation
-
-    scene_graph_pkl_load_path = main_config.scene_graph_pkl_load_path
-    entity_json_path = main_config.entity_json_path
-    rename_dict_path = main_config.rename_dict_path
 
     # 2 Generate the scene graph
     scene_graph = None

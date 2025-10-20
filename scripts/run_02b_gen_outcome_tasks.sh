@@ -8,6 +8,14 @@ print_config
 
 log_step "Starting 02b_gen_outcome_based_tasks.py"
 
+cd "$BASE_DIR"
+
+log_info "Current working directory: $BASE_DIR"
+
+args=(
+    --output_dir "$RUN_DIR"
+)
+
 
 check_input_optional "$SCENE_GRAPH_PKL"
 check_input_optional "$RENAME_DICT_JSON"
@@ -19,11 +27,7 @@ fi
 
 
 
-run_python_script "02b_gen_outcome_based_tasks.py" \
-    --scene_graph_pkl_load_path "$SCENE_GRAPH_PKL" \
-    --rename_dict_path "$RENAME_DICT_JSON" \
-    --manitaskot_pattern_file "$VOTING_PROMPTS" \
-    --outcome_based_task_txt_save_path "$OUTCOME_TASKS_TXT" \
+run_python_script "02b_gen_outcome_based_tasks.py" "${args[@]}"
 
 if [ $? -eq 0 ]; then
     log_info "Outcome-based task generation completed successfully"

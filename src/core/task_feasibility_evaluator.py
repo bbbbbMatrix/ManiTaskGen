@@ -24,7 +24,7 @@ class TaskFeasibilityEvaluator:
         Evaluate task feasibility by sending images and prompts to VLM.
         """
         if save_path is None:
-            save_path = "./image4outcomebase/"
+            save_path = "./image4vote/"
 
         # Reset conversation
         vlminteractor.conversation = []
