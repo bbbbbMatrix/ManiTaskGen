@@ -134,7 +134,7 @@ def parse_arguments():
     parser.add_argument(
         "--use_renaming_engine",
         action="store_true",
-        default=None,
+        default=False,
         help="Whether to use renaming engine",
     )
     parser.add_argument(
@@ -177,7 +177,6 @@ def main(args):
 
     glog.info(args.output_dir)
     glog.info(args.config)
-
     config_manager = ConfigManager(config_file_path=config_path, run_dir=run_dir)
 
     update_config_from_args(config_manager, args)
@@ -185,7 +184,8 @@ def main(args):
 
     if not os.path.exists(config_manager.config_file_export_dir):
         os.makedirs(config_manager.config_file_export_dir)
-    config_manager.save_to_yaml(
+
+    config_manager.save_to_yaml_staged(
         os.path.join(
             config_manager.config_file_export_dir,
             f"used_config_{int(time.time())}.yaml",
@@ -195,14 +195,16 @@ def main(args):
     glog.info(args.output_dir)
     glog.info(args.config)
 
-    # import ipdb
-    # ipdb.set_trace()
+    
 
     main_config = config_manager.config
 
     input_json_path = main_config.input_json_path
     output_json_path = main_config.output_json_path
     entity_json_path = main_config.entity_json_path
+    
+    import ipdb
+    ipdb.set_trace()
 
     # 0.5 Initialize the Scene, add shaders and lights.
     sapien_scene_manager = visualize_scene_sapien.SapienSceneManager()
@@ -240,15 +242,21 @@ def main(args):
 
     # 2 Generate the scene graph
     scene_graph = None
-    if main_config.scene_graph_pkl_load_path is not None and os.path.exists(main_config.scene_graph_pkl_load_path):
+    if (
+        False
+        and main_config.scene_graph_pkl_load_path is not None
+        and os.path.exists(main_config.scene_graph_pkl_load_path)
+    ):
         glog.info(f"Loading scene graph from {main_config.scene_graph_pkl_load_path}")
-        with open(main_config.scene_graph_pkl_load_path, 'rb') as f:
+        with open(main_config.scene_graph_pkl_load_path, "rb") as f:
             scene_graph = pickle.load(f)
     else:
 
         ts = time.perf_counter()
         json_tree_path = gen_scene_graph.load_json_file(entity_json_path)
-        scene_graph = gen_scene_graph.gen_multi_layer_graph_with_free_space(json_tree_path)
+        scene_graph = gen_scene_graph.gen_multi_layer_graph_with_free_space(
+            json_tree_path
+        )
         glog.info(f"scene graph tree generation time:  {time.perf_counter() - ts}")
 
     if main_config.scene_graph_pkl_save_path is not None:
@@ -256,12 +264,15 @@ def main(args):
             pickle.dump(scene_graph, f)
 
     rename_dict = {}
-    main_config.use_renaming_engine = True
-    main_config.rename_dict_path = "/mnt/windows_e/workplace/task_generation/runs/cache/rename_dict.json"
+
     if main_config.use_renaming_engine:
-        if main_config.rename_dict_path is not None and os.path.exists(main_config.rename_dict_path):
-             glog.info(f"Using provided renaming dictionary {main_config.rename_dict_path} to rename the objects.")
-             rename_dict = json.load(open(main_config.rename_dict_path, 'r'))
+        if main_config.rename_dict_path is not None and os.path.exists(
+            main_config.rename_dict_path
+        ):
+            glog.info(
+                f"Using provided renaming dictionary {main_config.rename_dict_path} to rename the objects."
+            )
+            rename_dict = json.load(open(main_config.rename_dict_path, "r"))
         else:
             glog.info("Using renaming engine to rename the objects.")
             rename_engine = renaming_engine.RenamingEngine()
@@ -272,27 +283,24 @@ def main(args):
             )
     scene_graph.rename_all_features(rename_dict)
     json.dump(
-                rename_dict,
-                open(
-                    os.path.join(
-                        config_manager.config_file_export_dir,
-                        f"rename_dict.json",
-                    ),
-                    "w",
-                ),
-                indent=4,
-            )
+        rename_dict,
+        open(
+            main_config.rename_dict_path,
+            "w",
+        ),
+        indent=4,
+    )
 
     scene_graph_visualizer = visualization_tools.SceneGraphVisualizer()
 
     # import ipdb; ipdb.set_trace()
 
     # tree_root_list = ['GROUND', 'kitchen_counter_1_body', 'frl_apartment_table_02_40']
-    
+
     # scene_graph.nodes['frl_apartment_table_02_40'].children = [
     #     child for child in scene_graph.nodes['frl_apartment_table_02_40'].children if child.on_platform.name[-1] == '4'
     # ]
-    
+
     # scene_graph.nodes['kitchen_counter_1_body'].children = [
     #     child for child in scene_graph.nodes['kitchen_counter_1_body'].children if child.on_platform.name[-1] == '2'
     # ]
@@ -301,13 +309,13 @@ def main(args):
     #         scene_graph.nodes[tree_root] ,
     #         output_file=tree_root,
     #         format='png'
-            
+
     #     )
     #     scene_graph_visualizer.export_tree_to_json(
     #         scene_graph.nodes[tree_root],
     #         output_file=tree_root,
     #     )
-            
+
     # import ipdb;
     # ipdb.set_trace()
     # visualization_tools.SceneGraphVisualizer.export_tree_to_dot(
@@ -316,10 +324,7 @@ def main(args):
     #     format: str = "png",
     #     include_properties: bool = True,
     #     max_depth: Optional[int] = None,
-    # ) 
-    
-    
-    
+    # )
 
     # entity_json_path = './parsed_scene_iTHOR_1.json'
 

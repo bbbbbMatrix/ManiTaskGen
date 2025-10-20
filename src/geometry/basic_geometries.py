@@ -161,11 +161,11 @@ class Basic2DGeometry:
         dir2 = dir2 / np.linalg.norm(dir2)
 
         # 2. Check if they are parallel
-        if (
-            np.abs(np.atan2(dir1[1], dir1[0]) - np.atan2(dir2[1], dir2[0])) > eps
-            and np.abs(np.atan2(dir1[1], dir1[0]) - np.atan2(-dir2[1], dir2[0])) > eps
-        ):
-            return None
+        # if (
+        #     np.abs(np.arctan2(dir1[1], dir1[0]) - np.arctan2(dir2[1], dir2[0])) > eps
+        #     and np.abs(np.arctan2(dir1[1], dir1[0]) - np.arctan2(-dir2[1], dir2[0])) > eps
+        # ):
+        #     return None
 
         # 3. Project both rectangles onto parallel and perpendicular directions
         perp_dir = np.array([-dir1[1], dir1[0]])  # Perpendicular direction

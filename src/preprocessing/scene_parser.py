@@ -457,10 +457,10 @@ class SceneObject:
             self.heading = orientation
             self.bounding_points = bounding_points  #
 
-        if isinstance(self.bounding_points, list) and len(self.bounding_points) < 2:
-            import ipdb
+        # if isinstance(self.bounding_points, list) and len(self.bounding_points) < 2:
+        #     import ipdb
 
-            ipdb.set_trace()
+        #     ipdb.set_trace()
 
         self.bounding_points += np.array(
             [self.centroid_translation[0], self.centroid_translation[1]]

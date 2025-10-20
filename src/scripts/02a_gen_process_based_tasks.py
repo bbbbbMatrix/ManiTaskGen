@@ -5,8 +5,6 @@ import sapien
 import argparse
 
 
-scene = sapien.Scene()
-script_dir = os.path.dirname(os.path.abspath(__file__))
 # sys.path.append("d:/workplace/scene_graph/task_generation/")
 from src.preprocessing import (
     visualize_scene_sapien,
@@ -18,11 +16,7 @@ from src.utils.image_renderer import image_render_processor
 from src.utils import visualization_tools
 from src.utils.config_manager import ConfigManager
 from src.core import gen_scene_graph, process_based_task_generation, benchmark_executor
-from src.core.outcome_based_task_generation import (
-    OutcomeBasedTaskGenerator,
-    VLMVoter,
-    OutcomeBasedTaskPattern,
-)
+
 from src.core.task_feasibility_evaluator import TaskFeasibilityEvaluator
 from src.vlm_interaction import vlm_interactor
 
@@ -39,6 +33,11 @@ import copy
 import json
 
 # %%
+
+
+# scene = sapien.Scene()
+# import ipdb; ipdb.set_trace()
+# script_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def parse_arguments():
@@ -106,7 +105,7 @@ def update_config_from_args(config_manager, args):
 
 
 def main(args):
-
+    print("Starting process-based task generation...")
     os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
     current_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -114,6 +113,7 @@ def main(args):
     # We only need to load the config once.
 
     config_path = args.config
+    print(f"Using config file: {config_path}")
 
     config_manager = ConfigManager(
         config_file_path=config_path, run_dir=args.output_dir
@@ -131,10 +131,8 @@ def main(args):
         )
     )
 
-    # import ipdb
-    # ipdb.set_trace()
-
     main_config = config_manager.config
+    entity_json_path = main_config.entity_json_path
 
     t = time.perf_counter()
 
@@ -145,11 +143,16 @@ def main(args):
         with open(main_config.scene_graph_pkl_load_path, "rb") as f:
             scene_graph = pickle.load(f)
     else:
-        glog.error(f"{main_config.scene_graph_pkl_load_path} does not exist.")
-        raise ValueError("Please provide a valid scene graph pickle file path.")
+
+        ts = time.perf_counter()
+        json_tree_path = gen_scene_graph.load_json_file(entity_json_path)
+        scene_graph = gen_scene_graph.gen_multi_layer_graph_with_free_space(
+            json_tree_path
+        )
+        glog.info(f"scene graph tree generation time:  {time.perf_counter() - ts}")
 
     rename_dict = {}
-    import ipdb; ipdb.set_trace()
+
     if main_config.use_renaming_engine:
         if main_config.rename_dict_path is not None and os.path.exists(
             main_config.rename_dict_path
@@ -168,7 +171,7 @@ def main(args):
     # random.seed(123)
     chained_task = process_based_task_generation.TaskGeneration(scene_graph)
 
-    chained_task.generate_task(max_task_num=2, task_length=3)
+    chained_task.generate_task()
 
     if main_config.process_based_task_pkl_save_path is not None:
 
