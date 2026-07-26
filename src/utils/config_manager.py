@@ -368,6 +368,7 @@ class OutcomeBaseGenerationConfig:
         "google/gemini-2.5-flash-lite-preview-06-17",
     ]
     task_num_per_pattern: int = 5
+    keep_min_score: int = 2  # min #Feasible votes to keep a task (default: majority of 3)
     # manitaskot_pattern_file: str = "data/templates/manitask_ot200.txt"
     # output_dir: str = "./out/outcome_based_task.txt"
 
@@ -648,6 +649,10 @@ class StageBasedConfigLoader:
                     attr_value = getattr(app_config, attr_name)
                     setattr(stage_config, attr_name, attr_value)
 
+        self.stage_config.stage2b_outcome_task_generation.outcome_based_task = (
+            app_config.outcome_based_task_generation
+        )
+
     def export_to_app_config(self, app_config: "AppConfig") -> Any:
         """Populate the main application configuration from stage-based configuration"""
 
@@ -668,6 +673,9 @@ class StageBasedConfigLoader:
                 if attr_name in app_config_attrs:
                     setattr(app_config, attr_name, attr_value)
 
+        app_config.outcome_based_task_generation = (
+            self.stage_config.stage2b_outcome_task_generation.outcome_based_task
+        )
         return app_config
 
 
@@ -1525,8 +1533,8 @@ def get_task_interaction_config() -> TaskInteractionConfig:
 
 
 def get_outcome_based_task_generation_config() -> OutcomeBaseGenerationConfig:
-    """Get Outcome Base Generation configuration"""
-    return OutcomeBaseGenerationConfig()
+    """Get Outcome Base Generation configuration (singleton, reflects loaded yml)."""
+    return config_manager.config.outcome_based_task_generation
 
 
 def get_rename_engine_config() -> RenameEngineConfig:

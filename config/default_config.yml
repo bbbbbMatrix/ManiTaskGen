@@ -60,6 +60,7 @@ stage2b_outcome_task_generation:
   manitaskot_pattern_file: data/templates/manitask_ot200.txt
   outcome_based_task:
     task_num_per_pattern: 5
+    keep_min_score: 2
     vlm_list:
       - "openai/gpt-4.1"
       - "anthropic/claude-3.5-haiku"
