@@ -1,5 +1,6 @@
 from src.core.task_coverage_analyzer import (
     TaskRefs, node_id, manitasken_task_to_refs, taskchain_to_refs,
+    gpt_task_to_refs,
 )
 
 
@@ -49,3 +50,28 @@ def test_taskchain_to_refs_one_per_subtask():
     assert len(refs) == 2
     assert refs[0].moving_objects == ["o1"]
     assert refs[1].anchor_objects == ["o2"]
+
+
+def test_gpt_task_to_refs_reads_steps():
+    gpt_task = {
+        "task_id": "P0001",
+        "steps": [
+            {"moving_object_id": "book_04_37", "source_platform_id": "sofa_10_platform_0",
+             "target_platform_id": "stool_02_platform_0", "anchor_object_ids": []},
+            {"moving_object_id": "plate_01_50", "source_platform_id": "stool_02_platform_0",
+             "target_platform_id": "cabinet_4_body_platform_0",
+             "anchor_object_ids": ["bowl_06_54", None]},
+        ],
+    }
+    refs = gpt_task_to_refs(gpt_task)
+    assert len(refs) == 2
+    assert refs[0].moving_objects == ["book_04_37"]
+    assert refs[0].target_platforms == ["stool_02_platform_0"]
+    assert refs[0].source_platforms == ["sofa_10_platform_0"]
+    assert refs[1].anchor_objects == ["bowl_06_54"]  # None dropped
+    assert refs[1].source_platforms == ["stool_02_platform_0"]
+
+
+def test_gpt_task_to_refs_empty_steps():
+    assert gpt_task_to_refs({"steps": []}) == []
+    assert gpt_task_to_refs({}) == []

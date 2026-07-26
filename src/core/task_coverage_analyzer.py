@@ -44,3 +44,22 @@ def manitasken_task_to_refs(task) -> TaskRefs:
 def taskchain_to_refs(chain) -> List[TaskRefs]:
     """One TaskRefs per subtask in a TaskChain."""
     return [manitasken_task_to_refs(st) for st in getattr(chain, "subtask_list", [])]
+
+
+def gpt_task_to_refs(gpt_task: dict) -> List[TaskRefs]:
+    """Normalize one GPT task (example.md schema) to TaskRefs per step."""
+    out = []
+    for step in gpt_task.get("steps", []) or []:
+        def _opt(v):
+            return v if isinstance(v, str) and v else None
+        moving = _opt(step.get("moving_object_id"))
+        src = _opt(step.get("source_platform_id"))
+        tgt = _opt(step.get("target_platform_id"))
+        anchors = [a for a in (step.get("anchor_object_ids") or []) if isinstance(a, str) and a]
+        out.append(TaskRefs(
+            moving_objects=[moving] if moving else [],
+            anchor_objects=anchors,
+            target_platforms=[tgt] if tgt else [],
+            source_platforms=[src] if src else [],
+        ))
+    return out
