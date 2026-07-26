@@ -117,3 +117,31 @@ def test_vote_task_scores_and_isolates_image_dir(monkeypatch):
     assert result["feasible"] is True
     assert [v["verdict"] for v in result["verdicts"]] == ["Feasible", "Not feasible", "Feasible"]
     assert all(c == "/tmp/img4vote/task_p000_t000" for c in calls)  # per-task dir
+
+
+from src.core.outcome_based_task_generation import build_histogram, OutcomeVotingRunner
+
+
+def _res(score, tid):
+    return {"task_id": tid, "task_description": f"d {tid}", "pattern": "P",
+            "score": score, "verdicts": [], "feasible": score >= 2,
+            "image_dir": f"/tmp/i{tid}", "platforms": [], "objects": []}
+
+
+def test_build_histogram():
+    results = [_res(0, "a"), _res(0, "b"), _res(2, "c"), _res(3, "d"), _res(1, "e")]
+    assert build_histogram(results) == {0: 2, 1: 1, 2: 1, 3: 1}
+
+
+def test_write_results_json_and_kept_txt(tmp_path):
+    results = [_res(0, "a"), _res(3, "b")]
+    runner = OutcomeVotingRunner.__new__(OutcomeVotingRunner)
+    json_path = tmp_path / "vote_results.json"
+    txt_path = tmp_path / "kept.txt"
+    runner.write_results_json(results, str(json_path), keep_min_score=2, vlm_list=["m0", "m1", "m2"])
+    runner.write_kept_txt(results, str(txt_path))
+    import json
+    data = json.loads(json_path.read_text())
+    assert data["histogram"] == {"0": 1, "1": 0, "2": 0, "3": 1}
+    assert [t["task_id"] for t in data["kept_tasks"]] == ["b"]
+    assert "d b" in txt_path.read_text() and "d a" not in txt_path.read_text()

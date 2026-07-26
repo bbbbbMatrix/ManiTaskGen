@@ -793,6 +793,64 @@ class OutcomeBasedTask:
 
 
 
+def build_histogram(results):
+    hist = {0: 0, 1: 0, 2: 0, 3: 0}
+    for r in results:
+        s = r["score"]
+        if s in hist:
+            hist[s] += 1
+    return hist
+
+
+class OutcomeVotingRunner:
+    """Orchestrates candidate generation -> voting -> aggregation -> outputs."""
+
+    def __init__(self, generator, vlm_voter, scene_graph, image4vote_path, out_dir):
+        self.generator = generator
+        self.vlm_voter = vlm_voter
+        self.scene_graph = scene_graph
+        self.image4vote_path = image4vote_path
+        self.out_dir = out_dir
+
+    def run(self):
+        import os, json
+        os.makedirs(self.out_dir, exist_ok=True)
+        tasks = self.generator.generate_task_with_all_patterns()
+        results = []
+        for task in tasks:
+            tid = task.task_id or f"t{len(results):03d}"
+            results.append(self.vlm_voter.vote_task(task, self.scene_graph, tid, self.image4vote_path))
+        keep_min = getattr(self.vlm_voter.config, "keep_min_score", 2)
+        vlm_list = self.vlm_voter.vlm_list
+        self.write_results_json(results, os.path.join(self.out_dir, "vote_results.json"), keep_min, vlm_list)
+        self.write_kept_txt(results, os.path.join(self.out_dir, "outcome_based_task.txt"))
+        self.write_review_gallery(results, os.path.join(self.out_dir, "review_gallery.html"))
+        glog.info(f"Voting done: {build_histogram(results)} kept={sum(1 for r in results if r['feasible'])}/{len(results)}")
+        return results
+
+    def write_results_json(self, results, path, keep_min_score, vlm_list):
+        import json
+        kept = [r for r in results if r["feasible"]]
+        payload = {
+            "keep_min_score": keep_min_score,
+            "vlm_list": list(vlm_list),
+            "histogram": build_histogram(results),
+            "kept_tasks": kept,
+            "tasks": results,
+        }
+        with open(path, "w") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+
+    def write_kept_txt(self, results, path):
+        with open(path, "w") as f:
+            for r in results:
+                if r["feasible"]:
+                    f.write(f"{r['task_description']}\n")
+
+    def write_review_gallery(self, results, path):
+        pass
+
+
 def generate_candidate_tasks(task_pattern_list, task_num_per_pattern, platform_list,
                              multilayer_object_list, room_object_list):
     """Generate up to task_num_per_pattern unique candidate tasks per pattern.
