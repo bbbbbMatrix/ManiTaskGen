@@ -145,3 +145,22 @@ def test_write_results_json_and_kept_txt(tmp_path):
     assert data["histogram"] == {"0": 1, "1": 0, "2": 0, "3": 1}
     assert [t["task_id"] for t in data["kept_tasks"]] == ["b"]
     assert "d b" in txt_path.read_text() and "d a" not in txt_path.read_text()
+
+
+def test_write_review_gallery_groups_by_score(tmp_path):
+    import os
+    img_dir = tmp_path / "task_X"
+    img_dir.mkdir()
+    (img_dir / "plat.png").write_bytes(b"\x89PNG\r\n")  # dummy image
+    results = [{
+        "task_id": "X", "task_description": "Arrange things", "pattern": "P",
+        "score": 3, "feasible": True, "image_dir": str(img_dir),
+        "verdicts": [{"model": "m0", "verdict": "Feasible"}], "platforms": [], "objects": [],
+    }]
+    runner = OutcomeVotingRunner.__new__(OutcomeVotingRunner)
+    html_path = tmp_path / "review_gallery.html"
+    runner.write_review_gallery(results, str(html_path))
+    html = html_path.read_text()
+    assert "Arrange things" in html
+    assert "Score 3" in html or "score-3" in html
+    assert "task_X" in html  # image referenced

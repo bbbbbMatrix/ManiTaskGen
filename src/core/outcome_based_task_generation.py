@@ -848,7 +848,36 @@ class OutcomeVotingRunner:
                     f.write(f"{r['task_description']}\n")
 
     def write_review_gallery(self, results, path):
-        pass
+        import os, html as html_mod
+        rows = []
+        for r in sorted(results, key=lambda x: (-x["score"], x["task_id"])):
+            imgs = ""
+            img_dir = r.get("image_dir")
+            if img_dir and os.path.isdir(img_dir):
+                for fn in sorted(os.listdir(img_dir)):
+                    if fn.lower().endswith((".png", ".jpg", ".jpeg")):
+                        rel = os.path.relpath(os.path.join(img_dir, fn), os.path.dirname(path))
+                        imgs += f'<img src="{html_mod.escape(rel)}" style="max-width:320px;margin:4px;border:1px solid #ccc;">'
+            verdicts = ", ".join(f'{v["model"]}={v["verdict"]}' for v in r.get("verdicts", []))
+            kept = "KEPT" if r["feasible"] else ""
+            rows.append(
+                f'<div class="card score-{r["score"]}">'
+                f'<h3>Score {r["score"]} <small>{kept}</small> &middot; {html_mod.escape(r["task_id"])}</h3>'
+                f'<p>{html_mod.escape(r["task_description"])}</p>'
+                f'<p class="v">pattern: {html_mod.escape(str(r["pattern"]))} | {html_mod.escape(verdicts)}</p>'
+                f'<div>{imgs}</div></div>'
+            )
+        doc = (
+            "<!doctype html><html><head><meta charset='utf-8'><title>Outcome Vote Review</title>"
+            "<style>body{font-family:sans-serif;margin:16px} .card{border:1px solid #ddd;border-radius:6px;}"
+            "padding:10px;margin:10px 0} .score-0{background:#fdd} .score-1{background:#fec}"
+            " .score-2{background:#efd} .score-3{background:#dfd} .v{color:#555;font-size:small}</style></head>"
+            "<body><h1>Outcome-based VLM voting review</h1>"
+            + "".join(rows) + "</body></html>"
+        )
+        with open(path, "w") as f:
+            f.write(doc)
+
 
 
 def generate_candidate_tasks(task_pattern_list, task_num_per_pattern, platform_list,
