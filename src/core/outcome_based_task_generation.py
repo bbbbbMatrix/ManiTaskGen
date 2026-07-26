@@ -838,11 +838,11 @@ class OutcomeVotingRunner:
             "kept_tasks": kept,
             "tasks": results,
         }
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2, ensure_ascii=False)
 
     def write_kept_txt(self, results, path):
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             for r in results:
                 if r["feasible"]:
                     f.write(f"{r['task_description']}\n")
@@ -875,7 +875,7 @@ class OutcomeVotingRunner:
             "<body><h1>Outcome-based VLM voting review</h1>"
             + "".join(rows) + "</body></html>"
         )
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(doc)
 
 
