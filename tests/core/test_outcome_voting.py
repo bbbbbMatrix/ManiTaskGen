@@ -1,6 +1,12 @@
 import textwrap
 from src.utils import config_manager as cm_mod
 from src.utils.config_manager import ConfigManager
+from src.core.outcome_based_task_generation import (
+    OutcomeBasedTask,
+    VLMVoter,
+    compute_vote_score,
+    generate_candidate_tasks,
+)
 
 
 def test_getter_returns_singleton_not_fresh_default():
@@ -14,18 +20,20 @@ def test_getter_returns_singleton_not_fresh_default():
 
 def test_yml_propagates_to_outcome_config(tmp_path):
     yml = tmp_path / 'c.yaml'
-    yml.write_text(textwrap.dedent("\n        stage2b_outcome_task_generation:\n          outcome_based_task:\n            task_num_per_pattern: 7\n            keep_min_score: 2\n            vlm_list:\n              - 'owner/one'\n              - 'owner/two'\n    "))
+    yml.write_text(textwrap.dedent("""
+        stage2b_outcome_task_generation:
+          outcome_based_task:
+            task_num_per_pattern: 7
+            keep_min_score: 2
+            vlm_list:
+              - 'owner/one'
+              - 'owner/two'
+    """))
     mgr = ConfigManager(config_file_path=str(yml), run_dir=str(tmp_path))
     obt = mgr.config.outcome_based_task_generation
     assert obt.task_num_per_pattern == 7
     assert obt.keep_min_score == 2
     assert obt.vlm_list == ['owner/one', 'owner/two']
-
-
-from src.core.outcome_based_task_generation import (
-    OutcomeBasedTask,
-    generate_candidate_tasks,
-)
 
 
 class _FakePattern:
@@ -70,3 +78,42 @@ def test_generate_candidate_tasks_respects_task_num_cap():
     tasks = generate_candidate_tasks(patterns, task_num_per_pattern=3,
                                      platform_list=[], multilayer_object_list=[], room_object_list=[])
     assert len(tasks) == 3
+
+
+def test_compute_vote_score_counts_feasible():
+    assert compute_vote_score(["Feasible", "Not feasible", "Feasible"]) == 2
+    assert compute_vote_score(["Not feasible", "Partially feasible"]) == 0
+    assert compute_vote_score([]) == 0
+    assert compute_vote_score(["Feasible", "Feasible", "Feasible"]) == 3
+
+
+def test_vote_task_scores_and_isolates_image_dir(monkeypatch):
+    voter = VLMVoter.__new__(VLMVoter)  # bypass __init__ (no API/network)
+    voter.config = type("C", (), {"vlm_list": ["m0", "m1", "m2"], "keep_min_score": 2})()
+    voter.global_config = type("G", (), {})()
+    # rotate verdicts per model
+    verdicts = {"m0": "Feasible", "m1": "Not feasible", "m2": "Feasible"}
+    calls = []
+    class _Eval:
+        def evaluate_task_feasibility(self, interactor, task, scene_graph, width, height, save_path):
+            calls.append(save_path)
+            return verdicts[interactor.model_name]
+    class _Inter:
+        def __init__(self, name): self.model_name = name
+        def change_model_name(self, n): self.model_name = n
+    voter.evaluator = _Eval()
+    voter.vlm_interactor = _Inter("m0")
+    voter.vlm_interactor.change_model_name = lambda n: setattr(voter.vlm_interactor, "model_name", n)
+
+    class _Task:
+        task_id = "p000_t000"
+        task_description = "do something"
+        task_pattern = "PAT"
+        platform_list = []
+        multi_layer_object_list = []
+    result = voter.vote_task(_Task(), scene_graph=None, task_id="p000_t000",
+                             image4vote_path="/tmp/img4vote")
+    assert result["score"] == 2
+    assert result["feasible"] is True
+    assert [v["verdict"] for v in result["verdicts"]] == ["Feasible", "Not feasible", "Feasible"]
+    assert all(c == "/tmp/img4vote/task_p000_t000" for c in calls)  # per-task dir

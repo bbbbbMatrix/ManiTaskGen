@@ -214,6 +214,11 @@ class OBTMultilayerObject:
         }
 
 
+def compute_vote_score(verdicts):
+    """Score = number of 'Feasible' verdicts (0..len(vlm_list))."""
+    return sum(1 for v in verdicts if v == "Feasible")
+
+
 class VLMVoter:
 
     def __init__(self):
@@ -225,26 +230,41 @@ class VLMVoter:
         self.evaluator = TaskFeasibilityEvaluator()
         self.vlm_interactor = VLMInteractor(mode="online")
 
-    def is_task_feasible(self, task, scene_graph):
-
-        feasible_cnt = 0
-       
-        for vlm in self.vlm_list:
+    def vote_task(self, task, scene_graph, task_id, image4vote_path):
+        """Vote a task with all configured VLMs. Returns a result dict with score."""
+        task_image_dir = f"{image4vote_path}/task_{task_id}"
+        os.makedirs(task_image_dir, exist_ok=True)
+        verdicts = []
+        for vlm in self.config.vlm_list:
             self.vlm_interactor.change_model_name(vlm)
-            self.vlm_interactor.model_name = vlm  # only change the model name
-
-            vote_str = self.evaluator.evaluate_task_feasibility(
+            self.vlm_interactor.model_name = vlm
+            verdict = self.evaluator.evaluate_task_feasibility(
                 self.vlm_interactor,
                 task,
                 scene_graph,
                 width=512,
                 height=512,
-                save_path=self.global_config.image4vote_path,
+                save_path=task_image_dir,
             )
+            verdicts.append({"model": vlm, "verdict": verdict})
+        score = compute_vote_score([v["verdict"] for v in verdicts])
+        keep_min = getattr(self.config, "keep_min_score", 2)
+        return {
+            "task_id": task_id,
+            "task_description": task.task_description,
+            "pattern": task.task_pattern.task_pattern if hasattr(task.task_pattern, "task_pattern") else str(task.task_pattern),
+            "score": score,
+            "verdicts": verdicts,
+            "feasible": score >= keep_min,
+            "image_dir": task_image_dir,
+            "platforms": [p.platform_name for p in getattr(task, "platform_list", [])],
+            "objects": [m.multilayer_object_name for m in getattr(task, "multi_layer_object_list", [])],
+        }
 
-            feasible_cnt += 1 if vote_str == "Feasible" else 0
-
-        return feasible_cnt >= (len(self.vlm_list) + 1) // 2
+    def is_task_feasible(self, task, scene_graph, task_id="legacy", image4vote_path=None):
+        """Backward-compatible bool wrapper over vote_task."""
+        image4vote_path = image4vote_path or self.global_config.image4vote_path
+        return self.vote_task(task, scene_graph, task.task_id if hasattr(task, "task_id") and task.task_id else task_id, image4vote_path)["feasible"]
 
 
 class OutcomeBasedTaskPattern:
