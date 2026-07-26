@@ -75,3 +75,66 @@ def test_gpt_task_to_refs_reads_steps():
 def test_gpt_task_to_refs_empty_steps():
     assert gpt_task_to_refs({"steps": []}) == []
     assert gpt_task_to_refs({}) == []
+
+
+from src.core.task_coverage_analyzer import (
+    scene_totals, compute_coverage, write_coverage_report, DIMENSIONS,
+)
+
+
+class _Child:
+    def __init__(self, name): self.name = name
+
+
+class _Sg:
+    def __init__(self, plats):
+        self._plats = plats
+    def get_sensible_platform_list(self):
+        return self._plats
+
+
+class _PlatWithChildren:
+    def __init__(self, name, children):
+        self.name = name; self.children = children
+
+
+def test_scene_totals():
+    sg = _Sg([_PlatWithChildren("p0", [_Child("o1"), _Child("o2")]), _PlatWithChildren("p1", [])])
+    tot = scene_totals(sg)
+    assert tot["platforms"] == {"p0", "p1"}
+    assert tot["objects"] == {"o1", "o2"}
+
+
+def test_compute_coverage_countss_and_ratios():
+    totals = {"objects": {"o1", "o2", "o3"}, "platforms": {"p0", "p1"}}
+    refs = [
+        TaskRefs(moving_objects=["o1"], target_platforms=["p0"], source_platforms=["p1"], anchor_objects=["o2"]),
+        TaskRefs(moving_objects=["o1"], target_platforms=["p0"], source_platforms=["p0"], anchor_objects=[]),
+    ]
+    cov = compute_coverage(refs, totals)
+    # moving_objects: o1 appeared twice; distinct covered 1/3
+    assert cov["moving_objects"]["counts"] == {"o1": 2}
+    assert cov["moving_objects"]["distinct_covered"] == 1
+    assert cov["moving_objects"]["total"] == 3
+    assert abs(cov["moving_objects"]["ratio"] - 1/3) < 1e-9
+    # target_platforms: p0 x2; covered 1/2
+    assert cov["target_platforms"]["counts"] == {"p0": 2}
+    assert cov["target_platforms"]["ratio"] == 0.5
+    assert cov["anchor_objects"]["counts"] == {"o2": 1}
+    # every DIMENSIONS key present
+    assert set(cov.keys()) == set(DIMENSIONS)
+
+
+def test_write_coverage_report(tmp_path):
+    totals = {"objects": {"o1", "o2"}, "platforms": {"p0", "p1"}}
+    cov_mn = compute_coverage([TaskRefs(moving_objects=["o1"], target_platforms=["p0"])], totals)
+    cov_gpt = compute_coverage([TaskRefs(moving_objects=["o2"], target_platforms=["p1"])], totals)
+    write_coverage_report(cov_mn, cov_gpt, str(tmp_path),
+                          meta={"sample_size": 1, "seed": 0, "totals": totals})
+    import json
+    data = json.loads((tmp_path / "coverage_report.json").read_text())
+    assert data["meta"]["sample_size"] == 1
+    assert data["manitaskgen"]["moving_objects"]["counts"] == {"o1": 1}
+    assert data["gpt"]["moving_objects"]["counts"] == {"o2": 1}
+    md = (tmp_path / "coverage_report.md").read_text()
+    assert "moving_objects" in md and "ManiTaskGen" in md and "GPT" in md
