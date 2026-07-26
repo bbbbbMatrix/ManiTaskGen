@@ -755,9 +755,11 @@ class OutcomeBasedTask:
         multi_layer_object_list: list = None,
         platform_list: list = None,
         room_object_list: list = None,
+        task_id: str = None,
     ):
         self.task_description = task_description
         self.task_pattern = task_pattern
+        self.task_id = task_id
         self.multi_layer_object_list = (
             multi_layer_object_list if multi_layer_object_list is not None else []
         )
@@ -768,6 +770,52 @@ class OutcomeBasedTask:
 
     def __str__(self):
         return f"Task: {self.task_description}, Pattern: {self.task_pattern}, Multi-layer Objects: {self.multi_layer_object_list}, Platforms: {self.platform_list}, Room Objects: {self.room_object_list}"
+
+
+
+def generate_candidate_tasks(task_pattern_list, task_num_per_pattern, platform_list,
+                             multilayer_object_list, room_object_list):
+    """Generate up to task_num_per_pattern unique candidate tasks per pattern.
+
+    Deduplicates identical task descriptions within this run. Assigns each
+    surviving candidate a stable task_id. Patterns the scene cannot fulfil
+    (generate_task_description returns None) are skipped.
+    """
+    candidates = []
+    seen_descriptions = set()
+    for p_idx, pattern in enumerate(task_pattern_list):
+        produced = 0
+        attempts = 0
+        # cap attempts to avoid infinite loops when few unique tasks exist
+        max_attempts = task_num_per_pattern * 6
+        while produced < task_num_per_pattern and attempts < max_attempts:
+            attempts += 1
+            desc, rel_platforms, rel_multilayer = pattern.generate_task_description(
+                platform_list=platform_list,
+                multilayer_object_list=multilayer_object_list,
+                room_object_list=room_object_list,
+            )
+            if desc is None:
+                # The real generate_task_description returns None deterministically
+                # when the scene cannot fulfil this pattern (no matching platform /
+                # multilayer). Retrying cannot help, so stop this pattern.
+                break
+            if desc in seen_descriptions:
+                continue
+            seen_descriptions.add(desc)
+            task_id = f"p{p_idx:03d}_t{produced:03d}"
+            candidates.append(
+                OutcomeBasedTask(
+                    task_description=desc,
+                    task_pattern=pattern,
+                    multi_layer_object_list=rel_multilayer,
+                    platform_list=rel_platforms,
+                    room_object_list=room_object_list,
+                    task_id=task_id,
+                )
+            )
+            produced += 1
+    return candidates
 
 
 class OutcomeBasedTaskGenerator:
@@ -975,35 +1023,20 @@ class OutcomeBasedTaskGenerator:
         return self.all_task_list
 
     def generate_task_with_all_patterns(self, task_num=None, desired_pattern_list=None):
-
-        task_num = self.task_num_per_pattern if task_num is None else 1
-
-        desired_pattern_list = (
-            desired_pattern_list
+        task_num = self.task_num_per_pattern if task_num is None else task_num
+        patterns = (
+            [self.task_pattern_list[i] for i in desired_pattern_list]
             if desired_pattern_list is not None
-            else [i for i in range(len(self.task_pattern_list))]
+            else self.task_pattern_list
         )
-
-        for pattern in desired_pattern_list:
-            task_pattern = self.task_pattern_list[pattern]
-            self.task_list = []
-            task_description, relevant_platform_list, relevant_multlayer_list = (
-                task_pattern.generate_task_description(
-                    platform_list=self.platform_list,
-                    multilayer_object_list=self.multilayer_object_list,
-                    room_object_list=self.room_object_list,
-                )
-            )
-            new_ob_task = OutcomeBasedTask(
-                task_description=task_description,
-                task_pattern=task_pattern,
-                multi_layer_object_list=relevant_multlayer_list,
-                platform_list=relevant_platform_list,
-                room_object_list=self.room_object_list,
-            )
-
-            self.task_list.append(new_ob_task)
-
+        self.task_list = generate_candidate_tasks(
+            patterns,
+            task_num_per_pattern=task_num,
+            platform_list=self.platform_list,
+            multilayer_object_list=self.multilayer_object_list,
+            room_object_list=self.room_object_list,
+        )
+        glog.info(f"Generated {len(self.task_list)} candidate outcome tasks.")
         return self.task_list
 
     def parse_scene_graph(self):
