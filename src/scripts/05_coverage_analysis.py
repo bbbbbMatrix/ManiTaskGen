@@ -55,6 +55,9 @@ def main(args):
         with open(args.gpt_json) as f:
             gpt_data = json.load(f)
         gpt_tasks = gpt_data.get("tasks", gpt_data) if isinstance(gpt_data, dict) else gpt_data
+        if not isinstance(gpt_tasks, list):
+            glog.warning(f"GPT json 'tasks' is not a list (got {type(gpt_tasks).__name__}); treating as no tasks.")
+            gpt_tasks = []
         gpt_refs = [r for t in gpt_tasks for r in gpt_task_to_refs(t)]
         gpt_cov = compute_coverage(gpt_refs, totals)
         glog.info(f"GPT tasks -> {len(gpt_refs)} step refs")

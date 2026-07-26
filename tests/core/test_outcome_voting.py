@@ -138,7 +138,7 @@ def test_write_results_json_and_kept_txt(tmp_path):
     runner = OutcomeVotingRunner.__new__(OutcomeVotingRunner)
     json_path = tmp_path / "vote_results.json"
     txt_path = tmp_path / "kept.txt"
-    runner.write_results_json(results, str(json_path), keep_min_score=2, vlm_list=["m0", "m1", "m2"])
+    runner.write_results_json(results, str(json_path), keep_min_score=2, vlm_list=["m0", "m1", "m2"], n_vlm=3)
     runner.write_kept_txt(results, str(txt_path))
     import json
     data = json.loads(json_path.read_text())
@@ -164,3 +164,34 @@ def test_write_review_gallery_groups_by_score(tmp_path):
     assert "Arrange things" in html
     assert "Score 3" in html or "score-3" in html
     assert "task_X" in html  # image referenced
+
+
+def test_run_kept_txt_goes_to_configured_path(tmp_path, monkeypatch):
+    """When kept_txt_path is set, run() writes the kept-txt there (not in out_dir)."""
+    import os
+    out_dir = str(tmp_path / "outcome_review")
+    kept_txt_target = str(tmp_path / "custom" / "outcome_based_task.txt")
+
+    runner = OutcomeVotingRunner.__new__(OutcomeVotingRunner)
+    runner.out_dir = out_dir
+    runner.kept_txt_path = kept_txt_target
+    runner.generator = type("G", (), {"generate_task_with_all_patterns": lambda self: []})()
+    runner.scene_graph = None
+    runner.image4vote_path = str(tmp_path / "imgs")
+
+    # vlm_voter must have .config and .vlm_list
+    runner.vlm_voter = type("V", (), {
+        "config": type("C", (), {"keep_min_score": 2})(),
+        "vlm_list": ["m0", "m1"],
+    })()
+
+    runner.run()
+
+    # kept-txt at the configured custom path
+    assert os.path.isfile(kept_txt_target)
+    # vote_results.json and review_gallery.html inside out_dir
+    assert os.path.isfile(os.path.join(out_dir, "vote_results.json"))
+    assert os.path.isfile(os.path.join(out_dir, "review_gallery.html"))
+    # the old location must NOT exist
+    assert not os.path.exists(os.path.join(out_dir, "outcome_based_task.txt"))
+

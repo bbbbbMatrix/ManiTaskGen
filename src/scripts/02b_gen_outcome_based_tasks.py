@@ -209,6 +209,7 @@ def main(args):
         scene_graph=scene_graph,
         image4vote_path=image4vote_path,
         out_dir=out_dir,
+        kept_txt_path=main_config.outcome_based_task_txt_save_path,
     )
     runner.run()
 

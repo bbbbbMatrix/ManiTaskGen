@@ -793,8 +793,8 @@ class OutcomeBasedTask:
 
 
 
-def build_histogram(results):
-    hist = {0: 0, 1: 0, 2: 0, 3: 0}
+def build_histogram(results, n_vlm=3):
+    hist = {i: 0 for i in range(n_vlm + 1)}
     for r in results:
         s = r["score"]
         if s in hist:
@@ -805,15 +805,16 @@ def build_histogram(results):
 class OutcomeVotingRunner:
     """Orchestrates candidate generation -> voting -> aggregation -> outputs."""
 
-    def __init__(self, generator, vlm_voter, scene_graph, image4vote_path, out_dir):
+    def __init__(self, generator, vlm_voter, scene_graph, image4vote_path, out_dir, kept_txt_path=None):
         self.generator = generator
         self.vlm_voter = vlm_voter
         self.scene_graph = scene_graph
         self.image4vote_path = image4vote_path
         self.out_dir = out_dir
+        self.kept_txt_path = kept_txt_path
 
     def run(self):
-        import os, json
+        import os
         os.makedirs(self.out_dir, exist_ok=True)
         tasks = self.generator.generate_task_with_all_patterns()
         results = []
@@ -822,19 +823,24 @@ class OutcomeVotingRunner:
             results.append(self.vlm_voter.vote_task(task, self.scene_graph, tid, self.image4vote_path))
         keep_min = getattr(self.vlm_voter.config, "keep_min_score", 2)
         vlm_list = self.vlm_voter.vlm_list
-        self.write_results_json(results, os.path.join(self.out_dir, "vote_results.json"), keep_min, vlm_list)
-        self.write_kept_txt(results, os.path.join(self.out_dir, "outcome_based_task.txt"))
+        n_vlm = len(self.vlm_voter.vlm_list)
+        self.write_results_json(results, os.path.join(self.out_dir, "vote_results.json"), keep_min, vlm_list, n_vlm)
+        kept_txt_target = self.kept_txt_path or os.path.join(self.out_dir, "outcome_based_task.txt")
+        kept_txt_dir = os.path.dirname(kept_txt_target)
+        if kept_txt_dir:
+            os.makedirs(kept_txt_dir, exist_ok=True)
+        self.write_kept_txt(results, kept_txt_target)
         self.write_review_gallery(results, os.path.join(self.out_dir, "review_gallery.html"))
-        glog.info(f"Voting done: {build_histogram(results)} kept={sum(1 for r in results if r['feasible'])}/{len(results)}")
+        glog.info(f"Voting done: {build_histogram(results, n_vlm=n_vlm)} kept={sum(1 for r in results if r['feasible'])}/{len(results)}")
         return results
 
-    def write_results_json(self, results, path, keep_min_score, vlm_list):
+    def write_results_json(self, results, path, keep_min_score, vlm_list, n_vlm=3):
         import json
         kept = [r for r in results if r["feasible"]]
         payload = {
             "keep_min_score": keep_min_score,
             "vlm_list": list(vlm_list),
-            "histogram": build_histogram(results),
+            "histogram": build_histogram(results, n_vlm=n_vlm),
             "kept_tasks": kept,
             "tasks": results,
         }
