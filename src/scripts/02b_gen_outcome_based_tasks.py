@@ -20,6 +20,7 @@ from src.utils.config_manager import ConfigManager
 from src.core import gen_scene_graph, process_based_task_generation, benchmark_executor
 from src.core.outcome_based_task_generation import (
     OutcomeBasedTaskGenerator,
+    OutcomeVotingRunner,
     VLMVoter,
     OutcomeBasedTaskPattern,
 )
@@ -198,16 +199,18 @@ def main(args):
     outcome_based_task_generator.generate_task_with_all_patterns()
     vlm_voter = VLMVoter()
 
-    feasible_task_list = []
-    for task in outcome_based_task_generator.task_list:
-        task_is_feasible = vlm_voter.is_task_feasible(task, scene_graph)
-        if task_is_feasible:
-            feasible_task_list.append(task)
+    out_dir = os.path.join(os.path.dirname(main_config.outcome_based_task_txt_save_path), "outcome_review")
+    os.makedirs(out_dir, exist_ok=True)
+    image4vote_path = main_config.image4vote_path
 
-    output_dir = main_config.outcome_based_task_txt_save_path
-    with open(output_dir, "w") as f:
-        for task in feasible_task_list:
-            f.write(str(task) + "\n")
+    runner = OutcomeVotingRunner(
+        generator=outcome_based_task_generator,
+        vlm_voter=vlm_voter,
+        scene_graph=scene_graph,
+        image4vote_path=image4vote_path,
+        out_dir=out_dir,
+    )
+    runner.run()
 
 
 # %%
