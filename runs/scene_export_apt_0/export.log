@@ -1,0 +1,67 @@
+[2026-07-26 06:36:37,552] INFO scene_exporter - 60 sensible platforms to export from scene apt_0
+[2026-07-26 06:36:37,552] INFO root - Using standing direction 2 for platform 0 with name frl_apartment_sofa_10_0
+[2026-07-26 06:36:37,552] WARNING py.warnings - /home/haina/miniconda3/envs/manitaskgen/lib/python3.10/site-packages/scipy/optimize/_minimize.py:744: OptimizeWarning: Unknown solver options: ftol
+  res = _minimize_cobyla(fun, x0, args, constraints, callback=callback,
+
+[2026-07-26 06:36:39,259] INFO root - Using standing direction 2 for platform 1 with name frl_apartment_sofa_10_1
+[2026-07-26 06:36:40,275] INFO root - Using standing direction 2 for platform 2 with name frl_apartment_sofa_10_2
+[2026-07-26 06:36:41,132] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_shoe_04_80_0
+[2026-07-26 06:36:41,593] INFO root - Using standing direction 0 for platform 1 with name frl_apartment_shoe_04_80_1
+[2026-07-26 06:36:41,954] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_table_04_13_0
+[2026-07-26 06:36:42,481] INFO root - Using standing direction 1 for platform 0 with name frl_apartment_chair_04_46_0
+[2026-07-26 06:36:42,707] INFO root - Using standing direction 1 for platform 0 with name frl_apartment_chair_05_8_0
+[2026-07-26 06:36:43,033] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_chair_05_7_0
+[2026-07-26 06:36:43,316] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_stool_02_18_0
+[2026-07-26 06:36:43,883] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_stool_02_6_0
+[2026-07-26 06:36:44,391] INFO root - Using standing direction 1 for platform 0 with name frl_apartment_rack_01_76_0
+[2026-07-26 06:36:44,634] INFO root - Using standing direction 1 for platform 1 with name frl_apartment_rack_01_76_1
+[2026-07-26 06:36:45,025] INFO root - Using standing direction 1 for platform 2 with name frl_apartment_rack_01_76_2
+[2026-07-26 06:36:45,304] INFO root - Using standing direction 0 for platform 0 with name kitchen_counter_1_body_0
+[2026-07-26 06:36:46,065] INFO root - Using standing direction 0 for platform 1 with name kitchen_counter_1_body_1
+[2026-07-26 06:36:46,443] INFO root - Using standing direction 0 for platform 2 with name kitchen_counter_1_body_2
+[2026-07-26 06:36:48,091] INFO root - Using standing direction 0 for platform 1 with name fridge_0_body_1
+[2026-07-26 06:36:48,345] INFO root - Using standing direction 0 for platform 3 with name fridge_0_body_3
+[2026-07-26 06:36:48,584] INFO root - Using standing direction 0 for platform 4 with name fridge_0_body_4
+[2026-07-26 06:36:48,816] INFO root - Using standing direction 0 for platform 5 with name fridge_0_body_5
+[2026-07-26 06:36:49,063] INFO root - Using standing direction 0 for platform 6 with name fridge_0_body_6
+[2026-07-26 06:36:49,282] INFO root - Using standing direction 0 for platform 7 with name fridge_0_body_7
+[2026-07-26 06:36:49,514] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_bin_03_3_0
+[2026-07-26 06:36:49,981] INFO root - Using standing direction 2 for platform 0 with name frl_apartment_wall_cabinet_01_4_0
+[2026-07-26 06:36:50,253] INFO root - Using standing direction 2 for platform 1 with name frl_apartment_wall_cabinet_01_4_1
+[2026-07-26 06:36:50,591] INFO root - Using standing direction 2 for platform 2 with name frl_apartment_wall_cabinet_01_4_2
+[2026-07-26 06:36:50,932] INFO root - Using standing direction 2 for platform 3 with name frl_apartment_wall_cabinet_01_4_3
+[2026-07-26 06:36:51,275] INFO root - Using standing direction 2 for platform 4 with name frl_apartment_wall_cabinet_01_4_4
+[2026-07-26 06:36:51,777] INFO root - Using standing direction 2 for platform 5 with name frl_apartment_wall_cabinet_01_4_5
+[2026-07-26 06:36:52,187] INFO root - Using standing direction 2 for platform 6 with name frl_apartment_wall_cabinet_01_4_6
+[2026-07-26 06:36:52,535] INFO root - Using standing direction 0 for platform 1 with name frl_apartment_table_03_14_1
+[2026-07-26 06:36:53,162] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_table_01_48_0
+[2026-07-26 06:36:53,885] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_wall_cabinet_02_21_0
+[2026-07-26 06:36:54,596] INFO root - Using standing direction 0 for platform 1 with name frl_apartment_wall_cabinet_02_21_1
+[2026-07-26 06:36:55,367] INFO root - Using standing direction 0 for platform 2 with name frl_apartment_wall_cabinet_02_21_2
+[2026-07-26 06:36:56,159] INFO root - Using standing direction 0 for platform 3 with name frl_apartment_wall_cabinet_02_21_3
+[2026-07-26 06:36:57,412] INFO root - Using standing direction 0 for platform 4 with name frl_apartment_wall_cabinet_02_21_4
+[2026-07-26 06:36:58,197] INFO root - Using standing direction 0 for platform 5 with name frl_apartment_wall_cabinet_02_21_5
+[2026-07-26 06:36:58,873] INFO root - Using standing direction 0 for platform 6 with name frl_apartment_wall_cabinet_02_21_6
+[2026-07-26 06:36:59,459] INFO root - Using standing direction 0 for platform 1 with name frl_apartment_chair_01_15_1
+[2026-07-26 06:37:00,287] INFO root - Using standing direction 0 for platform 2 with name frl_apartment_chair_01_15_2
+[2026-07-26 06:37:01,025] INFO root - Using standing direction 0 for platform 1 with name frl_apartment_chair_01_16_1
+[2026-07-26 06:37:01,877] INFO root - Using standing direction 0 for platform 2 with name frl_apartment_chair_01_16_2
+[2026-07-26 06:37:02,641] INFO root - Using standing direction 0 for platform 0 with name chestOfDrawers_01_3_body_0
+[2026-07-26 06:37:02,874] INFO root - Using standing direction 0 for platform 1 with name chestOfDrawers_01_3_body_1
+[2026-07-26 06:37:03,111] INFO root - Using standing direction 0 for platform 2 with name chestOfDrawers_01_3_body_2
+[2026-07-26 06:37:03,340] INFO root - Using standing direction 0 for platform 3 with name chestOfDrawers_01_3_body_3
+[2026-07-26 06:37:03,563] INFO root - Using standing direction 0 for platform 4 with name chestOfDrawers_01_3_body_4
+[2026-07-26 06:37:03,773] INFO root - Using standing direction 0 for platform 5 with name chestOfDrawers_01_3_body_5
+[2026-07-26 06:37:03,967] INFO root - Using standing direction 0 for platform 6 with name chestOfDrawers_01_3_body_6
+[2026-07-26 06:37:04,385] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_chair_04_47_0
+[2026-07-26 06:37:04,620] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_table_02_40_0
+[2026-07-26 06:37:05,240] INFO root - Using standing direction 0 for platform 1 with name frl_apartment_table_02_40_1
+[2026-07-26 06:37:06,146] INFO root - Using standing direction 0 for platform 2 with name frl_apartment_table_02_40_2
+[2026-07-26 06:37:07,005] INFO root - Using standing direction 0 for platform 3 with name frl_apartment_table_02_40_3
+[2026-07-26 06:37:08,484] INFO root - Using standing direction 0 for platform 4 with name frl_apartment_table_02_40_4
+[2026-07-26 06:37:10,045] INFO root - Using standing direction 0 for platform 0 with name frl_apartment_tvstand_89_0
+[2026-07-26 06:37:10,697] INFO root - Using standing direction 0 for platform 0 with name cabinet_4_body_0
+[2026-07-26 06:37:12,071] INFO root - Using standing direction 0 for platform 1 with name cabinet_4_body_1
+[2026-07-26 06:37:13,448] INFO scene_exporter - exported 60 platforms (60 imgs), 68 objects (68 imgs) -> /mnt/hdd_1/haina/workspace/manitaskgen/ManiTaskGen/runs/scene_export_apt_0
+[2026-07-26 06:37:13,448] INFO root - Export complete -> /mnt/hdd_1/haina/workspace/manitaskgen/ManiTaskGen/runs/scene_export_apt_0 (platforms=60, objects=68, platform_imgs=60, object_imgs=68)
+[2026-07-26 06:37:13,539] INFO root - Total time: 36.38s
